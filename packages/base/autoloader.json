@@ -1,0 +1,36 @@
+{
+	"files":[
+		{
+			"classes":["controller"],
+			"file":"libraries/mvc/controller.php"
+		},
+		{
+			"classes":["view"],
+			"file":"libraries/mvc/view.php"
+		},
+		{
+			"classes":[
+				"views\\form",
+				"views\\FormError"
+			],
+			"file":"libraries/mvc/views/form.php"
+		},
+		{
+			"classes":["translator"],
+			"file":"libraries/translator/translator.php"
+		},
+		{
+			"classes":[
+				"translator\\InvalidLangCode",
+				"translator\\LangAlreadyExists",
+				"translator\\PhraseAlreadyExists",
+				"translator\\InvalidJson"
+			],
+			"file":"libraries/translator/exceptions.php"
+		},
+		{
+			"classes":["translator\\language"],
+			"file":"libraries/translator/language.php"
+		}
+	]
+}

@@ -1,0 +1,134 @@
+<?php
+namespace packages\base;
+require_once('autoloader.php');
+require_once('packages.php');
+require_once('exceptions.php');
+
+require_once('packages/base/libraries/json/encode.php');
+require_once('packages/base/libraries/json/decode.php');
+require_once('packages/base/libraries/io/io.php');
+require_once('packages/base/libraries/db/db.php');
+require_once('packages/base/libraries/db/MysqliDb.php');
+require_once('packages/base/libraries/db/dbObject.php');
+require_once('packages/base/libraries/db/exceptions.php');
+require_once('packages/base/libraries/config/options.php');
+require_once('packages/base/libraries/frontend/exceptions.php');
+require_once('packages/base/libraries/frontend/frontend.php');
+require_once('packages/base/libraries/frontend/theme.php');
+require_once('packages/base/libraries/http/http.php');
+require_once('packages/base/libraries/session/session.php');
+require_once('packages/base/libraries/utility/password.php');
+require_once('packages/base/libraries/utility/safe.php');
+require_once('packages/base/libraries/utility/response.php');
+
+require_once('packages/base/libraries/router/router.php');
+require_once('packages/base/libraries/router/url.php');
+require_once('packages/base/libraries/access/packages.php');
+require_once('packages/base/pages/index.php');
+
+use \packages\base\db;
+
+class loader{
+	private static $packages = array();
+	static function packages(){
+		$packages = scandir("packages/");
+		foreach($packages as $package){
+			if($package != '.' and $package != '..'){
+				self::package($package);
+			}
+		}
+	}
+	static function package($package){
+		if(is_file("packages/{$package}/package.json")){
+			$config = file_get_contents("packages/{$package}/package.json");
+			$config = json\decode($config);
+			if(is_array($config)){
+				if(!isset($config['permissions']))
+					$config['permissions'] = array();
+				$p = new package();
+				$p->setName($package);
+				$p->setPermissions($config['permissions']);
+				if(isset($config['frontend'])){
+					$p->setFrontend($config['frontend']);
+				}
+				if(isset($config['bootstrap'])){
+					$p->setBootstrap($config['bootstrap']);
+				}
+				if(isset($config['autoload'])){
+					$p->setAutoload($config['autoload']);
+					$p->register_autoload();
+				}
+				packages::register($p);
+				self::packagerouting($package);
+				return true;
+			}else{
+				throw new packageConfig($package);
+			}
+		}else{
+			throw new packageNotConfiged($package);
+		}
+	}
+	private static function packagerouting($package){
+		if(is_file("packages/{$package}/routing.json")){
+			$routing = file_get_contents("packages/{$package}/routing.json");
+			$routing = json\decode($routing);
+			if(is_array($routing)){
+				foreach($routing as $route){
+					if(isset($route['path'], $route['controller'])){
+						if(!preg_match('/^\\\\packages\\\\([a-zA-Z0-9-\\_]+)((\\\\[a-zA-Z0-9\_]+)+)$/', $route['controller'])){
+							$route['controller'] = "\\packages\\{$package}\\".$route['controller'];
+						}
+						//if(access\package\controller(self::$packages[$package],$route['controller'])){
+							router::add($route['path'], $route['controller'], isset($route['method']) ? $route['method'] : '');
+						//}else{
+						//	throw new packagePermission($package, $route['controller']);
+						//}
+					}else{
+						throw new packageConfig($package);
+					}
+				}
+			}else{
+				throw new packageConfig($package);
+			}
+		}
+		return true;
+	}
+	public static function connectdb(){
+		if(($db = options::get('packages.base.loader.db')) !== false){
+			if(isset($db['type'])){
+				if($db['type'] == 'mysql'){
+					if(isset($db['host'], $db['user'], $db['pass'],$db['dbname'])){
+						db::connect('default', $db['host'], $db['user'], $db['dbname'],$db['pass']);
+						return true;
+					}else{
+						throw new mysqlConfig();
+					}
+				}else{
+					throw new dbType($db['type']);
+				}
+			}else{
+				throw new dbType();
+			}
+		}
+		return false;
+	}
+	public static function requiredb(){
+		if(!db::has_connection()){
+			self::connectdb();
+		}
+	}
+	public static function options(){
+		global $options;
+		if(isset($options) and is_array($options)){
+			foreach($options as $name => $value){
+				options::set($name, $value);
+			}
+			return true;
+		}
+		return false;
+	}
+	public static function register_autoloader(){
+		spl_autoload_register('\\packages\\base\\autoloader::handler');
+	}
+}
+?>
