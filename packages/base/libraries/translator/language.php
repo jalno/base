@@ -20,7 +20,7 @@ class language{
 	public function getCode(){
 		return $this->code;
 	}
-	public function setRTL(bool $value){
+	public function setRTL($value){
 		$this->rtl = $value;
 	}
 	public function loadByFile($file){
