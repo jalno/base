@@ -13,29 +13,38 @@ class controller{
 	protected function checkinputs($fields){
 		$return = array();
 		$formdata = http::$data;
+		$files = http::$files;
 		foreach($fields as $field => $options){
-			if(isset($formdata[$field])){
+			if(isset($formdata[$field]) or isset($files[$field])){
+				if(isset($formdata[$field])){
+					$rawdata = $formdata[$field];
+				}elseif(isset($files[$field])){
+					$rawdata = $files[$field];
+				}
+
 				if(isset($options['type'])){
 					if(!is_array($options['type']))
 						$options['type'] = array($options['type']);
 					foreach($options['type'] as $type){
 						$data = null;
 						if($type == 'number'){
-							$data = safe::number($formdata[$field]);
+							$data = safe::number($rawdata);
 						}elseif($type == 'string'){
-							$data = safe::string($formdata[$field]);
+							$data = safe::string($rawdata);
 						}elseif($type == 'bool'){
-							$data = safe::bool($formdata[$field]);
+							$data = safe::bool($rawdata);
 						}elseif($type == 'email'){
-							$valid = safe::is_email($formdata[$field]);
+							$valid = safe::is_email($rawdata);
 							if($valid){
-								$data = $formdata[$field];
+								$data = $rawdata;
 							}
 						}elseif($type == 'cellphone'){
-							$valid = safe::is_cellphone_ir($formdata[$field]);
+							$valid = safe::is_cellphone_ir($rawdata);
 							if($valid){
-								$data = safe::cellphone_ir($formdata[$field]);
+								$data = safe::cellphone_ir($rawdata);
 							}
+						}elseif($type == 'file'){
+							$data = $rawdata;
 						}else{
 							throw new inputType($options['type']);
 						}
@@ -67,7 +76,17 @@ class controller{
 							throw new inputValidation($field);
 						}
 					}else{
-						$return[$field] = $formdata[$field];
+						if(isset($files[$field])){
+							if($rawdata['error'] == 4){
+								if (!isset($options['empty']) or !$options['empty']){
+									throw new inputValidation($field);
+								}
+							}elseif($rawdata['error'] != 0){
+								throw new inputValidation($field);
+							}
+						}else{
+							$return[$field] = $formdata[$field];
+						}
 					}
 				}elseif(isset($options['empty']) and $options['empty']){
 					$return[$field] = null;;

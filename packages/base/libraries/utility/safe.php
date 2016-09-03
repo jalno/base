@@ -22,7 +22,7 @@ class safe{
     		$d = array(
     			'Y' => $matches[1],
     			'm' => $matches[2],
-    			'd' => $matches[3], 
+    			'd' => $matches[3],
     		);
     		if(isset($matches[6]) and $matches[6]>=0 and $matches[6]< 24){
     			$d['h'] = $matches[6];
@@ -48,7 +48,7 @@ class safe{
             elseif(strlen($cellphone) == 12)$sub4 = '0'.substr($cellphone, 2, 3);//98913
             elseif(strlen($cellphone) == 13)$sub4 = '0'.substr($cellphone, 3, 3);//+98913
             $error = false;
-            
+
             switch($sub4){
             	case('0910'):case('0911'):case('0912'):case('0913'):case('0914'):case('0915'):case('0916'):case('0917'):case('0918'):case('0919')://TCI
             	case('0931')://Spadan
@@ -75,16 +75,12 @@ class safe{
             elseif(strlen($cellphone) == 11)return '98'.substr($cellphone, 1);//0913
             elseif(strlen($cellphone) == 12)return $cellphone;//98913
             elseif(strlen($cellphone) == 13)return substr($cellphone, 1);//+98913
-            
+
         }
         return false;
     }
     static function bool($value){
-        if(is_string($value)){
-            return $value == 'true';
-        }elseif(is_int($value)){
-            return $value > 0;
-        }
+        return ($value == 'true' or $value == 1);
     }
 }
 ?>
