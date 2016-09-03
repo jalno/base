@@ -119,8 +119,15 @@ class dbObject {
 		$this->db = db::connection($connection);;
 		if (empty ($this->dbTable))
 			$this->dbTable = get_class ($this);
-		if ($data)
+		if ($data){
+			if(is_object($data) and $data instanceof dbObject){
+				$data = $data->toArray();
+			}
+			if(is_array($data) and $this->primaryKey and isset($data[$this->primaryKey]) and $data[$this->primaryKey]){
+				$this->isNew = false;
+			}
 			$this->data = $data;
+		}
 	}
 	/**
 	 * Magic setter function
@@ -354,7 +361,7 @@ class dbObject {
 	 * @return dbObject
 	 */
 	private function with ($objectName) {
-		if (!property_exists ($this, 'relations') && !isset ($this->relations[$name]))
+		if (!property_exists ($this, 'relations') && !isset ($this->relations[$objectName]))
 			die ("No relation with name $objectName found");
 		$this->_with[$objectName] = $this->relations[$objectName];
 		return $this;
@@ -572,6 +579,14 @@ class dbObject {
 				}
 			}
 		}
+		if (isset ($this->serializeFields) && is_array ($this->serializeFields)) {
+
+			foreach ($this->serializeFields as $key){
+				if($data[$key]){
+					$data[$key] = unserialize ($data[$key]);
+				}
+			}
+		}
 		if (isset ($this->arrayFields) && is_array($this->arrayFields)) {
 			foreach ($this->arrayFields as $key)
 				$data[$key] = explode ("|", $data[$key]);
@@ -605,6 +620,7 @@ class dbObject {
 			}
 			if ($value == null)
 				continue;
+
 			switch ($type) {
 				case "text";
 					$regexp = null;
@@ -625,13 +641,16 @@ class dbObject {
 					$regexp = $type;
 					break;
 			}
-			if (!$regexp)
+			if (empty($regexp))
 				continue;
 			if (!preg_match ($regexp, $value)) {
 				throw new InputDataType($key);
 			}
 		}
 		return true;
+	}
+	public function getPrimaryKey(){
+		return $this->primaryKey;
 	}
 	private function prepareData () {
 		$this->errors = array();
@@ -643,16 +662,22 @@ class dbObject {
 		if (!$this->dbFields)
 			return $this->data;
 		foreach ($this->data as $key => &$value) {
-			if ($value instanceof dbObject && $value->isNew == true) {
-				$id = $value->save();
-				if ($id)
-					$value = $id;
-				else
-					$this->errors = array_merge ($this->errors, $value->errors);
+			if ($value instanceof dbObject) {
+				if($value->isNew == true){
+					$id = $value->save();
+					if ($id)
+						$value = $id;
+					else
+						$this->errors = array_merge ($this->errors, $value->errors);
+				}else{
+					$pkey = $value->getPrimaryKey();
+					$sqlData[$key] = $value->$pkey;
+					continue;
+				}
 			}
 			if (!in_array ($key, array_keys ($this->dbFields)))
 				continue;
-			if (!is_array($value)) {
+			if (!is_array($value) and !is_object($value)) {
 				$sqlData[$key] = $value;
 				continue;
 			}
@@ -662,10 +687,13 @@ class dbObject {
 				}else{
 					$sqlData[$key] = $value;
 				}
-			}else if (isset ($this->arrayFields) && in_array ($key, $this->arrayFields))
+			}elseif(isset ($this->arrayFields) && in_array ($key, $this->arrayFields)){
 				$sqlData[$key] = implode ("|", $value);
-			else
+			}elseif (isset ($this->serializeFields) && in_array ($key, $this->serializeFields)){
+				$sqlData[$key] = serialize($value);
+			}else{
 				$sqlData[$key] = $value;
+			}
 		}
 		return $sqlData;
 	}
