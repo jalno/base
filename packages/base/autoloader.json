@@ -40,6 +40,14 @@
 				"IO\\drivers\\ftp\\NotReady"
 			],
 			"file":"libraries/io/drivers/ftp/exceptions.php"
+		},
+		{
+			"classes":["process"],
+			"file":"libraries/background/process.php"
+		},
+		{
+			"classes":["cli"],
+			"file":"libraries/background/cli.php"
 		}
 	]
 }

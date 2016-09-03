@@ -20,6 +20,8 @@ require_once('packages/base/libraries/session/session.php');
 require_once('packages/base/libraries/utility/password.php');
 require_once('packages/base/libraries/utility/safe.php');
 require_once('packages/base/libraries/utility/response.php');
+/* Comment-line and parallel process */
+require_once('packages/base/libraries/background/cli.php');
 
 require_once('packages/base/libraries/router/router.php');
 require_once('packages/base/libraries/router/url.php');
@@ -29,6 +31,8 @@ require_once('packages/base/pages/index.php');
 use \packages\base\db;
 
 class loader{
+	const cli = 1;
+	const cgi = 2;
 	private static $packages = array();
 	static function packages(){
 		$packages = scandir("packages/");
@@ -130,5 +134,12 @@ class loader{
 	public static function register_autoloader(){
 		spl_autoload_register('\\packages\\base\\autoloader::handler');
 	}
+	public static function sapi(){
+		$sapi_type = php_sapi_name();
+		if (substr($sapi_type, 0, 3) == 'cli') {
+			return self::cli;
+		}else{
+			return self::cgi;
+		}
+	}
 }
-?>

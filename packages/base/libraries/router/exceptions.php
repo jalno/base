@@ -1,7 +1,7 @@
 <?php
 namespace packages\base;
 class routerMethod extends \Exception {
-	private $method; 
+	private $method;
 	public function __construct($method){
 		$this->method = $method;
 	}
@@ -10,7 +10,7 @@ class routerMethod extends \Exception {
 	}
 }
 class routerController extends \Exception {
-	private $controller; 
+	private $controller;
 	public function __construct($controller){
 		$this->controller = $controller;
 	}
@@ -19,7 +19,7 @@ class routerController extends \Exception {
 	}
 }
 class routerRule extends \Exception {
-	private $rule; 
+	private $rule;
 	public function __construct($rule){
 		$this->rule = $rule;
 	}
@@ -28,7 +28,7 @@ class routerRule extends \Exception {
 	}
 }
 class routerRulePart extends \Exception {
-	private $part; 
+	private $part;
 	public function __construct($part, $message = ""){
 		$this->part = $part;
 		parent::__construct($message);
@@ -37,4 +37,4 @@ class routerRulePart extends \Exception {
 		return $this->part;
 	}
 }
-?>
+class NotFound extends \Exception {}

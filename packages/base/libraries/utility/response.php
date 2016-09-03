@@ -44,11 +44,21 @@ class response{
 	public function setStatus($status){
 		$this->status = $status;
 	}
+	public function getStatus(){
+		return $this->status;
+	}
 	public function setData($data, $key = null){
 		if($key){
 			$this->data[$key] = $data;
 		}else{
 			$this->data = $data;
+		}
+	}
+	public function getData($key = null){
+		if($key){
+			return(isset($this->data[$key]) ? $this->data[$key] : null);
+		}else{
+			return $this->data;
 		}
 	}
 	public function json(){

@@ -2,6 +2,7 @@
 namespace packages\base;
 include('exceptions.php');
 use packages\base\http;
+use packages\base\process;
 class router{
 	static private $rules = array();
 	static public function add($rule, $controller, $method){
@@ -73,38 +74,65 @@ class router{
 			throw new routerRulePart($part);
 		}
 	}
-	static function routing($path = null){
-		if($path === null)$path = http::$request['uri'];
-		$uri = explode('/', $path);
-		$newuri = array();
-		foreach($uri as $p){
-			if($p){
-				$newuri[] = $p;
-			}
-		}
-		$uri = $newuri;
-		if(empty($uri))$uri = array('index');
+	static function routing(){
 		$found = false;
-		foreach(self::$rules as $rule){
-			if(($data = self::checkRule($rule, $uri)) !== false){
-				list($controller, $method) = explode('@', $rule['controller'], 2);
-				if(preg_match('/^\\\\packages\\\\([a-zA-Z0-9|_]+).*$/', $controller, $matches)){
-					if($package = packages::package($matches[1])){
-						//$package->register_autoload();
-						$package->bootup();
-						if(class_exists($controller) and method_exists($controller, $method)){
-							$package->applyFrontend();
-							$controllerClass = new $controller();
-							$controllerClass->response($controllerClass->$method($data));
-							$package->cancelFrontend();
-						}else{
-							throw new routerController($rule['controller']);
+		$api = loader::sapi();
+		if($api == loader::cgi){
+			$path = http::$request['uri'];
+			$uri = explode('/', $path);
+			$newuri = array();
+			foreach($uri as $p){
+				if($p){
+					$newuri[] = $p;
+				}
+			}
+			$uri = $newuri;
+			if(empty($uri)){
+				$uri = array('index');
+			}
+			foreach(self::$rules as $rule){
+				if(($data = self::checkRule($rule, $uri)) !== false){
+					list($controller, $method) = explode('@', $rule['controller'], 2);
+					if(preg_match('/^\\\\packages\\\\([a-zA-Z0-9|_]+).*$/', $controller, $matches)){
+						if($package = packages::package($matches[1])){
+							//$package->register_autoload();
+							$package->bootup();
+							if(class_exists($controller) and method_exists($controller, $method)){
+								//$package->applyFrontend();
+								$controllerClass = new $controller();
+								$controllerClass->response($controllerClass->$method($data));
+								//$package->cancelFrontend();
+							}else{
+								throw new routerController($rule['controller']);
+							}
 						}
 					}
+					$found = true;
+					break;
 				}
-				$found = true;
-				break;
 			}
+		}else{
+			if(($processID = cli::getParameter('process')) !== false){
+				$process = process::byId($processID);
+				if($process->status != process::running){
+					list($controller, $method) = explode('@', $process->name, 2);
+					if(class_exists($controller) and method_exists($controller, $method)){
+						$process = new $controller($process);
+						$process->setPID();
+						$return = $process->$method($process->parameters);
+						if($return instanceof response){
+							$process->status = $return->getStatus() ? process::stopped : process::error;
+							$process->response = $return;
+						}
+						$process->save();
+					}else{
+						throw new proccessClass($process->name);
+					}
+				}else{
+					throw new proccessAlive($process->id);
+				}
+			}
+
 		}
 		return $found;
 	}
