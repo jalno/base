@@ -48,6 +48,10 @@
 		{
 			"classes":["cli"],
 			"file":"libraries/background/cli.php"
+		},
+		{
+			"classes":["response\\file"],
+			"file":"libraries/utility/response_file.php"
 		}
 	]
 }

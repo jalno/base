@@ -5,6 +5,7 @@ class http{
 	public static $server = array();
 	public static $request = array();
 	public static $data = array();
+	public static $files = array();
 	static function set(){
 		if(isset($_SERVER['SERVER_ADDR'])){
 			self::$server['ip'] = $_SERVER['SERVER_ADDR'];
@@ -43,6 +44,7 @@ class http{
 		self::$request['ajax'] = (isset($_GET['ajax']) and $_GET['ajax'] == 1);
 		self::$request['post'] = $_POST;
 		self::$request['get'] = $_GET;
+		self::$files = $_FILES;
 		if(isset($_COOKIE)){
 			self::$request['cookies'] = $_COOKIE;
 		}
@@ -77,9 +79,22 @@ class http{
 	static function redirect($url){
 		header("Location: {$url}");
 	}
+	static function setHeader($name, $value){
+		header("{$name}: {$value}");
+	}
+	static function setMimeType($type, $charset = null){
+		if($charset){
+			self::setHeader("content-type", $type.'; charset='.$charset);
+		}else{
+			self::setHeader("content-type", $type);
+		}
+	}
+	static function setLength($length){
+		self::setHeader('Content-Length', $length);
+	}
 	static function tojson($charset="utf-8"){
         header('Cache-Control: no-store, no-cache, must-revalidate, pre-check=0, post-check=0, max-age=0');
-		header("content-type: application/json; charset=$charset");
+		self::setMimeType('application/json', $charset);
     }
 }
 

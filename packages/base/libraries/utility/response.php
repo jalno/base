@@ -5,12 +5,14 @@ use packages\base\http;
 use packages\base\view;
 use packages\base\views\form;
 use packages\base\views\FormError;
+use packages\base\response\file;
 class response{
 	protected $status;
 	protected $data;
 	protected $view;
 	protected $ajax = false;
 	protected $json = false;
+	protected $file;
 	function __construct($status = null, $data = array()){
 		$this->status = $status;
 		$this->data = $data;
@@ -40,6 +42,9 @@ class response{
 				$this->setData($dataerror, 'error');
 			}
 		}
+	}
+	public function setFile(file $file){
+		$this->file = $file;
 	}
 	public function setStatus($status){
 		$this->status = $status;
@@ -75,7 +80,12 @@ class response{
 		}
 	}
 	public function send(){
-		if($this->json){
+		if($this->file){
+			http::setMimeType($this->file->getMimeType());
+			http::setLength($this->file->getSize());
+			http::setHeader('Content-Disposition', 'filename='.$this->file->getName());
+			$this->file->output();
+		}elseif($this->json){
 			echo $this->json();
 		}elseif($this->view){
 			$this->view->output();
