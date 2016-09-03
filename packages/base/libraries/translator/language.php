@@ -63,10 +63,11 @@ class language{
 	}
 	public function trans($key, array $params = array()){
 		if(($phrase = $this->getPhrase($key)) != false){
-			if(preg_match_all("/[^\\\\]{([^}]+)}/", $phrase, $matches)){
+			if(preg_match_all("/[^\\\\]?{([^}]+)}/", $phrase, $matches)){
 				$replaces = array();
 				foreach($matches[1] as $index => $key){
-					$replaces[] = substr($matches[0][$index], 0, 1).(isset($params[$key]) ? $params[$key] : '');
+					$f = substr($matches[0][$index], 0, 1);
+					$replaces[] = ($f != '{' ? $f : '').(isset($params[$key]) ? $params[$key] : '');
 				}
 				$phrase = str_replace($matches[0], $replaces, $phrase);
 			}
