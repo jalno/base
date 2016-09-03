@@ -20,6 +20,12 @@ require_once('packages/base/libraries/session/session.php');
 require_once('packages/base/libraries/utility/password.php');
 require_once('packages/base/libraries/utility/safe.php');
 require_once('packages/base/libraries/utility/response.php');
+/* DATE and calendar */
+require_once('packages/base/libraries/date/date_interface.php');
+require_once('packages/base/libraries/date/exceptions.php');
+require_once('packages/base/libraries/date/gregorian.php');
+require_once('packages/base/libraries/date/jdate.php');
+require_once('packages/base/libraries/date/date.php');
 /* Comment-line and parallel process */
 require_once('packages/base/libraries/background/cli.php');
 
