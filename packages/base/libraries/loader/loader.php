@@ -41,11 +41,41 @@ class loader{
 	const cgi = 2;
 	private static $packages = array();
 	static function packages(){
+		$alldependencies = array();
+		$loadeds = array();
 		$packages = scandir("packages/");
+		$allpackages = array();
 		foreach($packages as $package){
 			if($package != '.' and $package != '..'){
-				self::package($package);
+				if($p = self::package($package)){
+					$dependencies = $p->getDependencies();
+					$alldependencies[$p->getName()] = $dependencies;
+					$allpackages[$p->getName()] = $p;
+				}
 			}
+		}
+		do{
+			$oneload = false;
+			foreach($allpackages as $name => $package){
+				$readytoload = true;
+				foreach($alldependencies[$name] as $dependency){
+					if(!in_array($dependency, $loadeds)){
+						$readytoload = false;
+						break;
+					}
+				}
+				if($readytoload){
+					$loadeds[] = $name;
+					$oneload = true;
+					$package->register_autoload();
+					packages::register($package);
+					self::packagerouting($name);
+					unset($allpackages[$name]);
+				}
+			}
+		}while($oneload);
+		if($allpackages){
+			throw new Exception("could not register all of packages");
 		}
 	}
 	static function package($package){
@@ -58,6 +88,11 @@ class loader{
 				$p = new package();
 				$p->setName($package);
 				$p->setPermissions($config['permissions']);
+				if(isset($config['dependencies'])){
+					foreach($config['dependencies'] as $dependency){
+						$p->addDependency($dependency);
+					}
+				}
 				if(isset($config['frontend'])){
 					$p->setFrontend($config['frontend']);
 				}
@@ -66,16 +101,19 @@ class loader{
 				}
 				if(isset($config['autoload'])){
 					$p->setAutoload($config['autoload']);
-					$p->register_autoload();
 				}
-				packages::register($p);
-				self::packagerouting($package);
-				return true;
+				return $p;
 			}else{
 				throw new packageConfig($package);
 			}
 		}else{
 			throw new packageNotConfiged($package);
+		}
+	}
+	public static function themes(){
+		$packages = packages::get();
+		foreach($packages as $package){
+			$package->applyFrontend();
 		}
 	}
 	private static function packagerouting($package){

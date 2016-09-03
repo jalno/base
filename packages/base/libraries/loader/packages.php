@@ -13,6 +13,18 @@ class packages{
 		}
 		return false;
 	}
+	static function get($names = array()){
+		$return = array();
+		if(!empty($names)){
+			foreach(self::$actives as $name => $package){
+				if(in_array($name, $names)){
+					$return[] = $package;
+				}
+			}
+		}else{
+			return self::$actives;
+		}
+	}
 	static function call_method($method, $param_arr = array()){
 		if(preg_match('/^\\\\packages\\\\([a-zA-Z0-9|_]+)((\\\\[a-zA-Z0-9|_|:]+)+)$/', $method, $matches)){
 			if(($package = self::package($matches[1])) !== false){
@@ -31,6 +43,7 @@ class package{
 	private $home = "";
 	private $bootstrap;
 	private $autoload;
+	private $dependencies= array();
 	public function setName($name){
 		$this->name = $name;
 		$this->home = "packages/{$name}";
@@ -59,6 +72,12 @@ class package{
 		}else{
 			throw new packagePermission($this->name, $permission);
 		}
+	}
+	public function addDependency($dependency){
+		$this->dependencies[] = $dependency;
+	}
+	public function getDependencies(){
+		return $this->dependencies;
 	}
 	public function setFrontend($source){
 		if($source === false){

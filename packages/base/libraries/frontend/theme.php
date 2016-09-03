@@ -19,6 +19,7 @@ class source{
 	private $assets = array();
 	private $views = array();
 	private $langs = array();
+	private $family = array();
 	public function setPath($path){
 		if(is_dir($path)){
 			$this->path = $path;
@@ -41,6 +42,7 @@ class source{
 						$this->addAsset($asset);
 					}
 				}
+				//print_r($this);
 				if(isset($theme['autoload'])){
 					$this->setAutoload($theme['autoload']);
 					$this->register_autoload();
@@ -64,6 +66,9 @@ class source{
 	}
 	public function setName($name){
 		$this->name = $name;
+	}
+	public function getName(){
+		return $this->name;
 	}
 	public function addAsset($asset){
 		if($asset['type'] == 'js' or $asset['type'] == 'css'){
@@ -97,6 +102,9 @@ class source{
 			}
 		}
 		return $assets;
+	}
+	public function url($file){
+		return "/".$this->path."/".$file;
 	}
 	public function addView($view){
 		if(isset($view['name'])){
@@ -144,6 +152,10 @@ class source{
 		return false;
 	}
 	public function register_autoload(){
+
+		foreach($this->family as $source){
+			//$source->register_autoload();
+		}
 		if($this->autoload){
 			$autoload = json\decode(file_get_contents($this->autoload));
 			if(isset($autoload['files'])){
@@ -222,6 +234,7 @@ class theme{
 	}
 	static function setPrimarySource(source $source){
 		self::$primarySource = $source;
+
 	}
 	static function selectTheme(){
 		if(($theme = options::load('packages.base.frontend.theme')) !== false and !self::hasSource("themes/{$theme}")){
@@ -272,5 +285,13 @@ class theme{
 		}
 		return false;
 	}
+	static function byName($name){
+		$sources = array();
+		foreach(self::$sources as $source){
+			if($source->getName() == $name){
+				$sources[] = $source;
+			}
+		}
+		return $sources;
+	}
 }
-?>

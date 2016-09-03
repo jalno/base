@@ -84,19 +84,22 @@ class view{
 	public function setSource(source $source){
 		$this->source = $source;
 		theme::setPrimarySource($this->source);
-		$assets = $this->source->getAssets();
-		foreach($assets as $asset){
-			if($asset['type'] == 'css'){
-				if(isset($asset['file'])){
-					$this->addCSSFile(theme::url($asset['file']));
-				}elseif(isset($asset['inline'])){
-					$this->addCSS($asset['inline']);
-				}
-			}elseif($asset['type'] == 'js'){
-				if(isset($asset['file'])){
-					$this->addJSFile(theme::url($asset['file']));
-				}elseif(isset($asset['inline'])){
-					$this->addJS($asset['inline']);
+		$sources = theme::byName($this->source->getName());
+		foreach($sources as $source){
+			$assets = $source->getAssets();
+			foreach($assets as $asset){
+				if($asset['type'] == 'css'){
+					if(isset($asset['file'])){
+						$this->addCSSFile($source->url($asset['file']));
+					}elseif(isset($asset['inline'])){
+						$this->addCSS($asset['inline']);
+					}
+				}elseif($asset['type'] == 'js'){
+					if(isset($asset['file'])){
+						$this->addJSFile($source->url($asset['file']));
+					}elseif(isset($asset['inline'])){
+						$this->addJS($asset['inline']);
+					}
 				}
 			}
 		}
@@ -108,8 +111,10 @@ class view{
 	static public function byName($viewName){
 		$location = theme::locate($viewName);
 		if($location instanceof location){
-			$location->source->register_autoload();
-			$location->source->register_translates(translator::getDefaultLang());
+			$sources = theme::byName($location->source->getName());
+			foreach($sources as $source){
+				$source->register_translates(translator::getDefaultLang());
+			}
 			$view = new $location->view();
 			$view->setSource($location->source);
 			if($location->file){
