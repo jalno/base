@@ -37,6 +37,9 @@ class session{
 	static function status(){
 		return self::$status;
 	}
+	static function getID(){
+		return self::$resource->getID();
+	}
 	static function setup(){
 		$defaultOption = array(
 			'handler' => 'php',

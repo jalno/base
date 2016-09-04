@@ -1,8 +1,10 @@
 <?php
 namespace packages\base\session;
+use \packages\base\http;
 class php implements session_handler{
 	private $cookie;
 	private $ip;
+	private $id;
 	public function __construct($cookie,$ip){
 		$this->cookie = $cookie;
 		$this->ip = $ip;
@@ -31,15 +33,19 @@ class php implements session_handler{
 		}
 		$start = session_start();
 		if($start and (($this->ip and $this->checkIP()) or !$this->ip)){
+			$this->id = session_id();
 			return true;
 		}
 		return false;
 	}
+	public function getID(){
+		return $this->id;
+	}
 	private function checkIP(){
 		if(($ip = $this->get('SESSION_IP')) !== self::UNSETED){
-			return($ip == \packages\base\http::$client['ip']);
+			return($ip == http::$client['ip']);
 		}else{
-			$this->set('SESSION_IP', \packages\base\http::$client['ip']);
+			$this->set('SESSION_IP', http::$client['ip']);
 			return true;
 		}
 	}
