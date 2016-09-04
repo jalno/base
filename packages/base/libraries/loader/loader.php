@@ -28,6 +28,10 @@ require_once('packages/base/libraries/date/jdate.php');
 require_once('packages/base/libraries/date/date.php');
 /* Comment-line and parallel process */
 require_once('packages/base/libraries/background/cli.php');
+/* Tanslator */
+require_once('packages/base/libraries/translator/translator.php');
+require_once('packages/base/libraries/translator/language.php');
+require_once('packages/base/libraries/translator/exceptions.php');
 
 require_once('packages/base/libraries/router/router.php');
 require_once('packages/base/libraries/router/url.php');
@@ -68,6 +72,7 @@ class loader{
 					$loadeds[] = $name;
 					$oneload = true;
 					$package->register_autoload();
+					$package->register_translates(translator::getDefaultLang());
 					packages::register($package);
 					self::packagerouting($name);
 					unset($allpackages[$name]);
@@ -96,12 +101,19 @@ class loader{
 				if(isset($config['frontend'])){
 					$p->setFrontend($config['frontend']);
 				}
+				if(isset($config['languages'])){
+					foreach($config['languages'] as $lang => $file){
+						$p->addLang($lang, $file);
+					}
+				}
 				if(isset($config['bootstrap'])){
 					$p->setBootstrap($config['bootstrap']);
 				}
 				if(isset($config['autoload'])){
 					$p->setAutoload($config['autoload']);
 				}
+
+
 				return $p;
 			}else{
 				throw new packageConfig($package);

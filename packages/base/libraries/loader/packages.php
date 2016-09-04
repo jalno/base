@@ -2,6 +2,7 @@
 namespace packages\base;
 use \packages\base\frontend\theme;
 use \packages\base\frontend\source;
+use \packages\base\translator\language;
 class packages{
 	static private $actives = array();
 	static function register(package $package){
@@ -44,6 +45,7 @@ class package{
 	private $bootstrap;
 	private $autoload;
 	private $dependencies= array();
+	private $langs = array();
 	public function setName($name){
 		$this->name = $name;
 		$this->home = "packages/{$name}";
@@ -142,6 +144,34 @@ class package{
 			return true;
 		}
 		return false;
+	}
+	public function addLang($code,$file){
+		if(!isset($this->langs[$code])){
+			if(translator::is_validCode($code)){
+				if(is_file($this->home."/".$file)){
+					$lang = new language($code);
+					if($lang->loadByFile($this->home."/".$file)){
+						$this->langs[$code] = $lang;
+					}
+				}
+			}else{
+				throw new InvalidLangCode;
+			}
+		}else{
+			throw new LangAlreadyExists;
+		}
+	}
+	public function register_translates($lang){
+		if($lang = $this->getLang($lang)){
+			translator::import($lang);
+		}
+	}
+	public function getLang($code){
+		if(isset($this->langs[$code])){
+			return $this->langs[$code];
+		}else{
+			return false;
+		}
 	}
 	public function register_autoload(){
 		if($this->autoload){
