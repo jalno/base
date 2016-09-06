@@ -33,6 +33,10 @@
 			"file":"libraries/translator/language.php"
 		},
 		{
+			"classes":["IO\\drivers\\ftp"],
+			"file":"libraries/io/drivers/ftp/ftp.php"
+		},
+		{
 			"classes":[
 				"IO\\drivers\\ftp\\CannectionException",
 				"IO\\drivers\\ftp\\AuthException",
