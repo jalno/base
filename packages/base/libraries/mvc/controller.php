@@ -53,6 +53,15 @@ class controller{
 							break;
 						}
 					}
+					if(isset($return[$field])){
+						if(isset($options['regex'])){
+							if(preg_match($options['regex'], $formdata[$field])){
+								$return[$field] = $formdata[$field];
+							}else{
+								throw new inputValidation($field);
+							}
+						}
+					}
 					if(!isset($return[$field])){
 						if(isset($options['optional'])){
 							if(isset($options['default'])){
@@ -71,6 +80,12 @@ class controller{
 				}elseif($formdata[$field]){
 					if(isset($options['values'])){
 						if(in_array($options['values'], array($options['values']))){
+							$return[$field] = $formdata[$field];
+						}else{
+							throw new inputValidation($field);
+						}
+					}elseif(isset($options['regex'])){
+						if(preg_match($options['regex'], $formdata[$field])){
 							$return[$field] = $formdata[$field];
 						}else{
 							throw new inputValidation($field);
