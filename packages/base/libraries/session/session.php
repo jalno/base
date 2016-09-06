@@ -3,6 +3,7 @@ namespace packages\base;
 require_once('session_interface.php');
 require_once('php.php');
 require_once('file.php');
+use \packages\base\session\session_handler;
 class session{
 	private static $handler;
 	private static $cookie;
@@ -33,6 +34,9 @@ class session{
 			return self::$resource->get($key);
 		}
 		return false;
+	}
+	static function unset($key){
+		return $this->set($key, session_handler::UNSETED);
 	}
 	static function status(){
 		return self::$status;
