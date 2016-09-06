@@ -35,7 +35,7 @@ class session{
 		}
 		return false;
 	}
-	static function unset($key){
+	static function unsetval($key){
 		return $this->set($key, session_handler::UNSETED);
 	}
 	static function status(){
