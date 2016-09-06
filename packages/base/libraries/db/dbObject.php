@@ -705,7 +705,6 @@ class dbObject {
 				$sqlData[$key] = $value;
 			}
 		}
-		print_r($sqlData);
 		return $sqlData;
 	}
 }
