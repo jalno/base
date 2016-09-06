@@ -132,4 +132,7 @@ class inputValidation extends \Exception {
 	public function getInput(){
 		return $this->input;
 	}
+	public function setInput($input){
+		$this->input = $input;
+	}
 }
