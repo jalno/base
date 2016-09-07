@@ -697,4 +697,15 @@ class dbObject {
 		}
 		return $sqlData;
 	}
+	static function objectToArray($array){
+		$return = array();
+		foreach($array as $key => $val){
+			if(is_object($val) and $val instanceof dbObject){
+				$return[$key] = $val->toArray();
+			}else{
+				$return[$key] = $val;
+			}
+		}
+		return $return;
+	}
 }
