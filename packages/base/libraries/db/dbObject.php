@@ -161,7 +161,8 @@ class dbObject {
 					$key = $this->relations[$name][2];
 					$obj = new $modelName;
 					$obj->returnType = $this->returnType;
-					return $this->data[$name] = $obj->where($key, $this->data[$this->primaryKey])->get();
+					$this->data[$name] = $obj->where($key, $this->data[$this->primaryKey])->get();
+					return $this->data[$name];
 					break;
 				default:
 					break;
@@ -301,6 +302,7 @@ class dbObject {
 	 */
 	protected function getOne ($fields = null) {
 		$this->processHasOneWith ();
+		//echo($this->dbTable."\n");
 		$results = $this->db->ArrayBuilder()->getOne ($this->dbTable, $fields);
 		if ($this->db->count == 0)
 			return null;
@@ -361,7 +363,7 @@ class dbObject {
 	 * @return dbObject
 	 */
 	private function with ($objectName) {
-		if (!property_exists ($this, 'relations') && !isset ($this->relations[$objectName]))
+		if (!property_exists ($this, 'relations') && !isset ($this->relations[$name]))
 			die ("No relation with name $objectName found");
 		$this->_with[$objectName] = $this->relations[$objectName];
 		return $this;
@@ -487,9 +489,17 @@ class dbObject {
 	public function toArray () {
 		$data = $this->data;
 		$this->processAllWith ($data);
-		foreach ($data as &$d) {
-			if ($d instanceof dbObject)
-				$d = $d->data;
+		foreach ($data as $key => $d) {
+			if(is_array($d)){
+				foreach($d as $key2 => $val2){
+					if ($val2 instanceof dbObject){
+						$data[$key][$key2] = $val2->toArray();
+					}
+				}
+			}elseif(is_object($d) and $d instanceof dbObject){
+				$primaryKey= $d->getPrimaryKey();
+				$data[$key] = $d->$primaryKey;
+			}
 		}
 		return $data;
 	}
@@ -606,7 +616,7 @@ class dbObject {
 
 			if (is_array ($value))
 				continue;
-			if ($required and empty($value)) {
+			if ($required and $value === null) {
 				throw new InputRequired($key);
 			}
 			if($unique and !empty($value)){
@@ -620,7 +630,6 @@ class dbObject {
 			}
 			if ($value == null)
 				continue;
-
 			switch ($type) {
 				case "text";
 					$regexp = null;
@@ -641,7 +650,7 @@ class dbObject {
 					$regexp = $type;
 					break;
 			}
-			if (empty($regexp))
+			if (!$regexp)
 				continue;
 			if (!preg_match ($regexp, $value)) {
 				throw new InputDataType($key);
@@ -665,13 +674,14 @@ class dbObject {
 			if ($value instanceof dbObject) {
 				if($value->isNew == true){
 					$id = $value->save();
-					if ($id)
+					if ($id){
 						$value = $id;
-					else
+					}else{
 						$this->errors = array_merge ($this->errors, $value->errors);
+					}
 				}else{
-					$pkey = $value->getPrimaryKey();
-					$sqlData[$key] = $value->$pkey;
+					$key = $value->getPrimaryKey();
+					$value = $value->$key;
 					continue;
 				}
 			}
@@ -687,7 +697,7 @@ class dbObject {
 				}else{
 					$sqlData[$key] = $value;
 				}
-			}elseif(isset ($this->arrayFields) && in_array ($key, $this->arrayFields)){
+			}else if (isset ($this->arrayFields) && in_array ($key, $this->arrayFields)){
 				$sqlData[$key] = implode ("|", $value);
 			}elseif (isset ($this->serializeFields) && in_array ($key, $this->serializeFields)){
 				$sqlData[$key] = serialize($value);
