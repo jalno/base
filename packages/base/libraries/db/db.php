@@ -7,7 +7,11 @@ class db{
 		self::$driver[$conname] = new MysqliDb($host, $username, $password, $db, $port, $charset);
 	}
 	static function has_connection($conname = 'default'){
-		return isset(self::$driver[$conname]);
+		$connected = isset(self::$driver[$conname]);
+		if(!$connected){
+			$connected = loader::connectdb();
+		}
+		return $connected;
 	}
 	static function connection($conname = 'default'){
 		if(self::has_connection($conname)){
