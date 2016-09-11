@@ -140,6 +140,7 @@ class view{
 	}
 	public function output(){
 		if($this->file){
+			theme::loadViews();
 			if(method_exists($this, '__beforeLoad')){
 				$this->__beforeLoad();
 			}

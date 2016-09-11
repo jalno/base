@@ -117,14 +117,19 @@ class source{
 				if(isset($view['file']))
 					$newview['file'] = $view['file'];
 				$this->views[] = $newview;
-				if(method_exists($newview['name'], 'onSourceLoad')){
-					$newview['name']::onSourceLoad();
-				}
+
 			}else{
 				throw new SourceViewFileException($view['file'], $this->path);
 			}
 		}else{
 			throw new SourceViewException("View name is not set", $this->path);
+		}
+	}
+	public function loadViews(){
+		foreach($this->views as $view){
+			if(method_exists($view['name'], 'onSourceLoad')){
+				$view['name']::onSourceLoad();
+			}
 		}
 	}
 	public function getView($viewName){
@@ -293,5 +298,10 @@ class theme{
 			}
 		}
 		return $sources;
+	}
+	static function loadViews(){
+		foreach(self::$sources as $source){
+			$source->loadViews();
+		}
 	}
 }
