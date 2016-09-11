@@ -162,6 +162,9 @@ class dbObject {
 					$obj = new $modelName;
 					$obj->returnType = $this->returnType;
 					$this->data[$name] = $obj->where($key, $this->data[$this->primaryKey])->get();
+					if(!$this->data[$name]){
+						$this->data[$name] = array();
+					}
 					return $this->data[$name];
 					break;
 				default:
