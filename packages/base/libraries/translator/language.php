@@ -45,12 +45,8 @@ class language{
 		return false;
 	}
 	public function addPhrase($key, $phrase){
-		if(!isset($this->phrases[$key])){
-			$this->phrases[$key] = $phrase;
-			return true;
-		}else{
-			throw new PhraseAlreadyExists;
-		}
+		$this->phrases[$key] = $phrase;
+		return true;
 	}
 	public function getPhrase($key){
 		if(isset($this->phrases[$key])){
