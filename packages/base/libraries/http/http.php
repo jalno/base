@@ -41,6 +41,12 @@ class http{
 		if(isset($_SERVER['REQUEST_TIME'])){
 			self::$request['time'] = $_SERVER['REQUEST_TIME'];
 		}
+		if(isset($_SERVER['HTTP_HOST'])){
+			self::$request['hostname'] = $_SERVER['HTTP_HOST'];
+		}
+		if(isset($_SERVER['HTTP_REFERER'])){
+			self::$request['referer'] = $_SERVER['HTTP_REFERER'];
+		}
 		self::$request['ajax'] = (isset($_GET['ajax']) and $_GET['ajax'] == 1);
 		self::$request['post'] = $_POST;
 		self::$request['get'] = $_GET;
@@ -96,6 +102,26 @@ class http{
         header('Cache-Control: no-store, no-cache, must-revalidate, pre-check=0, post-check=0, max-age=0');
 		self::setMimeType('application/json', $charset);
     }
+	static function is_safe_referer(){
+		if(isset(self::$request['referer']) and self::$request['referer']){
+			if(preg_match("/\w+:\\/\\/.*/", self::$request['referer'])){
+				$url = parse_url(self::$request['referer']);
+				$hostname = $url['host'];
+				if(isset($url['port'])){
+					$hostname .=":".$url['port'];
+				}
+				if(isset(self::$request['hostname']) and self::$request['hostname'] == $hostname){
+					return true;
+				}elseif($safe_referers = options::get('packages.base.safe_referers') and in_array($hostname, $safe_referers)){
+					return true;
+				}
+			}elseif(substr(self::$request['referer'], 0, 1) == '/'){
+				return true;
+			}
+		}
+		return false;
+	}
+
 }
 
 /*
