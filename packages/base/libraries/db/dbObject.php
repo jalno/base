@@ -683,8 +683,8 @@ class dbObject {
 						$this->errors = array_merge ($this->errors, $value->errors);
 					}
 				}else{
-					$key = $value->getPrimaryKey();
-					$value = $value->$key;
+					$pkey = $value->getPrimaryKey();
+					$sqlData[$key] = $value->$pkey;
 					continue;
 				}
 			}
