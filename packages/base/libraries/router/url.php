@@ -1,6 +1,6 @@
 <?php
 namespace packages\base;
-function url($page = '',$parameters = array()){
-	return "/".$page.($parameters ? '?'.http_build_query($parameters) : '');
+use \packages\base\http;
+function url($page = '',$parameters = array(), $absolute = false){
+	return ($absolute ? http::$request['scheme'].'://'.http::$request['hostname'] : '')."/".$page.($parameters ? '?'.http_build_query($parameters) : '');
 }
-?>

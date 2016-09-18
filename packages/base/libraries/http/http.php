@@ -44,6 +44,9 @@ class http{
 		if(isset($_SERVER['HTTP_HOST'])){
 			self::$request['hostname'] = $_SERVER['HTTP_HOST'];
 		}
+		if(isset($_SERVER['REQUEST_SCHEME'])){
+			self::$request['scheme'] = $_SERVER['REQUEST_SCHEME'];
+		}
 		if(isset($_SERVER['HTTP_REFERER'])){
 			self::$request['referer'] = $_SERVER['HTTP_REFERER'];
 		}
