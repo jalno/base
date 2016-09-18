@@ -43,6 +43,19 @@ class controller{
 							if($valid){
 								$data = safe::cellphone_ir($rawdata);
 							}
+						}elseif($type == 'date'){
+							if(($date = safe::is_date($rawdata)) !== false){
+								$data = "{$date['Y']}/{$date['m']}/{$date['d']}";
+								if(isset($date['h'])){
+									$data.=" {$date['h']}";
+								}
+								if(isset($date['i'])){
+									$data.=":{$date['i']}";
+								}
+								if(isset($date['s'])){
+									$data.=":{$date['s']}";
+								}
+							}
 						}elseif($type == 'file'){
 							$data = $rawdata;
 						}else{

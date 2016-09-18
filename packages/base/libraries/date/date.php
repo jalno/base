@@ -17,6 +17,9 @@ class date implements date_interface{
 			self::setDefaultcalendar();
 		}
 		if(self::$calendar){
+			if($timestamp === null){
+				$timestamp = self::time();
+			}
 			return call_user_func_array(array(__NAMESPACE__.'\\date\\'.self::$calendar, "format"), array($format, $timestamp));
 		}
 	}
@@ -25,6 +28,9 @@ class date implements date_interface{
 			self::setDefaultcalendar();
 		}
 		if(self::$calendar){
+			if($now === null){
+				$now = self::time();
+			}
 			return call_user_func_array(array(__NAMESPACE__.'\\date\\'.self::$calendar, "strtotime"), array($time, $now));
 		}
 	}

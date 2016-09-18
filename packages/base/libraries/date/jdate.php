@@ -1,5 +1,6 @@
 <?php
 namespace packages\base\date;
+use \packages\base\utility\safe;
 class jdate implements date_interface{
     public static function format($type,$maket="now"){
     	$transnumber=0;
@@ -243,46 +244,24 @@ class jdate implements date_interface{
         }
     }
     static function mktime($hour = null, $minute = null, $second = null , $month = null, $day = null, $year = null, $is_dst = -1){
-    	list( $year, $month, $day ) = self::jalali_to_gregorian($jyear, $jmonth, $jday);
+    	list( $year, $month, $day ) = self::jalali_to_gregorian($year, $month, $day);
     	return mktime($hour,$minute,$second,$month,$day,$year);
     }
     static function strtotime($str,$now = null){
-    	$j_days_in_month = array(31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29);
-    	$str = explode(' ', $str);
-    	$t = array();
-    	if(isset($str[0])){
-    		$str[0] = explode('/', $str[0]);
-    		if(safe::number($str[0][0]) < 1300)$str[0][0] = 1300;
-    		if(!isset($str[0][1]))$str[0][1] = 1;
-    		$str[0][1] = safe::number($str[0][1]);
-    		if($str[0][1] > 12 or $str[0][1] < 1)$str[0][1] = 1;
-    		if(!isset($str[0][2]))$str[0][2] = 1;
-    		$str[0][2] = safe::number($str[0][2]);
-    		if($str[0][2] > $j_days_in_month[$str[0][1]-1] or $str[0][2] < 1)$str[0][2] = 1;
-    	}else{
-    		$str[0][0] = 1300;
-    		$str[0][1] = 1;
-    		$str[0][2] = 1;
-    	}
-    	if(isset($str[1])){
-    		$str[1] = explode(':', $str[1]);
-    		$str[1][0] = safe::number($str[1][0]);
-    		if($str[1][0] > 24 or $str[1][0] < 0)$str[1][0] = 0;
-
-    		if(!isset($str[1][1]))$str[1][1] = 0;
-    		$str[1][1] = safe::number($str[1][1]);
-    		if($str[1][1] > 60 or $str[1][1] < 0)$str[1][1] = 0;
-
-    		if(!isset($str[1][2]))$str[1][2] = 0;
-    		$str[1][2] = safe::number($str[1][2]);
-    		if($str[1][2] > 60 or $str[1][2] < 0)$str[1][2] = 0;
-    	}else{
-    		$str[1][0] = 0;
-    		$str[1][1] = 0;
-    		$str[1][2] = 0;
-
-    	}
-    	return self::jmaketime($str[0][0], $str[0][1], $str[0][2], $str[1][0], $str[1][1],$str[1][2]);
+		if($date = safe::is_date($str)){
+			if(!isset($date['h'])){
+				$date['h'] = 0;
+			}
+			if(!isset($date['i'])){
+				$date['i'] = 0;
+			}
+			if(!isset($date['s'])){
+				$date['s'] = 0;
+			}
+			return self::mktime($date['h'], $date['i'], $date['s'], $date['m'], $date['d'],$date['Y']);
+		}else{
+			return false;
+		}
     }
     static function is_kabise($year){
     	if($year%4==0 && $year%100!=0)return true;else return false;
