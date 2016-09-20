@@ -113,7 +113,7 @@ class view{
 		if($location instanceof location){
 			$sources = theme::byName($location->source->getName());
 			foreach($sources as $source){
-				$source->register_translates(translator::getDefaultLang());
+				$source->register_translates(translator::getCodeLang());
 			}
 			$view = new $location->view();
 			$view->setSource($location->source);

@@ -6,7 +6,7 @@ $options = array(
 		'host' => '127.0.0.1',
 		'user' => 'root',
 		'pass' => 'yeganemehr',
-		'dbname' => 'webuiler_slave'
+		'dbname' => 'jeyserver_mainsite'
 	),
 	'packages.base.frontend.theme' => 'w3school',
 	'packages.base.session' => array(
@@ -24,6 +24,18 @@ $options = array(
 	'packages.userpanel.register' => array(
 		'enable' => true,
 	),
-	'packages.base.translator.defaultlang' => 'fa_IR'
+	'packages.base.translator.defaultlang' => 'fa_IR',
+	'packages.base.translator.changelang' => 'uri',//uri,parameter
+	'packages.base.translator.changelang.type' => 'short',//short, complete
+	'packages.base.safe_referers' => array(),
+	'packages.userpanel.register' => array(
+		'enable' => true,
+		'type' => 3
+	),
+	'packages.userpanel.usertypes.guest' => 2,
+	'packages.base.translator.defaultlang' => 'fa_IR',
+	'packages.userpanel.date' => array(
+		'calendar' => 'jdate'
+	),
 );
 ?>

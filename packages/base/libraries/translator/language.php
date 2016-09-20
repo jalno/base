@@ -38,6 +38,8 @@ class language{
 					}
 				}
 			}else{
+				echo(json_last_error_msg());
+				exit();
 				throw new InvalidJson;
 			}
 			return true;
