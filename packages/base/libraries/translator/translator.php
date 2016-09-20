@@ -2,7 +2,7 @@
 namespace packages\base;
 use \packages\base\options;
 use \packages\base\translator\language;
-use translator\InvalidLangCode;
+use \packages\base\translator\InvalidLangCode;
 class translator{
 	static private $allowlangs = array(
 		'en', 'aa', 'ab', 'af', 'am', 'ar', 'as', 'ay', 'az', 'ba', 'be', 'bg', 'bh', 'bi', 'bn', 'bo', 'br', 'ca', 'co', 'cs', 'cy', 'da', 'de', 'dz', 'el',
@@ -34,11 +34,14 @@ class translator{
 		}
 	}
 	public static function getDefaultLang(){
-		if(!self::$lang){
-			self::$lang = options::load('packages.base.translator.defaultlang');
-			self::addLang(self::$lang);
-		}
-		return self::$lang;
+		$defaultlang = options::load('packages.base.translator.defaultlang');
+		return $defaultlang;
+	}
+	public static function getDefaultShortLang(){
+		return substr(self::getDefaultLang(), 0, 2);
+	}
+	public static function getAvailableLangs(){
+		return array_keys(self::$langs);
 	}
 	public static function addLang($code){
 		if(self::is_validCode($code)){
@@ -53,7 +56,25 @@ class translator{
 		}
 	}
 	public static function getLang($code = null){
-		return(isset(self::$langs[$code]) ? self::$langs[$code] : false);
+		if($code){
+			return(isset(self::$langs[$code]) ? self::$langs[$code] : false);
+		}else{
+			return(self::$langs[self::$lang]);
+		}
+	}
+	public static function getCodeLang($code = null){
+		if($code){
+			return($code);
+		}else{
+			return(self::$lang);
+		}
+	}
+	public static function getShortCodeLang($code = null){
+		if($code){
+			return(substr($code, 0,2));
+		}else{
+			return(substr(self::$lang, 0,2));
+		}
 	}
 	public static function trans($key, array $params = array()){
 		if(self::$lang and isset(self::$langs[self::$lang])){
@@ -82,5 +103,8 @@ class translator{
 			}
 		}
 		return false;
+	}
+	static public function is_shortCode($code){
+		return in_array($code, self::$allowlangs);
 	}
 }

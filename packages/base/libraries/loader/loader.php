@@ -58,6 +58,8 @@ class loader{
 				}
 			}
 		}
+		translator::addLang(translator::getDefaultLang());
+		translator::setLang(translator::getDefaultLang());
 		do{
 			$oneload = false;
 			foreach($allpackages as $name => $package){
@@ -80,7 +82,7 @@ class loader{
 			}
 		}while($oneload);
 		if($allpackages){
-			throw new Exception("could not register all of packages");
+			throw new \Exception("could not register all of packages");
 		}
 	}
 	static function package($package){

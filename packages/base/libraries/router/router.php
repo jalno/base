@@ -1,8 +1,10 @@
 <?php
 namespace packages\base;
 include('exceptions.php');
-use packages\base\http;
-use packages\base\process;
+use \packages\base\http;
+use \packages\base\process;
+use \packages\base\options;
+use \packages\base\translator\InvalidLangCode;
 class router{
 	static private $rules = array();
 	static public function add($rule, $controller, $method){
@@ -74,12 +76,52 @@ class router{
 			throw new routerRulePart($part);
 		}
 	}
+	private static function CheckShortLang($lang){
+		$type = options::get('packages.base.translator.changelang.type');
+		if($type == 'short'){
+			if(translator::is_shortCode($lang)){
+				$langs = translator::getAvailableLangs();
+				foreach($langs as $l){
+					if(substr($l, 0, 2) == $lang){
+						$lang = $l;
+						break;
+					}
+				}
+			}else{
+				throw new NotFound;
+			}
+		}
+		return $lang;
+	}
 	static function routing(){
 		$found = false;
 		$api = loader::sapi();
 		if($api == loader::cgi){
 			$path = http::$request['uri'];
 			$uri = explode('/', $path);
+			array_splice($uri, 0, 1);
+			$changelang = options::get('packages.base.translator.changelang');
+			if($changelang == 'uri'){
+				if($uri[0]){
+					$lang = self::CheckShortLang($uri[0]);
+					try{
+						translator::setLang($lang);
+						array_splice($uri, 0, 1);
+					}catch(InvalidLangCode $e){
+						throw new NotFound;
+					}
+				}
+			}elseif($changelang == 'parameter'){
+				if($lang = http::getURIData('lang')){
+					$lang = self::CheckShortLang($lang);
+					try{
+						translator::setLang($lang);
+					}catch(InvalidLangCode $e){
+						throw new NotFound;
+					}
+				}
+			}
+
 			$newuri = array();
 			foreach($uri as $p){
 				if($p){
