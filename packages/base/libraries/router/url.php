@@ -1,24 +1,13 @@
 <?php
 namespace packages\base;
-use \packages\base\http;
+use \packages\base\router;
 use \packages\base\options;
 use \packages\base\IO;
 function url($page = '',$parameters = array(), $absolute = false){
 	$page = IO\removeLastSlash($page);
 	$url = '';
 	if($absolute){
-		$hostname = http::$request['hostname'];
-		$www = options::get('packages.base.routing.www');
-		if($www == 'nowww'){
-			if(substr($hostname, 0, 4) == 'www.'){
-				$hostname = substr($hostname, 4);
-			}
-		}elseif($www == 'withwww'){
-			if(substr($hostname, 0, 4) != 'www.'){
-				$hostname = 'www.'.$hostname;
-			}
-		}
-		$url .= http::$request['scheme'].'://'.$hostname;
+		$url .= router::getscheme().'://'.router::gethostname();
 	}
 
 	$changelang = options::get('packages.base.translator.changelang');

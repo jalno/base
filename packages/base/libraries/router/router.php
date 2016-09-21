@@ -7,6 +7,8 @@ use \packages\base\options;
 use \packages\base\translator\InvalidLangCode;
 class router{
 	static private $rules = array();
+	static private $hostname;
+	static private $scheme;
 	static public function add($rule, $controller, $method, $absolute){
 		$method = strtolower($method);
 		if(in_array($method, array('','post','get','put','delete'))){
@@ -94,19 +96,51 @@ class router{
 		}
 		return $lang;
 	}
+	static function gethostname(){
+		if(!self::$hostname){
+			$hostname = http::$request['hostname'];
+			$www = options::get('packages.base.routing.www');
+			if($www == 'nowww'){
+				if(substr($hostname, 0, 4) == 'www.'){
+					$hostname = substr($hostname, 4);
+				}
+			}elseif($www == 'withwww'){
+				if(substr($hostname, 0, 4) != 'www.'){
+					$hostname = 'www.'.$hostname;
+				}
+			}
+			self::$hostname = $hostname;
+		}
+		return self::$hostname;
+	}
+	static function getscheme(){
+		if(!self::$scheme){
+			$scheme = http::$request['scheme'];
+			$schemeoption = options::get('packages.base.routing.scheme');
+			if($schemeoption and $scheme != $schemeoption){
+				$scheme = $schemeoption;
+			}
+			self::$scheme = $scheme;
+		}
+		return self::$scheme;
+	}
 	static function checkwww(){
-		$www = options::get('packages.base.routing.www');
-		$redirect = null;
-		if($www == 'nowww'){
-			if(substr(http::$request['hostname'], 0, 4) == 'www.'){
-				http::redirect(http::$request['scheme']."://".substr(http::$request['hostname'], 4).http::$request['uri']);
-				return false;
-			}
-		}elseif($www == 'withwww'){
-			if(substr(http::$request['hostname'], 0, 4) != 'www.'){
-				http::redirect(http::$request['scheme']."://www.".http::$request['hostname'].http::$request['uri']);
-				return false;
-			}
+		$hostnameoption = self::gethostname();
+		$hostname = http::$request['hostname'];
+		if($hostnameoption != $hostname){
+			$hostname = $hostnameoption;
+			http::redirect(self::getscheme()."://".$hostname.http::$request['uri']);
+			return false;
+		}
+		return true;
+	}
+	static function checkscheme(){
+		$schemeoption = self::getscheme();
+		$scheme = http::$request['scheme'];
+		if($schemeoption != $scheme){
+			$scheme = $schemeoption;
+			http::redirect($scheme."://".self::gethostname().http::$request['uri']);
+			return false;
 		}
 		return true;
 	}
@@ -114,7 +148,7 @@ class router{
 		$found = false;
 		$api = loader::sapi();
 		if($api == loader::cgi){
-			if(!self::checkwww()){
+			if(!self::checkwww() or !self::checkscheme()){
 				return false;
 			}
 			$path = http::$request['uri'];
