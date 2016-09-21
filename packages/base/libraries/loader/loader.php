@@ -142,7 +142,7 @@ class loader{
 							$route['controller'] = "\\packages\\{$package}\\".$route['controller'];
 						}
 						//if(access\package\controller(self::$packages[$package],$route['controller'])){
-							router::add($route['path'], $route['controller'], isset($route['method']) ? $route['method'] : '');
+							router::add($route['path'], $route['controller'], isset($route['method']) ? $route['method'] : '', (isset($route['absolute']) ? $route['absolute'] : false));
 						//}else{
 						//	throw new packagePermission($package, $route['controller']);
 						//}
