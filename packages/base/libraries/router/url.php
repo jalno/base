@@ -7,7 +7,18 @@ function url($page = '',$parameters = array(), $absolute = false){
 	$page = IO\removeLastSlash($page);
 	$url = '';
 	if($absolute){
-		$url .= http::$request['scheme'].'://'.http::$request['hostname'];
+		$hostname = http::$request['hostname'];
+		$www = options::get('packages.base.routing.www');
+		if($www == 'nowww'){
+			if(substr($hostname, 0, 4) == 'www.'){
+				$hostname = substr($hostname, 4);
+			}
+		}elseif($www == 'withwww'){
+			if(substr($hostname, 0, 4) != 'www.'){
+				$hostname = 'www.'.$hostname;
+			}
+		}
+		$url .= http::$request['scheme'].'://'.$hostname;
 	}
 
 	$changelang = options::get('packages.base.translator.changelang');

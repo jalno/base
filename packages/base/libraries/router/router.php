@@ -94,10 +94,29 @@ class router{
 		}
 		return $lang;
 	}
+	static function checkwww(){
+		$www = options::get('packages.base.routing.www');
+		$redirect = null;
+		if($www == 'nowww'){
+			if(substr(http::$request['hostname'], 0, 4) == 'www.'){
+				http::redirect(http::$request['scheme']."://".substr(http::$request['hostname'], 4).http::$request['uri']);
+				return false;
+			}
+		}elseif($www == 'withwww'){
+			if(substr(http::$request['hostname'], 0, 4) != 'www.'){
+				http::redirect(http::$request['scheme']."://www.".http::$request['hostname'].http::$request['uri']);
+				return false;
+			}
+		}
+		return true;
+	}
 	static function routing(){
 		$found = false;
 		$api = loader::sapi();
 		if($api == loader::cgi){
+			if(!self::checkwww()){
+				return false;
+			}
 			$path = http::$request['uri'];
 			$absolute = explode('/', $path);
 			array_splice($absolute, 0, 1);
