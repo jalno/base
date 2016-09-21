@@ -46,6 +46,7 @@ class package{
 	private $autoload;
 	private $dependencies= array();
 	private $langs = array();
+	private $options = array();
 	public function setName($name){
 		$this->name = $name;
 		$this->home = "packages/{$name}";
@@ -196,5 +197,22 @@ class package{
 		}
 		return false;
 	}
+	public function loadOptions(){
+		if(is_file($this->home."/package.json")){
+			if(!$this->options = json\decode($this->getFileContents('package.json'))){
+				throw new packageConfig($this->getName());
+			}
+		}else{
+			throw new packageNotConfiged($this->getName());
+		}
+	}
+	public function getOption($name){
+		return(isset($this->options[$name]) ? $this->options[$name] : null);
+	}
+	public function getFilePath($file){
+		return $this->home.'/'.$file;
+	}
+	public function getFileContents($file){
+		return file_get_contents($this->home.'/'.$file);
+	}
 }
-?>

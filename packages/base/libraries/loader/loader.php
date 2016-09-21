@@ -95,6 +95,7 @@ class loader{
 				$p = new package();
 				$p->setName($package);
 				$p->setPermissions($config['permissions']);
+				$p->loadOptions();
 				if(isset($config['dependencies'])){
 					foreach($config['dependencies'] as $dependency){
 						$p->addDependency($dependency);
