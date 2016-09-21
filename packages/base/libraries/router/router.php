@@ -175,7 +175,7 @@ class router{
 
 			$newuri = array();
 			foreach($uri as $p){
-				if($p){
+				if($p !== ''){
 					$newuri[] = $p;
 				}
 			}
