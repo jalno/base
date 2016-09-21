@@ -29,10 +29,10 @@ function url($page = '',$parameters = array(), $absolute = false){
 				if($lang != translator::getDefaultShortLang()){
 					$url .= '/'.$lang;
 				}
-			}elseif($lang != translator::getDefaultLang()){
+			}elseif($lang and $lang != translator::getDefaultLang()){
 				$url .= '/'.$lang;
 			}
-		}else{
+		}elseif($lang){
 			$url .= '/'.$lang;
 		}
 	}elseif($changelang == 'parameter'){
