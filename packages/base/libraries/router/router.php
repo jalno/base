@@ -7,7 +7,7 @@ use \packages\base\options;
 use \packages\base\translator\InvalidLangCode;
 class router{
 	static private $rules = array();
-	static public function add($rule, $controller, $method){
+	static public function add($rule, $controller, $method, $absolute){
 		$method = strtolower($method);
 		if(in_array($method, array('','post','get','put','delete'))){
 			if(is_string($rule)){
@@ -24,6 +24,7 @@ class router{
 				}
 				if($parts){
 					self::$rules[] = array(
+						'absolute' => $absolute,
 						'path' => $parts,
 						'method' => $method,
 						'controller' => $controller
@@ -98,18 +99,15 @@ class router{
 		$api = loader::sapi();
 		if($api == loader::cgi){
 			$path = http::$request['uri'];
-			$uri = explode('/', $path);
-			array_splice($uri, 0, 1);
+			$absolute = explode('/', $path);
+			array_splice($absolute, 0, 1);
+			$uri = $absolute;
+			$lang = null;
 			$changelang = options::get('packages.base.translator.changelang');
 			if($changelang == 'uri'){
 				if($uri[0]){
-					$lang = self::CheckShortLang($uri[0]);
-					try{
-						translator::setLang($lang);
-						array_splice($uri, 0, 1);
-					}catch(InvalidLangCode $e){
-						throw new NotFound;
-					}
+					$lang = $uri[0];
+					array_splice($uri, 0, 1);
 				}
 			}elseif($changelang == 'parameter'){
 				if($lang = http::getURIData('lang')){
@@ -133,7 +131,15 @@ class router{
 				$uri = array('index');
 			}
 			foreach(self::$rules as $rule){
-				if(($data = self::checkRule($rule, $uri)) !== false){
+				if(($data = self::checkRule($rule, ($rule['absolute'] ? $absolute : $uri))) !== false){
+					if(!$rule['absolute'] and $changelang == 'uri' and $lang){
+						$lang = self::CheckShortLang($lang);
+						try{
+							translator::setLang($lang);
+						}catch(InvalidLangCode $e){
+							throw new NotFound;
+						}
+					}
 					list($controller, $method) = explode('@', $rule['controller'], 2);
 					if(preg_match('/^\\\\packages\\\\([a-zA-Z0-9|_]+).*$/', $controller, $matches)){
 						if($package = packages::package($matches[1])){
