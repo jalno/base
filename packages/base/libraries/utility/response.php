@@ -88,6 +88,7 @@ class response{
 		}elseif($this->json){
 			echo $this->json();
 		}elseif($this->view){
+			$this->view->setData($this->getStatus(), 'status');
 			$this->view->output();
 		}
 	}
