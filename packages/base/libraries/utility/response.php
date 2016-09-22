@@ -16,6 +16,7 @@ class response{
 	protected $raw;
 	protected $output;
 	protected $headers = array();
+	protected $httpcode;
 	function __construct($status = null, $data = array()){
 		$this->status = $status;
 		$this->data = $data;
@@ -91,6 +92,9 @@ class response{
 	public function setHeader($key, $value){
 		$this->headers[$key] = $value;
 	}
+	public function setHttpCode($code){
+		$this->httpcode = $code;
+	}
 	public function setMimeType($type, $charset = null){
 		if($charset){
 			$this->setHeader("content-type", $type.'; charset='.$charset);
@@ -99,6 +103,9 @@ class response{
 		}
 	}
 	public function sendHeaders(){
+		if($this->httpcode){
+			http::setHttpCode($this->httpcode);
+		}
 		foreach($this->headers as $key => $val){
 			http::setHeader($key, $val);
 		}
