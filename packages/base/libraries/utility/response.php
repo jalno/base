@@ -122,6 +122,7 @@ class response{
 		}elseif($this->raw){
 			echo $this->output;
 		}elseif($this->view){
+			$this->view->setData($this->getStatus(), 'status');
 			$this->view->output();
 		}
 	}
