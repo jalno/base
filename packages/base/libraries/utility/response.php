@@ -13,6 +13,10 @@ class response{
 	protected $ajax = false;
 	protected $json = false;
 	protected $file;
+	protected $raw;
+	protected $output;
+	protected $headers = array();
+	protected $httpcode;
 	function __construct($status = null, $data = array()){
 		$this->status = $status;
 		$this->data = $data;
@@ -79,14 +83,44 @@ class response{
 			http::redirect($url);
 		}
 	}
+	public function rawOutput(&$output){
+		$this->raw = true;
+		$this->output = $output;
+		$this->file = null;
+		$this->json = false;
+	}
+	public function setHeader($key, $value){
+		$this->headers[$key] = $value;
+	}
+	public function setHttpCode($code){
+		$this->httpcode = $code;
+	}
+	public function setMimeType($type, $charset = null){
+		if($charset){
+			$this->setHeader("content-type", $type.'; charset='.$charset);
+		}else{
+			$this->setHeader("content-type", $type);
+		}
+	}
+	public function sendHeaders(){
+		if($this->httpcode){
+			http::setHttpCode($this->httpcode);
+		}
+		foreach($this->headers as $key => $val){
+			http::setHeader($key, $val);
+		}
+	}
 	public function send(){
+		$this->sendHeaders();
 		if($this->file){
 			http::setMimeType($this->file->getMimeType());
 			http::setLength($this->file->getSize());
-			http::setHeader('Content-Disposition', 'filename='.$this->file->getName());
+
 			$this->file->output();
 		}elseif($this->json){
 			echo $this->json();
+		}elseif($this->raw){
+			echo $this->output;
 		}elseif($this->view){
 			$this->view->setData($this->getStatus(), 'status');
 			$this->view->output();

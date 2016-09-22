@@ -1,13 +1,13 @@
 <?php
 namespace packages\base;
-use \packages\base\http;
+use \packages\base\router;
 use \packages\base\options;
 use \packages\base\IO;
 function url($page = '',$parameters = array(), $absolute = false){
 	$page = IO\removeLastSlash($page);
 	$url = '';
 	if($absolute){
-		$url .= http::$request['scheme'].'://'.http::$request['hostname'];
+		$url .= router::getscheme().'://'.router::gethostname();
 	}
 
 	$changelang = options::get('packages.base.translator.changelang');
@@ -29,10 +29,10 @@ function url($page = '',$parameters = array(), $absolute = false){
 				if($lang != translator::getDefaultShortLang()){
 					$url .= '/'.$lang;
 				}
-			}elseif($lang != translator::getDefaultLang()){
+			}elseif($lang and $lang != translator::getDefaultLang()){
 				$url .= '/'.$lang;
 			}
-		}else{
+		}elseif($lang){
 			$url .= '/'.$lang;
 		}
 	}elseif($changelang == 'parameter'){
