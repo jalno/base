@@ -137,17 +137,35 @@ class loader{
 			$routing = json\decode($routing);
 			if(is_array($routing)){
 				foreach($routing as $route){
-					if(isset($route['path'], $route['controller'])){
-						if(!preg_match('/^\\\\packages\\\\([a-zA-Z0-9-\\_]+)((\\\\[a-zA-Z0-9\_]+)+)$/', $route['controller'])){
-							$route['controller'] = "\\packages\\{$package}\\".$route['controller'];
+					if(isset($route['path'])){
+						if(isset($route['controller'])){
+							if(!preg_match('/^\\\\packages\\\\([a-zA-Z0-9-\\_]+)((\\\\[a-zA-Z0-9\_]+)+)$/', $route['controller'])){
+								$route['controller'] = "\\packages\\{$package}\\".$route['controller'];
+							}
+							//if(access\package\controller(self::$packages[$package],$route['controller'])){
+								router::add($route['path'], $route['controller'], isset($route['method']) ? $route['method'] : '', (isset($route['absolute']) ? $route['absolute'] : false));
+							//}else{
+							//	throw new packagePermission($package, $route['controller']);
+							//}
+						}else{
+							throw new packageConfig($package);
 						}
-						//if(access\package\controller(self::$packages[$package],$route['controller'])){
-							router::add($route['path'], $route['controller'], isset($route['method']) ? $route['method'] : '', (isset($route['absolute']) ? $route['absolute'] : false));
-						//}else{
-						//	throw new packagePermission($package, $route['controller']);
-						//}
-					}else{
-						throw new packageConfig($package);
+					}elseif(isset($route['paths'])){
+						if(isset($route['handler'])){
+							if(!preg_match('/^\\\\packages\\\\([a-zA-Z0-9-\\_]+)((\\\\[a-zA-Z0-9\_]+)+)$/', $route['handler'])){
+								$route['handler'] = "\\packages\\{$package}\\".$route['handler'];
+							}
+							foreach($route['paths'] as $path){
+								foreach($route['exceptions'] as $exception){
+									if(!preg_match('/^\\\\packages\\\\([a-zA-Z0-9-\\_]+)((\\\\[a-zA-Z0-9\_]+)+)$/', $exception)){
+										$exception = "\\packages\\{$package}\\".$exception;
+									}
+									router::addException($path, $exception, $route['handler']);
+								}
+							}
+						}else{
+							throw new packageConfig($package);
+						}
 					}
 				}
 			}else{
