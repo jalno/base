@@ -220,11 +220,12 @@ class router{
 				}
 			}elseif($changelang == 'parameter'){
 				if($lang = http::getURIData('lang')){
-					$lang = self::CheckShortLang($lang);
+
 					try{
+						$lang = self::CheckShortLang($lang);
 						translator::setLang($lang);
 					}catch(InvalidLangCode $e){
-						throw new NotFound;
+					}catch(NotFound $e){
 					}
 				}
 			}
@@ -244,10 +245,12 @@ class router{
 
 				if(($data = self::checkRuleException($rule, ($rule['absolute'] ? $absolute : $uri), $e)) !== false){
 					if(!$rule['absolute'] and $changelang == 'uri' and $lang){
-						$lang = self::CheckShortLang($lang);
+
 						try{
+							$lang = self::CheckShortLang($lang);
 							translator::setLang($lang);
 						}catch(InvalidLangCode $e){
+						}catch(NotFound $e){
 						}
 					}
 					list($controller, $method) = explode('@', $rule['handler'], 2);
