@@ -428,7 +428,7 @@ class dbObject {
 	 */
 	private function paginate ($page, $fields = null) {
 		$objects = array ();
-		$this->db->pageLimit = self::$pageLimit;
+		$this->db->pageLimit = $this->pageLimit;
 		$this->processHasOneWith ();
 		$results = $this->db->ArrayBuilder()->paginate($this->dbTable, $page, $fields);
 		if ($this->db->count == 0)
@@ -712,11 +712,13 @@ class dbObject {
 	}
 	static function objectToArray($array){
 		$return = array();
-		foreach($array as $key => $val){
-			if(is_object($val) and $val instanceof dbObject){
-				$return[$key] = $val->toArray();
-			}else{
-				$return[$key] = $val;
+		if(is_array($array)){
+			foreach($array as $key => $val){
+				if(is_object($val) and $val instanceof dbObject){
+					$return[$key] = $val->toArray();
+				}else{
+					$return[$key] = $val;
+				}
 			}
 		}
 		return $return;
