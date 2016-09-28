@@ -72,6 +72,18 @@
 		{
 			"classes":["response\\file"],
 			"file":"libraries/utility/response_file.php"
+		},
+		{
+			"classes":["events"],
+			"file":"libraries/events/events.php"
+		},
+		{
+			"classes":["event"],
+			"file":"libraries/events/event.php"
+		},
+		{
+			"classes":["events\\listener"],
+			"file":"libraries/events/exceptions.php"
 		}
 	]
 }

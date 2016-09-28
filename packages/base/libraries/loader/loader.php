@@ -115,7 +115,15 @@ class loader{
 				if(isset($config['autoload'])){
 					$p->setAutoload($config['autoload']);
 				}
-
+				if(isset($config['events'])){
+					foreach($config['events'] as $event){
+						if(isset($event['name'], $event['listener'])){
+							$p->addEvent($event['name'], $event['listener']);
+						}else{
+							throw new packageConfig($package);
+						}
+					}
+				}
 
 				return $p;
 			}else{
