@@ -56,6 +56,9 @@
 		{
 			"classes":["response\\file"],
 			"file":"libraries/utility/response_file.php"
+		},
+		{
+			"file":"libraries/utility/utility.php"
 		}
 	]
 }
