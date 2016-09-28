@@ -62,7 +62,7 @@ class SourceViewFileException extends \Exception {
 	private $viewfile;
 	private $source;
 	public function __construct($viewfile, $source){
-		$this->viewfile = $viewfilw;
+		$this->viewfile = $viewfile;
 		$this->source = $source;
 	}
 	public function getViewFile(){
