@@ -2,40 +2,9 @@
 namespace packages\base\views;
 use \packages\base;
 use \packages\base\view;
+use \packages\base\views\traits\form as formTrait;
 class form extends view{
-	protected $dataform = array();
-	protected $formerrors = array();
-	public function setFormError(FormError $error){
-		$this->formerrors[] = $error;
-	}
-	public function getFromErrorsByInput($input){
-		foreach($this->formerrors as $error){
-			if($error->input == $input){
-				return $error;
-			}
-		}
-		return false;
-	}
-	public function getFormErrorsByType($type){
-		foreach($this->formerrors as $error){
-			if($error->type == $type){
-				return $type;
-			}
-		}
-	}
-	public function getFormErrors(){
-		return $this->formerrors;
-	}
-	public function setDataForm($data, $key = null){
-		if($key){
-			$this->dataform[$key] = $data;
-		}else{
-			$this->dataform = $data;
-		}
-	}
-	public function getDataForm($key){
-		return(isset($this->dataform[$key]) ? $this->dataform[$key] : false);
-	}
+	use formTrait;
 }
 class FormError{
 	const FATAL = "fatal";

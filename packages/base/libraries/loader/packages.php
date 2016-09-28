@@ -215,4 +215,7 @@ class package{
 	public function getFileContents($file){
 		return file_get_contents($this->home.'/'.$file);
 	}
+	public function url($file, $absolute = false){
+		return '/'.$this->home.'/'.$file;
+	}
 }
