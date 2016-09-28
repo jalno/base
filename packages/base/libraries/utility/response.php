@@ -32,6 +32,14 @@ class response{
 	}
 	public function setView(view $view){
 		$this->view = $view;
+		if(method_exists($this->view, 'export')){
+			$export = $this->view->export();
+			if(isset($export['data'])){
+				foreach($export['data'] as $key => $val){
+					$this->data[$key] = $val;
+				}
+			}
+		}
 		if($this->view instanceof form){
 			$errors = $this->view->getFormErrors();
 			if($errors){
@@ -61,6 +69,9 @@ class response{
 			$this->data[$key] = $data;
 		}else{
 			$this->data = $data;
+		}
+		if($this->view){
+			$this->view->setData($data, $key);
 		}
 	}
 	public function getData($key = null){
