@@ -746,7 +746,16 @@ class MysqliDb
 		if (count($this->_where) == 0) {
 			$cond = '';
 		}
-
+		if($operator == 'contains'){
+			$whereValue = '%'.$whereValue.'%';
+			$operator = 'LIKE';
+		}elseif($operator == 'equals'){
+			$whereValue = $whereValue;
+			$operator = '=';
+		}elseif($operator == 'startswith'){
+			$whereValue = '%'.$whereValue;
+			$operator = 'LIKE';
+		}
 		$this->_where[] = array($cond, $whereProp, $operator, $whereValue);
 		return $this;
 	}
@@ -1379,11 +1388,22 @@ class MysqliDb
 		}
 
 		//Prepare the where portion of the query
-		$this->_query .= ' ' . $operator;
+		if($operator){
+			$this->_query .= ' ' . $operator;
+		}
 
 		foreach ($conditions as $cond) {
 			list ($concat, $varName, $operator, $val) = $cond;
-			$this->_query .= " " . $concat . " " . $varName;
+			$this->_query .= " " . $concat . " ";
+			if(is_object($varName) and $varName instanceof parenthesis){
+				$this->_query .= "(";
+				$condis = $varName->getWheres();
+				$this->_buildCondition(null, $condis);
+				$this->_query .= ")";
+				continue;
+
+			}
+			$this->_query .=  $varName;
 
 			switch (strtolower($operator)) {
 				case 'not in':
@@ -1910,3 +1930,30 @@ class MysqliDb
 }
 
 // END class
+class parenthesis{
+	protected $_where = array();
+	public function where($whereProp, $whereValue = 'DBNULL', $operator = '=', $cond = 'AND'){
+		if (is_array($whereValue) && ($key = key($whereValue)) != "0") {
+			$operator = $key;
+			$whereValue = $whereValue[$key];
+		}
+
+		if (count($this->_where) == 0) {
+			$cond = '';
+		}
+		if($operator == 'contains'){
+			$whereValue = '%'.$whereValue.'%';
+			$operator = 'LIKE';
+		}elseif($operator == 'equals'){
+			$whereValue = $whereValue;
+			$operator = '=';
+		}elseif($operator == 'startswith'){
+			$whereValue = '%'.$whereValue;
+			$operator = 'LIKE';
+		}
+		$this->_where[] = array($cond, $whereProp, $operator, $whereValue);
+	}
+	public function getWheres(){
+		return $this->_where;
+	}
+}
