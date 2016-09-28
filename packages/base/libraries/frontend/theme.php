@@ -103,6 +103,17 @@ class source{
 		}
 		return $assets;
 	}
+	public function hasFileAsset($file){
+		if(is_file("{$this->path}/{$file}")){
+			return true;
+		}
+		foreach($this->assets as $asset){
+			if(isset($asset['file']) and $asset['file'] == $file){
+				return true;
+			}
+		}
+		return false;
+	}
 	public function url($file){
 		return "/".$this->path."/".$file;
 	}
@@ -233,6 +244,16 @@ class theme{
 	}
 	static function url($file){
 		if(self::$primarySource){
+			if(self::$primarySource->hasFileAsset($file)){
+				return "/".self::$primarySource->getPath()."/".$file;
+			}else{
+				$sources = self::byName(self::$primarySource->getName());
+				foreach($sources as $source){
+					if($source->hasFileAsset($file)){
+						return "/".$source->getPath()."/".$file;
+					}
+				}
+			}
 			return "/".self::$primarySource->getPath()."/".$file;
 		}
 		return false;
