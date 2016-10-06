@@ -3,6 +3,8 @@ namespace packages\base;
 use \packages\base\frontend\theme;
 use \packages\base\frontend\source;
 use \packages\base\translator\language;
+use \packages\base\event;
+use \packages\base\events\listener;
 class packages{
 	static private $actives = array();
 	static function register(package $package){
@@ -47,6 +49,7 @@ class package{
 	private $dependencies= array();
 	private $langs = array();
 	private $options = array();
+	private $events = array();
 	public function setName($name){
 		$this->name = $name;
 		$this->home = "packages/{$name}";
@@ -217,5 +220,24 @@ class package{
 	}
 	public function url($file, $absolute = false){
 		return '/'.$this->home.'/'.$file;
+	}
+	public function addEvent($name, $listener){
+		$this->events[] = array(
+			'name' => $name,
+			'listener' => "\\packages\\{$this->name}\\".$listener
+		);
+	}
+	public function trigger(event $e){
+		foreach($this->events as $event){
+			if($event['name'] == '\\'.get_class($e)){
+				list($listener, $method) = explode('@', $event['listener'], 2);
+				if(class_exists($listener) and method_exists($listener, $method)){
+					$listener = new $listener();
+					$listener->$method($e);
+				}else{
+					throw new listener($event['name']);
+				}
+			}
+		}
 	}
 }

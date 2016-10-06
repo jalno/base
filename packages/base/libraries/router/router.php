@@ -1,45 +1,29 @@
 <?php
 namespace packages\base;
-include('exceptions.php');
 use \packages\base\http;
 use \packages\base\process;
 use \packages\base\options;
 use \packages\base\translator\InvalidLangCode;
+use \packages\base\router\rule;
 class router{
 	static private $rules = array();
 	static private $exceptions = array();
 	static private $hostname;
 	static private $scheme;
-	static public function add($rule, $controller, $method, $absolute){
-		$method = strtolower($method);
-		if(in_array($method, array('','post','get','put','delete'))){
-			if(is_string($rule)){
-				$rule = explode('/', $rule);
+	public static function getDefaultDomains(){
+		$option = options::get('packages.base.router.defaultDomain');
+		if($option){
+			if(!is_array($option)){
+				$option = array($option);
 			}
-			if(is_array($rule)){
-				$len = count($rule);
-				$parts = array();
-				for($x = 0;$x!=$len;$x++){
-					$part = $rule[$x];
-					if($part){
-						$parts[] = self::validPart($part);
-					}
-				}
-				if($parts){
-					self::$rules[] = array(
-						'absolute' => $absolute,
-						'path' => $parts,
-						'method' => $method,
-						'controller' => $controller
-					);
-					return true;
-				}
-			}else{
-				throw new routerRule($rule);
-			}
-		}else{
-			throw new routerMethod($method);
+			return $option;
+		}elseif(isset(http::$server['hostname'])){
+			return array(http::$server['hostname']);
 		}
+		return null;
+	}
+	static public function addRule(rule $rule){
+		self::$rules[] = $rule;
 	}
 	static public function addException($rule, $exception, $controller){
 		if(is_string($rule)){
@@ -51,7 +35,7 @@ class router{
 			for($x = 0;$x!=$len;$x++){
 				$part = $rule[$x];
 				if($part){
-					$parts[] = self::validPart($part);
+					$parts[] = rule::validPart($part);
 				}
 			}
 			if(!$parts){
@@ -70,46 +54,7 @@ class router{
 			throw new routerRule($rule);
 		}
 	}
-	static private function validPart($part){
-		if(is_string($part) or is_numeric($part)){
-			return array(
-				'type' => 'static',
-				'name' => $part,
-			);
-		}elseif(is_array($part)){
-			if(isset($part['name'])){
-				if(!isset($part['type'])){
-					if(isset($part['regex'])){
-						$part['type'] = 'dynamic';
-					}
-				}
-				if(isset($part['type']) and in_array($part['type'], array('static', 'dynamic'), true)){
-					if($part['type'] == 'dynamic'){
-						if(isset($part['regex'])){
-							if(@preg_match($part['regex'], null) === false){
-								throw new routerRulePart($part, "regex is invalid");
-							}
-						}
-					}
-					$valid = array(
-						'type' => $part['type'],
-						'name' => $part['name'],
-					);
-					if($part['type'] == 'dynamic' and isset($part['regex'])){
-						$valid['regex'] = $part['regex'];
-					}
-					return $valid;
-				}else{
-					throw new routerRulePart($part, "type is not static or dynamic");
-				}
-			}else{
-				throw new routerRulePart($part, "name is not assigned");
-			}
-		}else{
-			throw new routerRulePart($part);
-		}
-	}
-	private static function CheckShortLang($lang){
+	public static function CheckShortLang($lang){
 		$type = options::get('packages.base.translator.changelang.type');
 		if($type == 'short'){
 			if(translator::is_shortCode($lang)){
@@ -279,71 +224,38 @@ class router{
 		$found = false;
 		$api = loader::sapi();
 		if($api == loader::cgi){
-			try{
+			$hostname = http::$request['hostname'];
+			if(substr($hostname, 0,4) == 'www.'){
+				$hostname = substr($hostname, 4);
+			}
+			if(in_array($hostname, self::getDefaultDomains())){
 				if(!self::checkwww() or !self::checkscheme()){
 					return false;
 				}
-				$path = http::$request['uri'];
-				$absolute = explode('/', $path);
-				array_splice($absolute, 0, 1);
-				$uri = $absolute;
-				$lang = null;
-				$changelang = options::get('packages.base.translator.changelang');
-				if($changelang == 'uri'){
-					if($uri[0]){
-						$lang = $uri[0];
-						array_splice($uri, 0, 1);
-					}
-				}elseif($changelang == 'parameter'){
-					if($lang = http::getURIData('lang')){
-						$lang = self::CheckShortLang($lang);
-						try{
-							translator::setLang($lang);
-						}catch(InvalidLangCode $e){
-							throw new NotFound;
-						}
-					}
-				}
-
-				$newuri = array();
-				foreach($uri as $p){
-					if($p !== ''){
-						$newuri[] = $p;
-					}
-				}
-				$uri = $newuri;
-				if(empty($uri)){
-					$uri = array('index');
-				}
+			}
+			try{
 				foreach(self::$rules as $rule){
-					if(($data = self::checkRule($rule, ($rule['absolute'] ? $absolute : $uri))) !== false){
-						if(!$rule['absolute'] and $changelang == 'uri' and $lang){
-							$lang = self::CheckShortLang($lang);
-							try{
-								translator::setLang($lang);
-							}catch(InvalidLangCode $e){
-								throw new NotFound;
-							}
+					if(($data = $rule->check(http::$request['method'], http::$request['scheme'], http::$request['hostname'], http::$request['uri'])) !== false){
+						$found = true;
+						if($lang = $rule->getLang()){
+							translator::setLang($lang);
 						}
-						list($controller, $method) = explode('@', $rule['controller'], 2);
+						list($controller, $method) = $rule->getController();
 						if(preg_match('/^\\\\packages\\\\([a-zA-Z0-9|_]+).*$/', $controller, $matches)){
 							if($package = packages::package($matches[1])){
 								$package->bootup();
-								if(class_exists($controller) and method_exists($controller, $method)){
-									$controllerClass = new $controller();
-									$controllerClass->response($controllerClass->$method($data));
-								}else{
-									throw new routerController($rule['controller']);
-								}
+								$controllerClass = new $controller();
+								$controllerClass->response($controllerClass->$method($data));
 							}
 						}
-						$found = true;
 						break;
 					}
 				}
 				if(!$found){
 					throw new NotFound;
 				}
+			}catch(InvalidLangCode $e){
+				self::routingExceptions(new NotFound);
 			}catch(\Exception $e){
 				self::routingExceptions($e);
 			}
