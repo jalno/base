@@ -16,6 +16,9 @@ class http{
 		if(isset($_SERVER['SERVER_SOFTWARE'])){
 			self::$server['webserver'] = $_SERVER['SERVER_SOFTWARE'];
 		}
+		if(isset($_SERVER['SERVER_NAME'])){
+			self::$server['hostname'] = $_SERVER['SERVER_NAME'];
+		}
 		if(isset($_SERVER['REMOTE_ADDR'])){
 			self::$client['ip'] = $_SERVER['REMOTE_ADDR'];
 		}

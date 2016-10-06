@@ -17,9 +17,11 @@ require_once('packages/base/libraries/frontend/frontend.php');
 require_once('packages/base/libraries/frontend/theme.php');
 require_once('packages/base/libraries/http/http.php');
 require_once('packages/base/libraries/session/session.php');
+/* utilities */
 require_once('packages/base/libraries/utility/password.php');
 require_once('packages/base/libraries/utility/safe.php');
 require_once('packages/base/libraries/utility/response.php');
+require_once('packages/base/libraries/utility/exceptions.php');
 /* DATE and calendar */
 require_once('packages/base/libraries/date/date_interface.php');
 require_once('packages/base/libraries/date/exceptions.php');
@@ -32,14 +34,17 @@ require_once('packages/base/libraries/background/cli.php');
 require_once('packages/base/libraries/translator/translator.php');
 require_once('packages/base/libraries/translator/language.php');
 require_once('packages/base/libraries/translator/exceptions.php');
-
+/* Routing */
 require_once('packages/base/libraries/router/router.php');
+require_once('packages/base/libraries/router/rule.php');
 require_once('packages/base/libraries/router/url.php');
+require_once('packages/base/libraries/router/exceptions.php');
+
 require_once('packages/base/libraries/access/packages.php');
 require_once('packages/base/pages/index.php');
 
 use \packages\base\db;
-
+use \packages\base\router\rule;
 class loader{
 	const cli = 1;
 	const cgi = 2;
@@ -150,8 +155,9 @@ class loader{
 							if(!preg_match('/^\\\\packages\\\\([a-zA-Z0-9-\\_]+)((\\\\[a-zA-Z0-9\_]+)+)$/', $route['controller'])){
 								$route['controller'] = "\\packages\\{$package}\\".$route['controller'];
 							}
+							$rule = rule::import($route);
+							router::addRule($rule);
 							//if(access\package\controller(self::$packages[$package],$route['controller'])){
-								router::add($route['path'], $route['controller'], isset($route['method']) ? $route['method'] : '', (isset($route['absolute']) ? $route['absolute'] : false));
 							//}else{
 							//	throw new packagePermission($package, $route['controller']);
 							//}

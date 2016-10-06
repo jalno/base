@@ -1,6 +1,6 @@
 <?php
-namespace packages\base;
-class routerMethod extends \Exception {
+namespace packages\base\router;
+class methodException extends \Exception {
 	private $method;
 	public function __construct($method){
 		$this->method = $method;
@@ -9,7 +9,16 @@ class routerMethod extends \Exception {
 		return $this->method;
 	}
 }
-class routerController extends \Exception {
+class pathException extends \Exception {
+	private $path;
+	public function __construct($path){
+		$this->path = $path;
+	}
+	public function getPath(){
+		return $this->path;
+	}
+}
+class ruleControllerException extends \Exception {
 	private $controller;
 	public function __construct($controller){
 		$this->controller = $controller;
@@ -36,5 +45,24 @@ class routerRulePart extends \Exception {
 	public function getPart(){
 		return $this->part;
 	}
+}
+class RulePartNameException extends routerRulePart{
+	private $part;
+	public function __construct($part){
+		$this->part = $part;
+		parent::__construct("name is not assigned");
+	}
+	public function getPart(){
+		return $this->part;
+	}
+}
+class RulePartValue extends routerRulePart{
+
+}
+class schemeException extends routerRule{
+
+}
+class DomainException extends routerRule{
+
 }
 class NotFound extends \Exception {}
