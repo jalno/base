@@ -260,8 +260,8 @@ class router{
 				self::routingExceptions($e);
 			}
 		}else{
-			if(($processID = cli::getParameter('process')) !== false){
-				$process = process::byId($processID);
+			if($processID = cli::getParameter('process')){
+				if($process = process::byId($processID)){
 					if($process->status != process::running){
 						list($controller, $method) = explode('@', $process->name, 2);
 						if(class_exists($controller) and method_exists($controller, $method)){
@@ -285,7 +285,12 @@ class router{
 					}else{
 						throw new proccessAlive($process->id);
 					}
+				}else{
+					throw new NotFound();
 				}
+			}else{
+				echo("Please specify an process ID by passing --process argument".PHP_EOL);
+				exit(1);
 			}
 
 		}
