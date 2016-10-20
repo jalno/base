@@ -161,7 +161,8 @@ class dbObject {
 					$key = $this->relations[$name][2];
 					$obj = new $modelName;
 					$obj->returnType = $this->returnType;
-					$this->data[$name] = $obj->where($key, $this->data[$this->primaryKey])->get();
+					$obj->where($key, $this->data[$this->primaryKey]);
+					$this->data[$name] = $obj->get();
 					if(!$this->data[$name]){
 						$this->data[$name] = array();
 					}
@@ -339,7 +340,7 @@ class dbObject {
 		$this->processHasOneWith ();
 		$results = $this->db->ArrayBuilder()->get ($this->dbTable, $limit, $fields);
 		if ($this->db->count == 0)
-			return null;
+			return array();
 		foreach ($results as &$r) {
 			$this->processArrays ($r);
 			$this->data = $r;
