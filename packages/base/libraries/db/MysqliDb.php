@@ -289,7 +289,7 @@ class MysqliDb
 	 */
 	public function select_db($dbname)
 	{
-		if ($this->_mysqli->select_db($dbname)) {
+		if ($this->mysqli()->select_db($dbname)) {
 			$this->db = $dbname;
 		}
 		return $this;
