@@ -261,7 +261,19 @@ class router{
 			}
 		}else{
 			if($processID = cli::getParameter('process')){
-				if($process = process::byId($processID)){
+				$process = null;
+				$processID = str_replace("/", "\\", $processID);
+				if(preg_match('/^packages\\\\([a-zA-Z0-9_]+\\\\)+([a-zA-Z0-9_]+)\@([a-zA-Z0-9_]+)$/', $processID)){
+					$parameters = cli::$request['parameters'];
+					unset($parameters['process']);
+					$process = new process();
+					$process->name = '\\'.$processID;
+					$process->parameters = $parameters;
+					$process->save();
+				}elseif(!$process = process::byId($processID)){
+					throw new NotFound();
+				}
+				if($process){
 					if($process->status != process::running){
 						list($controller, $method) = explode('@', $process->name, 2);
 						if(class_exists($controller) and method_exists($controller, $method)){
