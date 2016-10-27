@@ -252,7 +252,7 @@ class rule{
 					$urlx = $urlen-1;
 				}
 			}else{
-				if($check = $this->checkPartPath($part, $url[$urlx])){
+				if(isset($url[$urlx]) and $check = $this->checkPartPath($part, $url[$urlx])){
 					if(is_array($check)){
 						$data = array_replace($data, $check);
 					}
