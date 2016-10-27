@@ -198,7 +198,7 @@ class rule{
 					}
 				}
 				if($foundomain){
-					$url = array_slice(explode('/', $url), 1);
+					$url = array_slice(explode('/', urldecode($url)), 1);
 					$changelang = options::get('packages.base.translator.changelang');
 					if(!$this->absolute){
 						if($changelang == 'uri'){
