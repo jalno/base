@@ -100,6 +100,10 @@
 		{
 			"classes":["IO\\drivers\\sftp"],
 			"file":"libraries/io/drivers/sftp/sftp.php"
+		},
+		{
+			"classes":["view\\error"],
+			"file":"libraries/mvc/error.php"
 		}
 	]
 }
