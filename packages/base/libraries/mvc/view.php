@@ -3,6 +3,7 @@ namespace packages\base;
 use \packages\base\frontend\theme;
 use \packages\base\frontend\location;
 use \packages\base\frontend\source;
+use \packages\base\view\error;
 class view{
 	protected $title = array();
 	protected $description;
@@ -11,6 +12,7 @@ class view{
 	protected $css = array();
 	protected $js = array();
 	protected $data = array();
+	protected $errors = array();
 	public function setTitle($title){
 		if(is_array($title)){
 			$this->title = $title;
@@ -148,5 +150,13 @@ class view{
 			require_once($path);
 		}
 	}
+	public function addError(error $error){
+		$this->errors[] = $error;
+	}
+	public function getError(){
+		return($this->errors ? $this->errors[0] : null);
+	}
+	public function getErrors(){
+		return $this->errors;
+	}
 }
-?>
