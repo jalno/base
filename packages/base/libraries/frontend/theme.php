@@ -74,19 +74,27 @@ class source{
 		if($asset['type'] == 'js' or $asset['type'] == 'css'){
 			if(isset($asset['file'])){
 				if(is_file("{$this->path}/{$asset['file']}")){
-					$this->assets[] = array(
+					$assetData = array(
 						'type' => $asset['type'],
 						'file' => $asset['file']
 					);
+					if(isset($asset['name'])){
+						$assetData['name'] = $asset['name'];
+					}
+					$this->assets[] = $assetData;
 					return true;
 				}else{
 					throw new SourceAssetFileException($asset['file'], $this->path);
 				}
 			}elseif(isset($asset['inline'])){
-				$this->assets[] = array(
+				$assetData = array(
 					'type' => $asset['type'],
 					'inline' => $asset['inline']
 				);
+				if(isset($asset['name'])){
+					$assetData['name'] = $asset['name'];
+				}
+				$this->assets[] = $assetData;
 			}else{
 				throw new SourceAssetException("No file and no Code for asset",$this->path);
 			}

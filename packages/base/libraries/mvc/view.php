@@ -39,11 +39,22 @@ class view{
 		);
 	}
 	public function addCSSFile($file,$name =''){
+		if($name == ''){
+			$name = $file;
+		}
 		$this->css[] = array(
 			'name' => $name,
 			'type' => 'file',
 			'file' => $file
 		);
+	}
+	public function removeCSS($name){
+		foreach($this->css as $key=> $css){
+			if($css['name'] == $name){
+				unset($this->css[$key]);
+				return;
+			}
+		}
 	}
 	protected function loadCSS(){
 		foreach($this->css as $css){
@@ -65,11 +76,22 @@ class view{
 		);
 	}
 	public function addJSFile($file,$name =''){
+		if($name == ''){
+			$name = $file;
+		}
 		$this->js[] = array(
 			'name' => $name,
 			'type' => 'file',
 			'file' => $file
 		);
+	}
+	public function removeJS($name){
+		foreach($this->js as $key=> $js){
+			if($js['name'] == $name){
+				unset($this->js[$key]);
+				return;
+			}
+		}
 	}
 	protected function loadJS(){
 		foreach($this->js as $js){
@@ -92,15 +114,15 @@ class view{
 			foreach($assets as $asset){
 				if($asset['type'] == 'css'){
 					if(isset($asset['file'])){
-						$this->addCSSFile($source->url($asset['file']));
+						$this->addCSSFile($source->url($asset['file']), isset($asset['name']) ? $asset['name'] : '');
 					}elseif(isset($asset['inline'])){
-						$this->addCSS($asset['inline']);
+						$this->addCSS($asset['inline'], isset($asset['name']) ? $asset['name'] : '');
 					}
 				}elseif($asset['type'] == 'js'){
 					if(isset($asset['file'])){
-						$this->addJSFile($source->url($asset['file']));
+						$this->addJSFile($source->url($asset['file']), isset($asset['name']) ? $asset['name'] : '');
 					}elseif(isset($asset['inline'])){
-						$this->addJS($asset['inline']);
+						$this->addJS($asset['inline'], isset($asset['name']) ? $asset['name'] : '');
 					}
 				}
 			}
