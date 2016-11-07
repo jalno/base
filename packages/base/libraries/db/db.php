@@ -139,6 +139,17 @@ class db{
 	}
 
 	/**
+	 * Function to get total results count
+	 *
+	 * @return int
+	 */
+	static function totalCount(){
+		if(self::has_connection()){
+			return self::connection()->totalCount;
+		}
+	}
+
+	/**
 	 * A convenient SELECT * function.
 	 *
 	 * @param string  $tableName The name of the database table to work with.
