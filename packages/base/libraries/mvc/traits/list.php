@@ -13,5 +13,6 @@ trait listTrait{
 		$this->currentPage = $currentPage;
 		$this->totalItems = $totalItems;
 		$this->itemsPage = $itemsPage;
+		$this->totalPages = ceil($totalItems/$itemsPage);
 	}
 }
