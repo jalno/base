@@ -8,6 +8,9 @@ trait listTrait{
 	protected $totalItems;
 	public function setDataList($data){
 		$this->dataList = $data;
+		if(!$this->dataList){
+			$this->dataList = array();
+		}
 	}
 	public function getDataList(){
 		return $this->dataList;
