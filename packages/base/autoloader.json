@@ -104,6 +104,14 @@
 		{
 			"classes":["view\\error"],
 			"file":"libraries/mvc/error.php"
+		},
+		{
+			"classes":[
+				"image",
+				"InvalidImageException",
+				"UnknownImageException"
+			],
+			"file":"libraries/utility/image.php"
 		}
 	]
 }
