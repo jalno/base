@@ -146,7 +146,7 @@ class view{
 			}
 			return $view;
 		}
-		return false;
+		throw new NoViewException;
 	}
 	public function setData($data, $key = null){
 		if($key){
@@ -182,3 +182,4 @@ class view{
 		return $this->errors;
 	}
 }
+class NoViewException extends \Exception {}
