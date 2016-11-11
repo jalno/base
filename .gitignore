@@ -1,1 +1,3 @@
+/packages/*
+!/packages/base/
 /packages/base/storage/session/*
