@@ -144,6 +144,10 @@ class process extends dbObject{
 		}
 		return true;
 	}
+	protected function progress($progress){
+		$this->progress += $progress;
+		$this->save();
+	}
 	static function getOS(){
 		$os = strtoupper(PHP_OS);
         if (substr($os, 0, 3) === 'WIN') {

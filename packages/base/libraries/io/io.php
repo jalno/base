@@ -21,6 +21,9 @@ function md5($file){
 function filesize($file){
 	return \filesize($file);
 }
+function unlink($filename, $context = null){
+	return \unlink($filename);
+}
 function mime_type($filename) {
 	if(is_file($filename) and function_exists('mime_content_type')) {
 		return mime_content_type($filename);

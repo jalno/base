@@ -198,7 +198,7 @@ class rule{
 					}
 				}
 				if($foundomain){
-					$url = array_slice(explode('/', $url), 1);
+					$url = array_slice(explode('/', urldecode($url)), 1);
 					$changelang = options::get('packages.base.translator.changelang');
 					if(!$this->absolute){
 						if($changelang == 'uri'){
@@ -252,7 +252,7 @@ class rule{
 					$urlx = $urlen-1;
 				}
 			}else{
-				if($check = $this->checkPartPath($part, $url[$urlx])){
+				if(isset($url[$urlx]) and $check = $this->checkPartPath($part, $url[$urlx])){
 					if(is_array($check)){
 						$data = array_replace($data, $check);
 					}

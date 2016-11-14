@@ -46,9 +46,9 @@ class response{
 				$dataerror = array();
 				foreach($errors as $error){
 					$dataerror[] = array(
-						'type' => $error->type,
-						'error' => $error->error,
-						'input' => $error->input
+						'type' => $error->getType(),
+						'error' => $error->getCode(),
+						'input' => $error->getInput()
 					);
 				}
 				$this->setData($dataerror, 'error');

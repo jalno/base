@@ -54,6 +54,12 @@ class dbObject {
 	 */
 	protected static $modelPath;
 	/**
+	 * An array that holds original object data
+	 *
+	 * @var array
+	 */
+	public $original_data;
+	/**
 	 * An array that holds object data
 	 *
 	 * @var array
@@ -127,6 +133,7 @@ class dbObject {
 				$this->isNew = false;
 			}
 			$this->data = $data;
+			$this->original_data = $data;
 		}
 	}
 	/**
@@ -161,7 +168,8 @@ class dbObject {
 					$key = $this->relations[$name][2];
 					$obj = new $modelName;
 					$obj->returnType = $this->returnType;
-					$this->data[$name] = $obj->where($key, $this->data[$this->primaryKey])->get();
+					$obj->where($key, $this->data[$this->primaryKey]);
+					$this->data[$name] = $obj->get();
 					if(!$this->data[$name]){
 						$this->data[$name] = array();
 					}
@@ -239,6 +247,7 @@ class dbObject {
 		if (!empty ($this->primaryKey) && empty ($this->data[$this->primaryKey]))
 			$this->data[$this->primaryKey] = $id;
 		$this->isNew = false;
+		$this->original_data = $this->data;
 		return $id;
 	}
 	/**
@@ -258,8 +267,18 @@ class dbObject {
 		$sqlData = $this->prepareData ();
 		if (!$this->validate ($sqlData))
 			return false;
-		$this->db->where ($this->primaryKey, $this->data[$this->primaryKey]);
-		return $this->db->update ($this->dbTable, $sqlData);
+
+		$newdata = $this->compareData($sqlData, $this->original_data);
+		if($newdata){
+			$this->db->where ($this->primaryKey, $this->data[$this->primaryKey]);
+			if($this->db->update ($this->dbTable, $newdata)){
+				$this->original_data = $sqlData;
+				return true;
+			}
+		}else{
+			return true;
+		}
+		return false;
 	}
 	/**
 	 * Save or Update object
@@ -311,6 +330,7 @@ class dbObject {
 			return null;
 		$this->processArrays ($results);
 		$this->data = $results;
+		$this->original_data = $results;
 		$this->processAllWith ($results);
 		if ($this->returnType == 'Json')
 			return json\encode ($results);
@@ -339,10 +359,11 @@ class dbObject {
 		$this->processHasOneWith ();
 		$results = $this->db->ArrayBuilder()->get ($this->dbTable, $limit, $fields);
 		if ($this->db->count == 0)
-			return null;
+			return array();
 		foreach ($results as &$r) {
 			$this->processArrays ($r);
 			$this->data = $r;
+			$this->original_data = $r;
 			$this->processAllWith ($r, false);
 			if ($this->returnType == 'Object') {
 				$item = new static ($r);
@@ -604,6 +625,15 @@ class dbObject {
 			foreach ($this->arrayFields as $key)
 				$data[$key] = explode ("|", $data[$key]);
 		}
+	}
+	private function compareData($new, $old){
+		$return = array();
+		foreach($new as $key => $value){
+			if(!array_key_exists($key, $old) or $value != $old[$key]){
+				$return[$key] = $value;
+			}
+		}
+		return $return;
 	}
 	/**
 	 * @param array $data

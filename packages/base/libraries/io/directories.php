@@ -1,7 +1,23 @@
 <?php
 namespace packages\base\IO;
 function mkdir($pathname, $recursive = false, $mode = 0755){
-	return \mkdir($pathname, $mode, $recursive);
+	if($recursive){
+		$dirs = explode('/', $pathname);
+	    $dir='';
+		$result = true;
+	    foreach ($dirs as $part) {
+	        $dir.=$part.'/';
+	        if (!is_dir($dir) and $dir){
+				if(!\mkdir($dir, $mode)){
+					$result = false;
+					break;
+				}
+			}
+	    }
+		return $result;
+	}else{
+		return \mkdir($pathname, $mode, $recursive);
+	}
 }
 function removeLastSlash($path){
 	while(substr($path,-1) == '/'){

@@ -8,6 +8,9 @@ trait form{
 		$this->formerrors[] = $error;
 	}
 	public function getFromErrorsByInput($input){
+		return $this->getFormErrorsByInput($input);
+	}
+	public function getFormErrorsByInput($input){
 		foreach($this->formerrors as $error){
 			if($error->input == $input){
 				return $error;

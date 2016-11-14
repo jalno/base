@@ -29,6 +29,9 @@ class controller{
 						$data = null;
 						if($type == 'number'){
 							$data = safe::number($rawdata);
+							if(!$data){
+								$data = 0;
+							}
 						}elseif($type == 'string'){
 							$data = safe::string($rawdata);
 						}elseif($type == 'bool'){
@@ -61,7 +64,7 @@ class controller{
 						}else{
 							throw new inputType($options['type']);
 						}
-						if($data){
+						if($data !== null){
 							$return[$field] = $data;
 							break;
 						}
@@ -83,7 +86,11 @@ class controller{
 						}else{
 							throw new inputValidation($field);
 						}
-					}elseif(!isset($options['optional']) and isset($options['values'])){
+					}elseif(!$return[$field]){
+						if(!isset($options['empty']) or !$options['empty']){
+							throw new inputValidation($field);
+						}
+					}if(!isset($options['optional']) and isset($options['values'])){
 						if(in_array($options['values'], array($options['values']))){
 							$return[$field] = $formdata[$field];
 						}else{

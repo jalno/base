@@ -84,6 +84,34 @@
 		{
 			"classes":["events\\listener"],
 			"file":"libraries/events/exceptions.php"
+		},
+		{
+			"classes":["ssh"],
+			"file":"libraries/ssh/ssh.php"
+		},
+		{
+			"classes":["ssh\\ConnectionException"],
+			"file":"libraries/ssh/exceptions.php"
+		},
+		{
+			"classes":["IO\\drivers\\scp"],
+			"file":"libraries/io/drivers/scp/scp.php"
+		},
+		{
+			"classes":["IO\\drivers\\sftp"],
+			"file":"libraries/io/drivers/sftp/sftp.php"
+		},
+		{
+			"classes":["view\\error"],
+			"file":"libraries/mvc/error.php"
+		},
+		{
+			"classes":[
+				"image",
+				"InvalidImageException",
+				"UnknownImageException"
+			],
+			"file":"libraries/utility/image.php"
 		}
 	]
 }

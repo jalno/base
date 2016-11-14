@@ -282,7 +282,18 @@ class MysqliDb
 		}
 		return $this->_mysqli;
 	}
-
+	/**
+	 * A method to change default database in connection
+	 *
+	 * @return MysqliDb Returns the current instance.
+	 */
+	public function select_db($dbname)
+	{
+		if ($this->mysqli()->select_db($dbname)) {
+			$this->db = $dbname;
+		}
+		return $this;
+	}
 	/**
 	 * A method of returning the static instance to allow access to the
 	 * instantiated object from within another class.

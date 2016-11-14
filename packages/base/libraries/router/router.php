@@ -260,25 +260,49 @@ class router{
 				self::routingExceptions($e);
 			}
 		}else{
-			if(($processID = cli::getParameter('process')) !== false){
-				$process = process::byId($processID);
-				if($process->status != process::running){
-					list($controller, $method) = explode('@', $process->name, 2);
-					if(class_exists($controller) and method_exists($controller, $method)){
-						$process = new $controller($process);
-						$process->setPID();
-						$return = $process->$method($process->parameters);
-						if($return instanceof response){
-							$process->status = $return->getStatus() ? process::stopped : process::error;
-							$process->response = $return;
+			if($processID = cli::getParameter('process')){
+				$process = null;
+				$processID = str_replace("/", "\\", $processID);
+				if(preg_match('/^packages\\\\([a-zA-Z0-9_]+\\\\)+([a-zA-Z0-9_]+)\@([a-zA-Z0-9_]+)$/', $processID)){
+					$parameters = cli::$request['parameters'];
+					unset($parameters['process']);
+					$process = new process();
+					$process->name = '\\'.$processID;
+					$process->parameters = $parameters;
+					$process->save();
+				}elseif(!$process = process::byId($processID)){
+					throw new NotFound();
+				}
+				if($process){
+					if($process->status != process::running){
+						list($controller, $method) = explode('@', $process->name, 2);
+						if(class_exists($controller) and method_exists($controller, $method)){
+							$process = new $controller($process);
+							$process->start = time();
+							$process->end = null;
+							$process->setPID();
+							$return = $process->$method($process->parameters);
+							if($return instanceof response){
+								$process->status = $return->getStatus() ? process::stopped : process::error;
+								$process->response = $return;
+								if($return->getStatus()){
+									$process->progress = 100;
+								}
+							}
+							$process->end = time();
+							$process->save();
+						}else{
+							throw new proccessClass($process->name);
 						}
-						$process->save();
 					}else{
-						throw new proccessClass($process->name);
+						throw new proccessAlive($process->id);
 					}
 				}else{
-					throw new proccessAlive($process->id);
+					throw new NotFound();
 				}
+			}else{
+				echo("Please specify an process ID by passing --process argument".PHP_EOL);
+				exit(1);
 			}
 
 		}

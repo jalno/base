@@ -8,10 +8,17 @@ trait listTrait{
 	protected $totalItems;
 	public function setDataList($data){
 		$this->dataList = $data;
+		if(!$this->dataList){
+			$this->dataList = array();
+		}
+	}
+	public function getDataList(){
+		return $this->dataList;
 	}
 	public function setPaginate($currentPage, $totalItems, $itemsPage){
 		$this->currentPage = $currentPage;
 		$this->totalItems = $totalItems;
 		$this->itemsPage = $itemsPage;
+		$this->totalPages = ceil($totalItems/$itemsPage);
 	}
 }

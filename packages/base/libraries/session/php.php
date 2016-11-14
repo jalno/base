@@ -31,9 +31,9 @@ class php implements session_handler{
 		if($id){
 			session_id($id);
 		}
-		$start = session_start();
+		$start = @session_start();
 		if($start and (($this->ip and $this->checkIP()) or !$this->ip)){
-			$this->id = session_id();
+			$this->id = @session_id();
 			return true;
 		}
 		return false;
