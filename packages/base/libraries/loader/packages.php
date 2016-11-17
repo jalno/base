@@ -235,7 +235,7 @@ class package{
 					$listener = new $listener();
 					$listener->$method($e);
 				}else{
-					throw new listener($event['name']);
+					throw new listener($event['listener']);
 				}
 			}
 		}

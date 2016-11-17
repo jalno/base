@@ -2,6 +2,7 @@
 namespace packages\base\frontend;
 use \packages\base\options;
 use \packages\base\json;
+use \packages\base\event;
 use \packages\base\autoloader;
 use \packages\base\translator;
 use \packages\base\translator\InvalidLangCode;
@@ -20,6 +21,7 @@ class source{
 	private $views = array();
 	private $langs = array();
 	private $family = array();
+	private $events = array();
 	public function setPath($path){
 		if(is_dir($path)){
 			$this->path = $path;
@@ -55,6 +57,15 @@ class source{
 				if(isset($theme['languages'])){
 					foreach($theme['languages'] as $lang => $file){
 						$this->addLang($lang, $file);
+					}
+				}
+				if(isset($theme['events'])){
+					foreach($theme['events'] as $event){
+						if(isset($event['name'], $event['listener'])){
+							$this->addEvent($event['name'], $event['listener']);
+						}else{
+							throw new SourceConfigException("Event", $this->path);
+						}
 					}
 				}
 				return true;
@@ -230,6 +241,25 @@ class source{
 			return false;
 		}
 	}
+	public function addEvent($name, $listener){
+		$this->events[] = array(
+			'name' => $name,
+			'listener' => "\\themes\\{$this->name}\\".$listener
+		);
+	}
+	public function trigger(event $e){
+		foreach($this->events as $event){
+			if($event['name'] == '\\'.get_class($e)){
+				list($listener, $method) = explode('@', $event['listener'], 2);
+				if(class_exists($listener) and method_exists($listener, $method)){
+					$listener = new $listener();
+					$listener->$method($e);
+				}else{
+					throw new listener($event['name']);
+				}
+			}
+		}
+	}
 }
 class theme{
 	const TOP = 1;
@@ -332,5 +362,8 @@ class theme{
 		foreach(self::$sources as $source){
 			$source->loadViews();
 		}
+	}
+	static function get(){
+		return self::$sources;
 	}
 }
