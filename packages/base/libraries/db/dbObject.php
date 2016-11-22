@@ -160,20 +160,26 @@ class dbObject {
 			switch ($relationType) {
 				case 'hasone':
 					$key = isset ($this->relations[$name][2]) ? $this->relations[$name][2] : $name;
-					$obj = new $modelName;
-					$obj->returnType = $this->returnType;
-					return $this->data[$name] = $obj->byId($this->data[$key]);
+					if(isset($this->data[$key])){
+						$obj = new $modelName;
+						$obj->returnType = $this->returnType;
+						return $this->data[$name] = $obj->byId($this->data[$key]);
+					}
+					return null;
 					break;
 				case 'hasmany':
-					$key = $this->relations[$name][2];
-					$obj = new $modelName;
-					$obj->returnType = $this->returnType;
-					$obj->where($key, $this->data[$this->primaryKey]);
-					$this->data[$name] = $obj->get();
-					if(!$this->data[$name]){
-						$this->data[$name] = array();
+					if(isset($this->data[$this->primaryKey])){
+						$key = $this->relations[$name][2];
+						$obj = new $modelName;
+						$obj->returnType = $this->returnType;
+						$obj->where($key, $this->data[$this->primaryKey]);
+						$this->data[$name] = $obj->get();
+						if(!$this->data[$name]){
+							$this->data[$name] = array();
+						}
+						return $this->data[$name];
 					}
-					return $this->data[$name];
+					return array();
 					break;
 				default:
 					break;

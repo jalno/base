@@ -368,7 +368,41 @@ class db{
 			return self::connection()->join($joinTable, $joinCondition, $joinType);
 		}
 	}
+	/**
+     * This method allows you to specify multiple (method chaining optional) AND WHERE statements for the join table on part of the SQL query.
+     *
+     * @uses $dbWrapper->joinWhere('user u', 'u.id', 7)->where('user u', 'u.title', 'MyTitle');
+     *
+     * @param string $whereJoin  The name of the table followed by its prefix.
+     * @param string $whereProp  The name of the database field.
+     * @param mixed  $whereValue The value of the database field.
+     *
+     * @return MysqliDb
+     */
+    public static function joinWhere($whereJoin, $whereProp, $whereValue = 'DBNULL', $operator = '=', $cond = 'AND')
+    {
+		if(self::has_connection()){
+			return self::connection()->joinWhere($whereJoin, $whereProp, $whereValue, $operator, $cond);
+		}
+    }
 
+    /**
+     * This method allows you to specify multiple (method chaining optional) OR WHERE statements for the join table on part of the SQL query.
+     *
+     * @uses $dbWrapper->joinWhere('user u', 'u.id', 7)->where('user u', 'u.title', 'MyTitle');
+     *
+     * @param string $whereJoin  The name of the table followed by its prefix.
+     * @param string $whereProp  The name of the database field.
+     * @param mixed  $whereValue The value of the database field.
+     *
+     * @return MysqliDb
+     */
+    public static function joinOrWhere($whereJoin, $whereProp, $whereValue = 'DBNULL', $operator = '=')
+    {
+		if(self::has_connection()){
+			return self::connection()->joinOrWhere($whereJoin, $whereProp, $whereValue, $operator);
+		}
+    }
 	/**
 	 * This method allows you to specify multiple (method chaining optional) ORDER BY statements for SQL queries.
 	 *

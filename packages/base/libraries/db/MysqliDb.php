@@ -11,7 +11,7 @@ namespace packages\base\db;
  * @copyright Copyright (c) 2010-2016
  * @license   http://opensource.org/licenses/gpl-3.0.html GNU Public License
  * @link	  http://github.com/joshcam/PHP-MySQLi-Database-Class
- * @version   2.7-master
+ * @version   2.7
  */
 
 class MysqliDb
@@ -64,7 +64,12 @@ class MysqliDb
 	 * @var array
 	 */
 	protected $_where = array();
-
+	/**
+     * An array that holds where join ands
+     *
+     * @var array
+     */
+    protected $_joinAnd = array();
 	/**
 	 * An array that holds having conditions
 	 * @var array
@@ -649,6 +654,47 @@ class MysqliDb
 	}
 
 	/**
+     * Insert method to add several rows at once
+     *
+     * @param string $tableName The name of the table.
+     * @param array $multiInsertData Two-dimensinal Data-array containing information for inserting into the DB.
+     * @param array $dataKeys Optinal Table Key names, if not set in insertDataSet.
+     *
+     * @return bool|array Boolean indicating the insertion failed (false), else return id-array ([int])
+     */
+    public function insertMulti($tableName, array $multiInsertData, array $dataKeys = null)
+    {
+        // only auto-commit our inserts, if no transaction is currently running
+        $autoCommit = (isset($this->_transaction_in_progress) ? !$this->_transaction_in_progress : true);
+        $ids = array();
+
+        if($autoCommit) {
+            $this->startTransaction();
+        }
+
+        foreach ($multiInsertData as $insertData) {
+            if($dataKeys !== null) {
+                // apply column-names if given, else assume they're already given in the data
+                $insertData = array_combine($dataKeys, $insertData);
+            }
+
+            $id = $this->insert($tableName, $insertData);
+            if(!$id) {
+                if($autoCommit) {
+                    $this->rollback();
+                }
+                return false;
+            }
+            $ids[] = $id;
+        }
+
+        if($autoCommit) {
+            $this->commit();
+        }
+
+        return $ids;
+    }
+	/**
 	 * Replace method to add new row
 	 *
 	 * @param string $tableName The name of the table.
@@ -876,6 +922,38 @@ class MysqliDb
 
 		return $this;
 	}
+	/**
+     * This method allows you to specify multiple (method chaining optional) AND WHERE statements for the join table on part of the SQL query.
+     *
+     * @uses $dbWrapper->joinWhere('user u', 'u.id', 7)->where('user u', 'u.title', 'MyTitle');
+     *
+     * @param string $whereJoin  The name of the table followed by its prefix.
+     * @param string $whereProp  The name of the database field.
+     * @param mixed  $whereValue The value of the database field.
+     *
+     * @return dbWrapper
+     */
+    public function joinWhere($whereJoin, $whereProp, $whereValue = 'DBNULL', $operator = '=', $cond = 'AND')
+    {
+        $this->_joinAnd[$whereJoin][] = Array ($cond, $whereProp, $operator, $whereValue);
+        return $this;
+    }
+
+    /**
+     * This method allows you to specify multiple (method chaining optional) OR WHERE statements for the join table on part of the SQL query.
+     *
+     * @uses $dbWrapper->joinWhere('user u', 'u.id', 7)->where('user u', 'u.title', 'MyTitle');
+     *
+     * @param string $whereJoin  The name of the table followed by its prefix.
+     * @param string $whereProp  The name of the database field.
+     * @param mixed  $whereValue The value of the database field.
+     *
+     * @return dbWrapper
+     */
+    public function joinOrWhere($whereJoin, $whereProp, $whereValue = 'DBNULL', $operator = '=', $cond = 'AND')
+    {
+        return $this->joinWhere($whereJoin, $whereProp, $whereValue, $operator, 'OR');
+    }
 
 	/**
 	 * This method allows you to specify multiple (method chaining optional) ORDER BY statements for SQL queries.
@@ -1101,6 +1179,7 @@ class MysqliDb
 	 */
 	protected function _buildQuery($numRows = null, $tableData = null)
 	{
+		 // $this->_buildJoinOld();
 		$this->_buildJoin();
 		$this->_buildInsertQuery($tableData);
 		$this->_buildCondition('WHERE', $this->_where);
@@ -1245,31 +1324,96 @@ class MysqliDb
 	}
 
 	/**
-	 * Abstraction method that will build an JOIN part of the query
-	 *
-	 * @return void
-	 */
-	protected function _buildJoin()
-	{
-		if (empty($this->_join)) {
-			return;
-		}
+     * Abstraction method that will build an JOIN part of the query
+     *
+     * @return void
+     */
+    protected function _buildJoinOld()
+    {
+        if (empty($this->_join)) {
+            return;
+        }
 
-		foreach ($this->_join as $data) {
-			list ($joinType, $joinTable, $joinCondition) = $data;
+        foreach ($this->_join as $data) {
+            list ($joinType, $joinTable, $joinCondition) = $data;
 
-			if (is_object($joinTable)) {
-				$joinStr = $this->_buildPair("", $joinTable);
-			} else {
-				$joinStr = $joinTable;
-			}
+            if (is_object($joinTable)) {
+                $joinStr = $this->_buildPair("", $joinTable);
+            } else {
+                $joinStr = $joinTable;
+            }
 
-			$this->_query .= " " . $joinType . " JOIN " . $joinStr .
-				(false !== stripos($joinCondition, 'using') ? " " : " on ")
-				. $joinCondition;
-		}
-	}
+            $this->_query .= " " . $joinType . " JOIN " . $joinStr .
+                (false !== stripos($joinCondition, 'using') ? " " : " on ")
+                . $joinCondition;
+        }
+    }
 
+	/**
+     * Abstraction method that will build an JOIN part of the query
+     */
+    protected function _buildJoin () {
+        if (empty ($this->_join))
+            return;
+
+        foreach ($this->_join as $data) {
+            list ($joinType,  $joinTable, $joinCondition) = $data;
+
+            if (is_object ($joinTable))
+                $joinStr = $this->_buildPair ("", $joinTable);
+            else
+                $joinStr = $joinTable;
+
+            $this->_query .= " " . $joinType. " JOIN " . $joinStr ." on " . $joinCondition;
+
+            // Add join and query
+            if (!empty($this->_joinAnd) && isset($this->_joinAnd[$joinStr])) {
+                foreach($this->_joinAnd[$joinStr] as $join_and_cond) {
+                    list ($concat, $varName, $operator, $val) = $join_and_cond;
+                    $this->_query .= " " . $concat ." " . $varName;
+                    $this->conditionToSql($operator, $val);
+                }
+            }
+        }
+    }
+	/**
+     * Convert a condition and value into the sql string
+     * @param  String $operator The where constraint operator
+     * @param  String $val    The where constraint value
+     */
+    private function conditionToSql($operator, $val) {
+        switch (strtolower ($operator)) {
+            case 'not in':
+            case 'in':
+                $comparison = ' ' . $operator. ' (';
+                if (is_object ($val)) {
+                    $comparison .= $this->_buildPair ("", $val);
+                } else {
+                    foreach ($val as $v) {
+                        $comparison .= ' ?,';
+                        $this->_bindParam ($v);
+                    }
+                }
+                $this->_query .= rtrim($comparison, ',').' ) ';
+                break;
+            case 'not between':
+            case 'between':
+                $this->_query .= " $operator ? AND ? ";
+                $this->_bindParams ($val);
+                break;
+            case 'not exists':
+            case 'exists':
+                $this->_query.= $operator . $this->_buildPair ("", $val);
+                break;
+            default:
+                if (is_array ($val))
+                    $this->_bindParams ($val);
+                else if ($val === null)
+                    $this->_query .= $operator . " NULL";
+                else if ($val != 'DBNULL' || $val == '0')
+                    $this->_query .= $this->_buildPair ($operator, $val);
+        }
+    }
 	/**
 	 * Insert/Update query helper
 	 *
