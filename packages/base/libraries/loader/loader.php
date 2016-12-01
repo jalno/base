@@ -41,7 +41,6 @@ require_once('packages/base/libraries/router/url.php');
 require_once('packages/base/libraries/router/exceptions.php');
 
 require_once('packages/base/libraries/access/packages.php');
-require_once('packages/base/pages/index.php');
 
 use \packages\base\db;
 use \packages\base\router\rule;
