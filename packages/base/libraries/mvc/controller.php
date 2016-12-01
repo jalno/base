@@ -147,7 +147,17 @@ class controller{
 		$return = array();
 		$formdata = http::$data;
 		foreach($fields as $field => $options){
-			$return[$field] = isset($formdata[$field]) ? htmlspecialchars($formdata[$field]) : '';
+			if(isset($formdata[$field])){
+				if(is_array($formdata[$field])){
+					foreach($formdata[$field] as $key => $val ){
+						$return[$field][$key] = htmlspecialchars($formdata[$field][$key]);
+					}
+				}else{
+					$return[$field] = htmlspecialchars($formdata[$field]);
+				}
+			}else{
+				$return[$field] = '';
+			}
 		}
 		return $return;
 	}
