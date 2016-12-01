@@ -41,6 +41,11 @@ class controller{
 							if($valid){
 								$data = $rawdata;
 							}
+						}elseif($type == 'ip4'){
+							$valid = safe::is_ip4($rawdata);
+							if($valid){
+								$data = $rawdata;
+							}
 						}elseif($type == 'cellphone'){
 							$valid = safe::is_cellphone_ir($rawdata);
 							if($valid){

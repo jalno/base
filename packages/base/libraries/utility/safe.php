@@ -82,5 +82,20 @@ class safe{
     static function bool($value){
         return ($value == 'true' or $value == 1);
     }
+	static function is_ip4($ip){
+		$parts = explode('.',$ip);
+		if(count($parts) != 4){
+			return false;
+		}
+		foreach($parts as $key => $part){
+			if($key == 0){
+				if($part <= 0 or $part > 255){
+					return false;
+				}
+			}elseif($part < 0 or $part > 255){
+				return false;
+			}
+		}
+		return true;
+	}
 }
-?>
