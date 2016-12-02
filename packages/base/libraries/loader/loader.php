@@ -106,7 +106,15 @@ class loader{
 					}
 				}
 				if(isset($config['frontend'])){
-					$p->setFrontend($config['frontend']);
+					if(is_array($config['frontend'])){
+						foreach($config['frontend'] as $frontend){
+							$p->addFrontend($frontend);
+						}
+					}elseif(is_string($config['frontend'])){
+						$p->addFrontend($config['frontend']);
+					}else{
+						throw new packageConfig($package);
+					}
 				}
 				if(isset($config['languages'])){
 					foreach($config['languages'] as $lang => $file){
