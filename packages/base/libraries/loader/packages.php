@@ -42,7 +42,7 @@ class packages{
 class package{
 	private $name;
 	private $permissions;
-	private $frontend = false;
+	private $frontend = array();
 	private $home = "";
 	private $bootstrap;
 	private $autoload;
@@ -85,12 +85,9 @@ class package{
 	public function getDependencies(){
 		return $this->dependencies;
 	}
-	public function setFrontend($source){
-		if($source === false){
-			$this->frontend = $source;
-			return true;
-		}elseif($source and is_dir($this->home."/".$source)){
-			$this->frontend = $this->home."/".$source;
+	public function addFrontend($source){
+		if($source and is_dir($this->home."/".$source)){
+			$this->frontend[] = $this->home."/".$source;
 			return true;
 		}
 		return false;
@@ -130,16 +127,20 @@ class package{
 	}
 	public function applyFrontend(){
 		if($this->frontend){
-			$source = new source();
-			if($source->setPath($this->frontend)){
-				$source->loadConfigFile();
-				theme::addSource($source, theme::BOTTOM);
+			foreach($this->frontend as $frontend){
+				$source = new source();
+				if($source->setPath($frontend)){
+					$source->loadConfigFile();
+					theme::addSource($source, theme::BOTTOM);
+				}
 			}
 		}
 	}
 	public function cancelFrontend(){
 		if($this->frontend){
-			theme::removeSource($this->frontend);
+			foreach($this->frontend as $frontend){
+				theme::removeSource($frontend);
+			}
 		}
 	}
 	public function bootup(){

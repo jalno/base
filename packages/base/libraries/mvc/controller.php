@@ -41,6 +41,11 @@ class controller{
 							if($valid){
 								$data = $rawdata;
 							}
+						}elseif($type == 'ip4'){
+							$valid = safe::is_ip4($rawdata);
+							if($valid){
+								$data = $rawdata;
+							}
 						}elseif($type == 'cellphone'){
 							$valid = safe::is_cellphone_ir($rawdata);
 							if($valid){
@@ -61,6 +66,9 @@ class controller{
 							}
 						}elseif($type == 'file'){
 							$data = $rawdata;
+							if(isset($data['error']) and is_array($data['error'])){
+								$data = $this->diverse_array($data);
+							}
 						}else{
 							throw new inputType($options['type']);
 						}
@@ -112,12 +120,32 @@ class controller{
 						}
 					}else{
 						if(isset($files[$field])){
-							if($rawdata['error'] == 4){
-								if (!isset($options['empty']) or !$options['empty']){
+
+							if(is_array($rawdata['error'])){
+								$rawdata = $this->diverse_array($rawdata);
+								print_r($rawdata);
+								$allempty = true;
+								foreach ($rawdata as $filekey=> $file) {
+									if($file['error'] != 0){
+										throw new inputValidation($field."[$filekey]");
+									}
+									if($file['error'] != 4){
+										$allempty = false;
+									}
+								}
+								if($allempty){
+									if (!isset($options['empty']) or !$options['empty']){
+										throw new inputValidation($field);
+									}
+								}
+							}else{
+								if($rawdata['error'] == 4){
+									if (!isset($options['empty']) or !$options['empty']){
+										throw new inputValidation($field);
+									}
+								}elseif($rawdata['error'] != 0){
 									throw new inputValidation($field);
 								}
-							}elseif($rawdata['error'] != 0){
-								throw new inputValidation($field);
 							}
 						}else{
 							$return[$field] = $formdata[$field];
@@ -138,11 +166,28 @@ class controller{
 		}
 		return $return;
 	}
+	private function diverse_array($vector) {
+		$result = array();
+	   foreach($vector as $key1 => $value1)
+		   foreach($value1 as $key2 => $value2)
+			   $result[$key2][$key1] = $value2;
+	   return $result;
+	}
 	protected function inputsvalue($fields){
 		$return = array();
 		$formdata = http::$data;
 		foreach($fields as $field => $options){
-			$return[$field] = isset($formdata[$field]) ? htmlspecialchars($formdata[$field]) : '';
+			if(isset($formdata[$field])){
+				if(is_array($formdata[$field])){
+					foreach($formdata[$field] as $key => $val ){
+						$return[$field][$key] = htmlspecialchars($formdata[$field][$key]);
+					}
+				}else{
+					$return[$field] = htmlspecialchars($formdata[$field]);
+				}
+			}else{
+				$return[$field] = '';
+			}
 		}
 		return $return;
 	}

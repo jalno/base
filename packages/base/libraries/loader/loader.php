@@ -41,7 +41,6 @@ require_once('packages/base/libraries/router/url.php');
 require_once('packages/base/libraries/router/exceptions.php');
 
 require_once('packages/base/libraries/access/packages.php');
-require_once('packages/base/pages/index.php');
 
 use \packages\base\db;
 use \packages\base\router\rule;
@@ -107,7 +106,15 @@ class loader{
 					}
 				}
 				if(isset($config['frontend'])){
-					$p->setFrontend($config['frontend']);
+					if(is_array($config['frontend'])){
+						foreach($config['frontend'] as $frontend){
+							$p->addFrontend($frontend);
+						}
+					}elseif(is_string($config['frontend'])){
+						$p->addFrontend($config['frontend']);
+					}else{
+						throw new packageConfig($package);
+					}
 				}
 				if(isset($config['languages'])){
 					foreach($config['languages'] as $lang => $file){
