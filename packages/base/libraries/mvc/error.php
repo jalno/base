@@ -6,6 +6,7 @@ class error{
 	const NOTICE = 'notice';
 	protected $code;
 	protected $data;
+	protected $message;
 	protected $type = self::FATAL;
 	public function setCode($code){
 		$this->code = $code;
@@ -36,5 +37,11 @@ class error{
 	}
 	public function getType(){
 		return $this->type;
+	}
+	public function setMessage($message){
+		$this->message = $message;
+	}
+	public function getMessage(){
+		return $this->message;
 	}
 }
