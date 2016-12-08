@@ -12,6 +12,9 @@ class date implements date_interface{
 			throw new calendarNotExist($name);
 		}
 	}
+	public static function getCanlenderName(){
+		return self::$calendar;
+	}
 	public static function format($format ,$timestamp = null){
 		if(!self::$calendar){
 			self::setDefaultcalendar();
