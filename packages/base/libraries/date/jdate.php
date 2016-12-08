@@ -116,7 +116,8 @@ class jdate implements date_interface{
     			case "m":if($jmonth<10) $result1="0".$jmonth;else	$result1=$jmonth;if($transnumber==1) $result.=self::Convertnumber2farsi($result1);else $result.=$result1;break;
     			case "M":$result.=self::short_monthname($jmonth);break;
     			case "n":$result1=$jmonth;if($transnumber==1) $result.=self::Convertnumber2farsi($result1);else $result.=$result1;break;
-                case "s":$result1=date("s",$need);if($transnumber==1) $result.=self::Convertnumber2farsi($result1);else $result.=$result1;break;
+				case "N":$result = date("N",$need);break;
+				case "s":$result1=date("s",$need);if($transnumber==1) $result.=self::Convertnumber2farsi($result1);else $result.=$result1;break;
     			case "S":$result.="&#1575;&#1605;";break;
     			case "t":$result.=self::lastday ($month,$day,$year);break;
     			case "w":$result1=date("w",$need);if($transnumber==1) $result.=self::Convertnumber2farsi($result1);else $result.=$result1;break;
