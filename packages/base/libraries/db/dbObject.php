@@ -674,7 +674,7 @@ class dbObject {
 					$regexp = null;
 					break;
 				case "int":
-					$regexp = "/^[0-9]*$/";
+					$regexp = "/^-?[0-9]*$/";
 					break;
 				case "double":
 					$regexp = "/^[0-9\.]*$/";
