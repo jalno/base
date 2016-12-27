@@ -5,6 +5,7 @@ use \packages\base\process;
 use \packages\base\options;
 use \packages\base\translator\InvalidLangCode;
 use \packages\base\router\rule;
+use \packages\base\router\ruleControllerException;
 class router{
 	static private $rules = array();
 	static private $exceptions = array();
@@ -206,7 +207,7 @@ class router{
 								$controllerClass = new $controller();
 								$controllerClass->response($controllerClass->$method($e, $data));
 							}else{
-								throw new routerController($rule['handler']);
+								throw new ruleControllerException($rule['handler']);
 							}
 						}
 					}
