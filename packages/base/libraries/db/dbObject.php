@@ -710,6 +710,8 @@ class dbObject {
 		if (!$this->dbFields)
 			return $this->data;
 		foreach ($this->data as $key => &$value) {
+			if (!in_array ($key, array_keys ($this->dbFields)))
+				continue;
 			if ($value instanceof dbObject) {
 				if($value->isNew == true){
 					$id = $value->save();
@@ -724,8 +726,7 @@ class dbObject {
 					continue;
 				}
 			}
-			if (!in_array ($key, array_keys ($this->dbFields)))
-				continue;
+
 			if (!is_array($value) and !is_object($value)) {
 				$sqlData[$key] = $value;
 				continue;
