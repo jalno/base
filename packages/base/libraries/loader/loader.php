@@ -162,6 +162,28 @@ class loader{
 							if(!preg_match('/^\\\\packages\\\\([a-zA-Z0-9-\\_]+)((\\\\[a-zA-Z0-9\_]+)+)$/', $route['controller'])){
 								$route['controller'] = "\\packages\\{$package}\\".$route['controller'];
 							}
+							if(isset($route['middleware'])){
+								if(is_array($route['middleware'])){
+									foreach($route['middleware'] as $key => $middleware){
+										if(!preg_match('/^\\\\packages\\\\([a-zA-Z0-9-\\_]+)((\\\\[a-zA-Z0-9\_]+)+)$/', $middleware)){
+											$route['middleware'][$key] = "\\packages\\{$package}\\".$middleware;
+										}
+									}
+								}else{
+									if(!preg_match('/^\\\\packages\\\\([a-zA-Z0-9-\\_]+)((\\\\[a-zA-Z0-9\_]+)+)$/', $route['middleware'])){
+										$route['middleware'] = "\\packages\\{$package}\\".$route['middleware'];
+									}
+								}
+							}
+							if(isset($route['permissions'])){
+								foreach($route['permissions'] as $permission => $controller){
+									if($controller !== true and $controller !== false){
+										if(!preg_match('/^\\\\packages\\\\([a-zA-Z0-9-\\_]+)((\\\\[a-zA-Z0-9\_]+)+)$/', $controller)){
+											$route['permissions'][$permission] = "\\packages\\{$package}\\".$controller;
+										}
+									}
+								}
+							}
 							$rule = rule::import($route);
 							router::addRule($rule);
 							//if(access\package\controller(self::$packages[$package],$route['controller'])){

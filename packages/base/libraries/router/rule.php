@@ -10,9 +10,15 @@ class rule{
 	const delete = 'delete';
 	const http = 'http';
 	const https = 'https';
+	const api = 'api';
+	const ajax = 'ajax';
 	private $methods = array();
 	private $paths = array();
 	private $domains = array();
+	private $permissions = array(
+		self::ajax => true
+	);
+	private $middlewares = array();
 	private $absolute = false;
 	private $controller;
 	private $schemes = array();
@@ -55,6 +61,29 @@ class rule{
 		if(isset($data['controller'])){
 			$data['controller'] = explode('@', $data['controller'], 2);
 			$rule->setController($data['controller'][0], $data['controller'][1]);
+		}
+		if(isset($data['middleware'])){
+			if(is_array($data['middleware'])){
+				foreach($data['middleware'] as $middleware){
+					$middleware = explode('@', $middleware, 2);
+					$rule->addMiddleware($middleware[0], $middleware[1]);
+				}
+			}else{
+				$data['middleware'] = explode('@', $data['middleware'], 2);
+				$rule->addMiddleware($data['middleware'][0], $data['middleware'][1]);
+			}
+		}
+		if(isset($data['permissions'])){
+			foreach($data['permissions'] as $permission => $controller){
+				if($controller === true){
+					$rule->allow($permission);
+				}elseif($controller === false){
+					$rule->deny($permission);
+				}else{
+					$controller = explode('@', $controller, 2);
+					$rule->addPermissonController($permission, $controller[0], $controller[1]);
+				}
+			}
 		}
 		return $rule;
 	}
@@ -120,6 +149,34 @@ class rule{
 		}
 		$this->domains[] = $domain;
 	}
+	public function allow($permission){
+		if(!in_array($permission, array(self::api, self::ajax))){
+			throw new permissionException($permission);
+		}
+		$this->permissions[$permission] = true;
+	}
+	public function deny($permission){
+		if(!in_array($permission, array(self::api, self::ajax))){
+			throw new permissionException($permission);
+		}
+		$this->permissions[$permission] = false;
+	}
+	public function addPermissonController($permission, $class, $method){
+		if(!in_array($permission, array(self::api, self::ajax))){
+			throw new permissionException($permission);
+		}
+		if(!class_exists($class) or !method_exists($class, $method)){
+			throw new ruleControllerException("{$class}@{$method}");
+		}
+
+		$this->permissions[$permission] = array($class,$method);
+	}
+	public function addMiddleware($class, $method){
+		if(!class_exists($class) or !method_exists($class, $method)){
+			throw new ruleMiddlewareException("{$class}@{$method}");
+		}
+		$this->middlewares[] = array($class, $method);
+	}
 	static public function validPart($part){
 		if(is_string($part) or is_numeric($part)){
 			return array(
@@ -172,7 +229,7 @@ class rule{
 			}
 		}
 	}
-	public function check($method, $scheme,$domain,$url){
+	public function check($method, $scheme,$domain,$url, $data){
 		$method = strtolower($method);
 		if(empty($this->methods) or in_array($method, $this->methods)){
 			$scheme = strtolower($scheme);
@@ -217,7 +274,9 @@ class rule{
 					}
 					foreach($this->paths as $path){
 						if($checkPath = $this->checkPath($url, $path)){
-							return $checkPath;
+							if($this->checkPermissions($data)){
+								return $checkPath;
+							}
 						}
 					}
 				}
@@ -286,5 +345,44 @@ class rule{
 			return false;
 		}
 		return($data ? $data : true);
+	}
+	private function askPermission($permission){
+		if(isset($this->permissions[$permission])){
+			if($this->permissions[$permission] === true){
+				return true;
+			}elseif(is_array($this->permissions[$permission])){
+				$class = new $this->permissions[$permission][0]();
+				$method = $this->permissions[$permission][1];
+				if($class->$method()){
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	private function checkPermissions($data){
+		return($this->checkAPIPermission($data) and $this->checkAjaxPermission($data));
+	}
+	private function checkAPIPermission($data){
+		if(isset($data['api'])){
+			return $this->askPermission(self::api);
+		}
+		return true;
+	}
+	private function checkAjaxPermission($data){
+		if(isset($data['ajax'])){
+			return $this->askPermission(self::ajax);
+		}
+		return true;
+	}
+	public function runMiddlewares($data){
+		foreach($this->middlewares as $middleware){
+			$class = new $middleware[0]();
+			$method = $middleware[1];
+			if(!$class->$method($data)){
+				return false;
+			}
+		}
+		return true;
 	}
 }

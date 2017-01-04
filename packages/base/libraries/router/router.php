@@ -188,7 +188,6 @@ class router{
 			}
 			foreach(self::$exceptions as $rule){
 				$rule['absolute'] = false;
-
 				if(($data = self::checkRuleException($rule, ($rule['absolute'] ? $absolute : $uri), $e)) !== false){
 					if(!$rule['absolute'] and $changelang == 'uri' and $lang){
 
@@ -236,7 +235,7 @@ class router{
 			}
 			try{
 				foreach(self::$rules as $rule){
-					if(($data = $rule->check(http::$request['method'], http::$request['scheme'], http::$request['hostname'], http::$request['uri'])) !== false){
+					if(($data = $rule->check(http::$request['method'], http::$request['scheme'], http::$request['hostname'], http::$request['uri'], http::$request['get'])) !== false){
 						$found = true;
 						if($lang = $rule->getLang()){
 							translator::setLang($lang);
@@ -245,6 +244,7 @@ class router{
 						if(preg_match('/^\\\\packages\\\\([a-zA-Z0-9|_]+).*$/', $controller, $matches)){
 							if($package = packages::package($matches[1])){
 								$package->bootup();
+								$rule->runMiddlewares($data);
 								$controllerClass = new $controller();
 								$controllerClass->response($controllerClass->$method($data));
 							}

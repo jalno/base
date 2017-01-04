@@ -27,6 +27,15 @@ class ruleControllerException extends \Exception {
 		return $this->controller;
 	}
 }
+class ruleMiddlewareException extends \Exception {
+	private $middleware;
+	public function __construct($middleware){
+		$this->middleware = $middleware;
+	}
+	public function getMiddleware(){
+		return $this->middleware;
+	}
+}
 class routerRule extends \Exception {
 	private $rule;
 	public function __construct($rule){
@@ -62,7 +71,15 @@ class RulePartValue extends routerRulePart{
 class schemeException extends routerRule{
 
 }
-class DomainException extends routerRule{
-
+class DomainException extends routerRule{}
+class permissionException extends \Exception{
+	private $permission;
+	public function __construct($permission){
+		$this->permission = $permission;
+		parent::__construct("permission is unknown");
+	}
+	public function getPermission(){
+		return $this->permission;
+	}
 }
 class NotFound extends \Exception {}
