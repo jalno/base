@@ -516,19 +516,23 @@ class dbObject {
 	 *
 	 * @return array Converted data
 	 */
-	public function toArray () {
+	public function toArray ($recursive = false) {
 		$data = $this->data;
 		$this->processAllWith ($data);
 		foreach ($data as $key => $d) {
 			if(is_array($d)){
 				foreach($d as $key2 => $val2){
 					if ($val2 instanceof dbObject){
-						$data[$key][$key2] = $val2->toArray();
+						$data[$key][$key2] = $val2->toArray($recursive);
 					}
 				}
 			}elseif(is_object($d) and $d instanceof dbObject){
-				$primaryKey= $d->getPrimaryKey();
-				$data[$key] = $d->$primaryKey;
+				if($recursive){
+					$data[$key] = $d->toArray($recursive);
+				}else{
+					$primaryKey= $d->getPrimaryKey();
+					$data[$key] = $d->$primaryKey;
+				}
 			}
 		}
 		return $data;
@@ -747,12 +751,12 @@ class dbObject {
 		}
 		return $sqlData;
 	}
-	static function objectToArray($array){
+	static function objectToArray($array, $recursive = false){
 		$return = array();
 		if(is_array($array)){
 			foreach($array as $key => $val){
 				if(is_object($val) and $val instanceof dbObject){
-					$return[$key] = $val->toArray();
+					$return[$key] = $val->toArray($recursive);
 				}else{
 					$return[$key] = $val;
 				}
