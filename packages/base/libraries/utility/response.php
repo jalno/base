@@ -11,7 +11,9 @@ class response{
 	protected $data;
 	protected $view;
 	protected $ajax = false;
+	protected $api = false;
 	protected $json = false;
+	protected $xml = false;
 	protected $file;
 	protected $raw;
 	protected $output;
@@ -20,20 +22,35 @@ class response{
 	function __construct($status = null, $data = array()){
 		$this->status = $status;
 		$this->data = $data;
-		if(isset(http::$request['ajax']) and http::$request['ajax']){
-			$this->ajax = true;
-		}
-		if((isset(http::$request['json']) and  http::$request['json']) or (!isset(http::$request['json']) and $this->ajax)) {
+		$this->ajax = (isset(http::$request['get']['ajax']) and http::$request['get']['ajax']);
+		$this->api  = (isset(http::$request['get']['api'])  and http::$request['get']['api']);
+		if($this->ajax or $this->api){
 			$this->json = true;
+			if(isset(http::$request['get']['json']) and !http::$request['get']['json']) {
+				$this->json = false;
+			}
+			if(isset(http::$request['get']['xml']) and http::$request['get']['xml']) {
+				$this->xml = true;
+			}
 		}
+
 	}
 	public function is_ajax(){
 		return $this->ajax;
 	}
+	public function is_api(){
+		return $this->api;
+	}
 	public function setView(view $view){
 		$this->view = $view;
 		if(method_exists($this->view, 'export')){
-			$export = $this->view->export();
+			$target = '';
+			if($this->api){
+				$target = 'api';
+			}elseif($this->ajax){
+				$target = 'ajax';
+			}
+			$export = $this->view->export($target);
 			if(isset($export['data'])){
 				foreach($export['data'] as $key => $val){
 					$this->data[$key] = $val;
@@ -138,4 +155,3 @@ class response{
 		}
 	}
 }
-?>
