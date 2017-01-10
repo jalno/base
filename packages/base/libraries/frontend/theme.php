@@ -16,6 +16,7 @@ class location{
 class source{
 	private $path;
 	private $name;
+	private $parent;
 	private $autoload;
 	private $assets = array();
 	private $views = array();
@@ -36,6 +37,9 @@ class source{
 		if(is_file("{$this->path}/theme.json") and is_readable("{$this->path}/theme.json")){
 			$json = file_get_contents("{$this->path}/theme.json");
 			if($theme = json\decode($json)){
+				if(isset($theme['parent'])){
+					$this->setParent($theme['parent']);
+				}
 				if(isset($theme['name'])){
 					$this->setName($theme['name']);
 				}
@@ -74,6 +78,12 @@ class source{
 			}
 		}
 		return false;
+	}
+	public function setParent($parent){
+		$this->parent = $parent;
+	}
+	public function getParent(){
+		return $this->parent;
 	}
 	public function setName($name){
 		$this->name = $name;
@@ -164,7 +174,7 @@ class source{
 	}
 	public function getView($viewName){
 		foreach($this->views as $view){
-			if($view['name'] == $viewName or (isset($view['parent']) and $view['parent'] == $viewName)){
+			if((!isset($view['disabled']) or !$view['disabled']) and ($view['name'] == $viewName or (isset($view['parent']) and $view['parent'] == $viewName) )){
 				if(class_exists($view['name'])){
 					if(!isset($view['parent']) or class_exists($view['parent'])){
 						return $view;
@@ -178,6 +188,12 @@ class source{
 			}
 		}
 		return false;
+	}
+	public function disableViews(){
+		$len = count($this->views);
+		for($x=0;$x!=$len;$x++){
+			$this->views[$x]['disabled'] = true;
+		}
 	}
 	public function setAutoload($autoload){
 		if(is_file($this->path."/".$autoload) and is_readable($this->path."/".$autoload)){
@@ -206,6 +222,25 @@ class source{
 						}
 					}else{
 						throw new SourceAutoloaderFileException($this->name,$this->path."/".$rule['file']);
+					}
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+	public function unregister_autoload(){
+		if($this->autoload){
+			$autoload = json\decode(file_get_contents($this->autoload));
+			if(isset($autoload['files'])){
+				foreach($autoload['files'] as $rule){
+					if(isset($rule['file'])){
+						if(isset($rule['classes']) and is_array($rule['classes']) and !empty($rule['classes'])){
+							foreach($rule['classes'] as $className){
+								$className = "\\themes\\{$this->name}\\".$className;
+								autoloader::removeClass($className);
+							}
+						}
 					}
 				}
 			}
@@ -312,14 +347,17 @@ class theme{
 	}
 
 	static function addSource(source $source, $position = self::BOTTOM){
-
 		if(is_dir($source->getPath())){
 			if(!self::hasSource($source->getPath())){
-				if($position == self::TOP){
-					array_unshift(self::$sources, $source);
-				}else{
-					self::$sources[] = $source;
-				}
+				$appendIndex = count(self::$sources);
+				array_splice(self::$sources, $appendIndex, 0, array($source));
+				usort(self::$sources, function($a, $b){
+					if($a->getParent() and !$b->getParent()){
+						return 1;
+					}
+					return 0;
+				});
+				return true;
 			}
 		}
 		return false;
@@ -349,6 +387,14 @@ class theme{
 		}
 		return false;
 	}
+	static function byPath($sourcePath){
+		foreach(self::$sources as $key => $source){
+			if($source->getPath() == $sourcePath){
+				return $source;
+			}
+		}
+		return null;
+	}
 	static function byName($name){
 		$sources = array();
 		foreach(self::$sources as $source){
@@ -357,6 +403,14 @@ class theme{
 			}
 		}
 		return $sources;
+	}
+	static function getParent($name){
+		foreach(self::$sources as $source){
+			if($source->getParent() == null and $source->getName() == $name){
+				return $source;
+			}
+		}
+		return null;
 	}
 	static function loadViews(){
 		foreach(self::$sources as $source){
