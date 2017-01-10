@@ -213,6 +213,9 @@ class package{
 	public function getOption($name){
 		return(isset($this->options[$name]) ? $this->options[$name] : null);
 	}
+	public function setOption($name, $value){
+		$this->options[$name] = $value;
+	}
 	public function getFilePath($file){
 		return $this->home.'/'.$file;
 	}
