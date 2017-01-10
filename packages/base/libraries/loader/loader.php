@@ -159,18 +159,18 @@ class loader{
 				foreach($routing as $route){
 					if(isset($route['path'])){
 						if(isset($route['controller'])){
-							if(!preg_match('/^\\\\packages\\\\([a-zA-Z0-9-\\_]+)((\\\\[a-zA-Z0-9\_]+)+)$/', $route['controller'])){
+							if(!preg_match('/^\\\\packages\\\\([a-zA-Z0-9-\\_]+)((\\\\[a-zA-Z0-9\\_]+)+)@.*$/', $route['controller'])){
 								$route['controller'] = "\\packages\\{$package}\\".$route['controller'];
 							}
 							if(isset($route['middleware'])){
 								if(is_array($route['middleware'])){
 									foreach($route['middleware'] as $key => $middleware){
-										if(!preg_match('/^\\\\packages\\\\([a-zA-Z0-9-\\_]+)((\\\\[a-zA-Z0-9\_]+)+)$/', $middleware)){
+										if(!preg_match('/^\\\\packages\\\\([a-zA-Z0-9-\\_]+)((\\\\[a-zA-Z0-9\_]+)+)@.*$/', $middleware)){
 											$route['middleware'][$key] = "\\packages\\{$package}\\".$middleware;
 										}
 									}
 								}else{
-									if(!preg_match('/^\\\\packages\\\\([a-zA-Z0-9-\\_]+)((\\\\[a-zA-Z0-9\_]+)+)$/', $route['middleware'])){
+									if(!preg_match('/^\\\\packages\\\\([a-zA-Z0-9-\\_]+)((\\\\[a-zA-Z0-9\_]+)+)@.*$/', $route['middleware'])){
 										$route['middleware'] = "\\packages\\{$package}\\".$route['middleware'];
 									}
 								}
@@ -178,7 +178,7 @@ class loader{
 							if(isset($route['permissions'])){
 								foreach($route['permissions'] as $permission => $controller){
 									if($controller !== true and $controller !== false){
-										if(!preg_match('/^\\\\packages\\\\([a-zA-Z0-9-\\_]+)((\\\\[a-zA-Z0-9\_]+)+)$/', $controller)){
+										if(!preg_match('/^\\\\packages\\\\([a-zA-Z0-9-\\_]+)((\\\\[a-zA-Z0-9\_]+)+)@.*$/', $controller)){
 											$route['permissions'][$permission] = "\\packages\\{$package}\\".$controller;
 										}
 									}
