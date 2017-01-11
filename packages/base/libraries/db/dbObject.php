@@ -639,6 +639,10 @@ class dbObject {
 	private function compareData($new, $old){
 		$return = array();
 		foreach($new as $key => $value){
+			if(array_key_exists($key, $old) and $old[$key] instanceof self){
+				$pkey = $old[$key]->getPrimaryKey();
+				$old[$key] = $old[$key]->$pkey;
+			}
 			if(!array_key_exists($key, $old) or $value != $old[$key]){
 				$return[$key] = $value;
 			}
