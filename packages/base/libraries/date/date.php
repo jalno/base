@@ -41,6 +41,25 @@ class date implements date_interface{
 		if(!self::$calendar){
 			self::setDefaultcalendar();
 		}
+		$now = explode("/", self::format("Y/m/d/H/i/s"));
+		if($year === null){
+			$year = $now[0];
+		}
+		if($day === null){
+			$day = $now[2];
+		}
+		if($month === null){
+			$month = $now[1];
+		}
+		if($hour === null){
+			$hour = $now[3];
+		}
+		if($minute === null){
+			$minute = $now[4];
+		}
+		if($second === null){
+			$second = $now[5];
+		}
 		if(self::$calendar){
 			return call_user_func_array(array(__NAMESPACE__.'\\date\\'.self::$calendar, "mktime"), array($hour, $minute, $second, $month, $day, $year, $is_dst));
 		}
