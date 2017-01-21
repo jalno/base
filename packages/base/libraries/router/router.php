@@ -220,6 +220,26 @@ class router{
 		}
 
 	}
+	static function checkRules($rules){
+		foreach($rules as $rule){
+			if(($data = $rule->check(http::$request['method'], http::$request['scheme'], http::$request['hostname'], http::$request['uri'], http::$request['get'])) !== false){
+				if($lang = $rule->getLang()){
+					translator::setLang($lang);
+				}
+				list($controller, $method) = $rule->getController();
+				if(preg_match('/^\\\\packages\\\\([a-zA-Z0-9|_]+).*$/', $controller, $matches)){
+					if($package = packages::package($matches[1])){
+						$package->bootup();
+						$rule->runMiddlewares($data);
+						$controllerClass = new $controller();
+						$controllerClass->response($controllerClass->$method($data));
+					}
+				}
+				return true;
+			}
+		}
+		return false;
+	}
 	static function routing(){
 		$found = false;
 		$api = loader::sapi();
@@ -233,25 +253,17 @@ class router{
 					return false;
 				}
 			}
-			try{
-				foreach(self::$rules as $rule){
-					if(($data = $rule->check(http::$request['method'], http::$request['scheme'], http::$request['hostname'], http::$request['uri'], http::$request['get'])) !== false){
-						$found = true;
-						if($lang = $rule->getLang()){
-							translator::setLang($lang);
-						}
-						list($controller, $method) = $rule->getController();
-						if(preg_match('/^\\\\packages\\\\([a-zA-Z0-9|_]+).*$/', $controller, $matches)){
-							if($package = packages::package($matches[1])){
-								$package->bootup();
-								$rule->runMiddlewares($data);
-								$controllerClass = new $controller();
-								$controllerClass->response($controllerClass->$method($data));
-							}
-						}
-						break;
-					}
+			$absoluteRules = array();
+			$normalRules = array();
+			foreach(self::$rules as $rule){
+				if($rule->isAbsolute()){
+					$absoluteRules[] = $rule;
+				}else{
+					$normalRules[] = $rule;
 				}
+			}
+			try{
+				$found = (self::checkRules($absoluteRules) or self::checkRules($normalRules));
 				if(!$found){
 					throw new NotFound;
 				}

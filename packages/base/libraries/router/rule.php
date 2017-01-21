@@ -131,6 +131,9 @@ class rule{
 	public function setAbsolute($absolute){
 		$this->absolute = $absolute;
 	}
+	public function isAbsolute(){
+		return $this->absolute;
+	}
 	public function addScheme($scheme){
 		$scheme = strtolower($scheme);
 		if(!in_array($scheme, $this->schemes)){
