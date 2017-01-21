@@ -112,6 +112,15 @@
 				"UnknownImageException"
 			],
 			"file":"libraries/utility/image.php"
+		},
+		{
+			"classes":[
+				"view\\events\\viewEvent",
+				"view\\events\\beforeLoad",
+				"view\\events\\afterLoad",
+				"view\\events\\afterOutput"
+			],
+			"file":"libraries/mvc/events/view.php"
 		}
 	]
 }

@@ -4,6 +4,9 @@ use \packages\base\frontend\theme;
 use \packages\base\frontend\location;
 use \packages\base\frontend\source;
 use \packages\base\view\error;
+use \packages\base\view\events\beforeLoad;
+use \packages\base\view\events\afterLoad;
+use \packages\base\view\events\afterOutput;
 class view{
 	protected $title = array();
 	protected $description;
@@ -165,11 +168,14 @@ class view{
 	public function output(){
 		if($this->file){
 			theme::loadViews();
+			events::trigger(new beforeLoad($this));
 			if(method_exists($this, '__beforeLoad')){
 				$this->__beforeLoad();
 			}
+			events::trigger(new afterLoad($this));
 			$path = $this->source->getPath()."/".$this->file;
 			require_once($path);
+			events::trigger(new afterOutput($this));
 		}
 	}
 	public function addError(error $error){
