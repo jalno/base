@@ -21,6 +21,23 @@ class options{
 		}
 		return false;
 	}
+	static function save($name,$value, $autoload = false){
+		self::$options[$name] = $value;
+		loader::requiredb();
+		db::where("name", $name);
+		if(!db::has('options')){
+			return db::insert("options", array(
+				'name' => $name,
+				'value' => (is_array($value) or is_object($value)) ? json\encode($value) : $value,
+				'autoload' => $autoload
+			));
+		}else{
+			db::where("name", $name);
+			return db::update("options", array(
+				'value' => (is_array($value) or is_object($value)) ? json\encode($value) : $value
+			));
+		}
+	}
 	static function set($name,$value){
 		self::$options[$name] = $value;
 		return true;
