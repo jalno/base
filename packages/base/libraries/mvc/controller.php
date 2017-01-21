@@ -178,16 +178,27 @@ class controller{
 		$formdata = http::$data;
 		foreach($fields as $field => $options){
 			if(isset($formdata[$field])){
-				if(is_array($formdata[$field])){
-					foreach($formdata[$field] as $key => $val ){
-						$return[$field][$key] = htmlspecialchars($formdata[$field][$key]);
-					}
-				}else{
-					$return[$field] = htmlspecialchars($formdata[$field]);
-				}
+				$return[$field] = $this->escapeFormData($formdata[$field]);
 			}else{
 				$return[$field] = '';
 			}
+		}
+		return $return;
+	}
+	private function escapeFormData($data){
+		$return = array();
+		if(is_array($data)){
+			foreach($data as $key => $val ){
+				if(is_array($val)){
+					foreach($this->escapeFormData($val) as $key2 => $val2){
+						$return[$key][$key2] = $val2;
+					}
+				}else{
+					$return[$key] = $val;
+				}
+			}
+		}else{
+			$return = htmlspecialchars($data);
 		}
 		return $return;
 	}
