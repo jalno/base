@@ -1,5 +1,8 @@
 {
 	"permissions": "*",
 	"routing": "routing.json",
-	"autoload": "autoloader.json"
+	"autoload": "autoloader.json",
+	"languages":{
+		"fa_IR": "langs/fa_IR.json"
+	}
 }
