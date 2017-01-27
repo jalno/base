@@ -42,6 +42,7 @@ class response{
 		return $this->api;
 	}
 	public function setView(view $view){
+		$log = log::getInstance();
 		$this->view = $view;
 		if(method_exists($this->view, 'export')){
 			$target = '';
@@ -50,7 +51,9 @@ class response{
 			}elseif($this->ajax){
 				$target = 'ajax';
 			}
+			$log->debug("call export method for colleting data");
 			$export = $this->view->export($target);
+			$log->reply("Success");
 			if(isset($export['data'])){
 				foreach($export['data'] as $key => $val){
 					$this->data[$key] = $val;
@@ -58,6 +61,7 @@ class response{
 			}
 		}
 		if($this->view instanceof form){
+			$log->debug("view is a form, colleting form errors");
 			$errors = $this->view->getFormErrors();
 			if($errors){
 				$dataerror = array();
@@ -69,6 +73,9 @@ class response{
 					);
 				}
 				$this->setData($dataerror, 'error');
+				$log->reply("Success");
+			}else{
+				$log->reply("there is no error");
 			}
 		}
 	}
@@ -76,18 +83,23 @@ class response{
 		$this->file = $file;
 	}
 	public function setStatus($status){
+		$log = log::getInstance();
 		$this->status = $status;
+		$log->debug("status changed to", $status);
 	}
 	public function getStatus(){
 		return $this->status;
 	}
 	public function setData($data, $key = null){
+		$log = log::getInstance();
 		if($key){
+			$log->debug("data",$key,"set to", $data);
 			$this->data[$key] = $data;
 		}else{
 			$this->data = $data;
 		}
 		if($this->view){
+			$log->debug("also passed to view");
 			$this->view->setData($data, $key);
 		}
 	}
@@ -99,7 +111,10 @@ class response{
 		}
 	}
 	public function json(){
+		$log = log::getInstance();
+		$log->debug("set http header to json");
 		http::tojson();
+		$log->debug("encode json response");
 		return json\encode(array_merge(array(
 			'status' => $this->status,
 		), $this->data));
@@ -118,9 +133,13 @@ class response{
 		$this->json = false;
 	}
 	public function setHeader($key, $value){
+		$log = log::getInstance();
+		$log->debug("set http header",$key,"to",$value);
 		$this->headers[$key] = $value;
 	}
 	public function setHttpCode($code){
+		$log = log::getInstance();
+		$log->debug("set http response code to",$code);
 		$this->httpcode = $code;
 	}
 	public function setMimeType($type, $charset = null){
@@ -139,6 +158,8 @@ class response{
 		}
 	}
 	public function send(){
+		$log = log::getInstance();
+		$log->info("send response");
 		$this->sendHeaders();
 		if($this->file){
 			http::setMimeType($this->file->getMimeType());
@@ -153,5 +174,6 @@ class response{
 			$this->view->setData($this->getStatus(), 'status');
 			$this->view->output();
 		}
+		$log->reply("Success");
 	}
 }

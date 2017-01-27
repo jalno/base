@@ -1,5 +1,6 @@
 <?php
 namespace packages\base\db;
+use \packages\base\log;
 /**
  * MysqliDb Class
  *
@@ -260,18 +261,24 @@ class MysqliDb
 		if ($this->isSubQuery) {
 			return;
 		}
+		$log = log::getInstance();
 
 		if (empty($this->host)) {
+			$log->fatal('MySQL host is not set');
 			throw new \Exception('MySQL host is not set');
 		}
+		$log->info('connect to '.$this->username.'@'.$this->host.':'.$this->port.'/'.$this->db);
 		$this->_mysqli = new \mysqli($this->host, $this->username, $this->password, $this->db, $this->port);
 
 		if ($this->_mysqli->connect_error) {
+			$log->reply()->fatal($this->_mysqli->connect_errno . ': ' . $this->_mysqli->connect_error);
 			throw new \Exception('Connect Error ' . $this->_mysqli->connect_errno . ': ' . $this->_mysqli->connect_error);
 		}
-
+		$log->reply("Success");
 		if ($this->charset) {
+			$log->debug("set charset to", $this->charset);
 			$this->_mysqli->set_charset($this->charset);
+			$log->reply("Success");
 		}
 	}
 
@@ -283,7 +290,10 @@ class MysqliDb
 	public function mysqli()
 	{
 		if (!$this->_mysqli) {
+			$log = log::getInstance();
+			$log->debug("connect to mysql");
 			$this->connect();
+			$log->reply("Success");
 		}
 		return $this->_mysqli;
 	}
@@ -294,8 +304,13 @@ class MysqliDb
 	 */
 	public function select_db($dbname)
 	{
+		$log = log::getInstance();
+		$log->debug("switch database to");
 		if ($this->mysqli()->select_db($dbname)) {
+			$log->reply("Success");
 			$this->db = $dbname;
+		}else{
+			$log->reply()->error("Failed");
 		}
 		return $this;
 	}
@@ -1201,6 +1216,8 @@ class MysqliDb
 		if ($this->isSubQuery) {
 			return;
 		}
+		$log = log::getInstance();
+		$log->debug("SQL Query:",$this->_lastQuery);
 
 		// Prepare query
 		$stmt = $this->_prepareQuery();

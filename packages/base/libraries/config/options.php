@@ -42,7 +42,12 @@ class options{
 		self::$options[$name] = $value;
 		return true;
 	}
-	static function get($option){
-		return isset(self::$options[$option]) ? self::$options[$option] : self::load($option);
+	static function get($option, $load = true){
+		if(isset(self::$options[$option])){
+			return self::$options[$option];
+		}elseif($load){
+			return self::load($option);
+		}
+		return null;
 	}
 }

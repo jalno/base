@@ -1,14 +1,20 @@
 <?php
 namespace packages\base;
+use \packages\base\log;
 use \packages\base\date\date_interface;
 use \packages\base\date\calendarNotExist;
 
 class date implements date_interface{
 	static protected $calendar;
 	public static function setCanlenderName($name){
-		if(class_exists(__NAMESPACE__.'\\date\\'.$name)){
+		$log = log::getInstance();
+		$classname = __NAMESPACE__.'\\date\\'.$name;
+		$log->debug("looking for",$classname,"calendar");
+		if(class_exists($classname)){
+			$log->reply("found");
 			self::$calendar = $name;
 		}else{
+			$log->reply()->fatal("Notfound");
 			throw new calendarNotExist($name);
 		}
 	}
@@ -68,13 +74,18 @@ class date implements date_interface{
 		return time();
 	}
 	public static function setDefaultcalendar(){
+		$log = log::getInstance();
 		$defaultOption = array(
 			'calendar' => 'gregorian'
 		);
+		$log->debug("looking for packages.base.date option");
 		if(($option = options::load('packages.base.date')) !== false){
+			$log->reply($option);
 			$foption = array_replace_recursive($defaultOption, $option);
+			$log->debug("set calendar to",$foption['calendar']);
 			self::setCanlenderName($foption['calendar']);
 		}else{
+			$log->debug("set calendar to",$defaultOption['calendar']);
 			self::setCanlenderName($defaultOption['calendar']);
 		}
 	}

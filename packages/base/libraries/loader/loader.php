@@ -4,6 +4,7 @@ require_once('autoloader.php');
 require_once('packages.php');
 require_once('exceptions.php');
 
+
 require_once('packages/base/libraries/json/encode.php');
 require_once('packages/base/libraries/json/decode.php');
 require_once('packages/base/libraries/io/io.php');
@@ -22,6 +23,7 @@ require_once('packages/base/libraries/utility/password.php');
 require_once('packages/base/libraries/utility/safe.php');
 require_once('packages/base/libraries/utility/response.php');
 require_once('packages/base/libraries/utility/exceptions.php');
+
 /* DATE and calendar */
 require_once('packages/base/libraries/date/date_interface.php');
 require_once('packages/base/libraries/date/exceptions.php');
@@ -39,6 +41,9 @@ require_once('packages/base/libraries/router/router.php');
 require_once('packages/base/libraries/router/rule.php');
 require_once('packages/base/libraries/router/url.php');
 require_once('packages/base/libraries/router/exceptions.php');
+/* Logging */
+require_once("packages/base/libraries/logging/log.php");
+require_once("packages/base/libraries/logging/instance.php");
 
 require_once('packages/base/libraries/access/packages.php');
 
@@ -49,38 +54,63 @@ class loader{
 	const cgi = 2;
 	private static $packages = array();
 	static function packages(){
+		$log = log::getInstance();
 		$alldependencies = array();
 		$loadeds = array();
+		$log->debug("find packages");
 		$packages = scandir("packages/");
+		$log->reply($packages);
 		$allpackages = array();
 		foreach($packages as $package){
 			if($package != '.' and $package != '..'){
+				$log->info("Loading '{$package}'");
 				if($p = self::package($package)){
+					$log->reply("Success");
 					$dependencies = $p->getDependencies();
 					$alldependencies[$p->getName()] = $dependencies;
 					$allpackages[$p->getName()] = $p;
+				}else{
+					$log->reply()->error("Failed");
 				}
 			}
 		}
-		translator::addLang(translator::getDefaultLang());
-		translator::setLang(translator::getDefaultLang());
+
+		$log->info("Select default language");
+		$getDefaultLang = translator::getDefaultLang();
+		translator::addLang($getDefaultLang);
+		translator::setLang($getDefaultLang);
+		$log->reply($getDefaultLang);
+
+		$log->info("Register packages by dependencies");
 		do{
 			$oneload = false;
 			foreach($allpackages as $name => $package){
+				$log->debug("Try to register {$name}");
+				$log->append(",dependencies are ", $alldependencies[$name]);
 				$readytoload = true;
 				foreach($alldependencies[$name] as $dependency){
 					if(!in_array($dependency, $loadeds)){
 						$readytoload = false;
+						$log->reply("Abort because {$dependency} still not registered");
 						break;
 					}
 				}
 				if($readytoload){
+					$log->info("Register",$name);
 					$loadeds[] = $name;
 					$oneload = true;
+					$log->debug("Register classes");
 					$package->register_autoload();
-					$package->register_translates(translator::getDefaultLang());
+					$log->reply("Success");
+					$log->debug("Register translations in", $getDefaultLang);
+					$package->register_translates($getDefaultLang);
+					$log->reply("Success");
+					$log->debug("Register package");
 					packages::register($package);
+					$log->reply("Success");
+					$log->debug("Register router");
 					self::packagerouting($name);
+					$log->reply("Success");
 					unset($allpackages[$name]);
 				}
 			}
@@ -90,22 +120,31 @@ class loader{
 		}
 	}
 	static function package($package){
-		if(is_file("packages/{$package}/package.json")){
-			$config = file_get_contents("packages/{$package}/package.json");
+		$log = log::getInstance();
+		$configureFile = "packages/{$package}/package.json";
+		$log->debug("looking for", $configureFile);
+		if(is_file($configureFile)){
+			$log->reply("found");
+			$log->debug("read and parse");
+			$config = file_get_contents($configureFile);
 			$config = json\decode($config);
 			if(is_array($config)){
+				$log->reply("Success");
 				if(!isset($config['permissions']))
 					$config['permissions'] = array();
+				$log->debug("create new package");
 				$p = new package();
 				$p->setName($package);
 				$p->setPermissions($config['permissions']);
 				$p->loadOptions();
 				if(isset($config['dependencies'])){
+					$log->debug("Set dependencies");
 					foreach($config['dependencies'] as $dependency){
 						$p->addDependency($dependency);
 					}
 				}
 				if(isset($config['frontend'])){
+					$log->debug("Set front-ends");
 					if(is_array($config['frontend'])){
 						foreach($config['frontend'] as $frontend){
 							$p->addFrontend($frontend);
@@ -117,17 +156,21 @@ class loader{
 					}
 				}
 				if(isset($config['languages'])){
+					$log->debug("add languages");
 					foreach($config['languages'] as $lang => $file){
 						$p->addLang($lang, $file);
 					}
 				}
 				if(isset($config['bootstrap'])){
+					$log->debug("set bootstrap file");
 					$p->setBootstrap($config['bootstrap']);
 				}
 				if(isset($config['autoload'])){
+					$log->debug("set autoload database");
 					$p->setAutoload($config['autoload']);
 				}
 				if(isset($config['events'])){
+					$log->debug("add event listeners");
 					foreach($config['events'] as $event){
 						if(isset($event['name'], $event['listener'])){
 							$p->addEvent($event['name'], $event['listener']);
@@ -146,8 +189,10 @@ class loader{
 		}
 	}
 	public static function themes(){
+		$log = log::getInstance();
 		$packages = packages::get();
 		foreach($packages as $package){
+			$log->info("apply frontend sources from",$package->getName(),"package");
 			$package->applyFrontend();
 		}
 	}
@@ -218,7 +263,7 @@ class loader{
 		return true;
 	}
 	public static function connectdb(){
-		if(($db = options::get('packages.base.loader.db')) !== false){
+		if(($db = options::get('packages.base.loader.db', false)) !== false){
 			if(isset($db['type'])){
 				if($db['type'] == 'mysql'){
 					if(isset($db['host'], $db['user'], $db['pass'],$db['dbname'])){
