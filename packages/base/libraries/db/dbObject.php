@@ -768,4 +768,10 @@ class dbObject {
 		}
 		return $return;
 	}
+	public function getFields(){
+		return(property_exists($this,'dbFields') ? $this->dbFields : array());
+	}
+	public function getRelations(){
+		return(property_exists($this,'relations') ? $this->relations : array());
+	}
 }
