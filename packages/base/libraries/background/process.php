@@ -89,7 +89,14 @@ class process extends dbObject{
 		}
 	}
 	public function setPID(){
-		$this->pid = cli::$process['pid'];
+		switch(loader::sapi()){
+			case(loader::cli):
+				$this->pid = cli::$process['pid'];
+				break;
+			case(loader::cgi):
+				$this->pid = http::pid();
+				break;
+		}
 		$this->save();
 	}
 	public function runAndWaitFor($seconds){
@@ -105,6 +112,34 @@ class process extends dbObject{
 		}
 	}
 	public function run(){
+		list($class,$method) = explode('@',$this->name,2);
+		if(class_exists($class) and method_exists($class, $method)){
+			if($this->status != self::running){
+				$this->status = self::running;
+				$this->start = date::time();
+				$this->end = null;
+				$this->setPID();
+				$this->save();
+				$obj = new $class();
+				$return = $obj->$method($this->parameters);
+				if($return instanceof response){
+					$obj->status = $return->getStatus() ? self::stopped : self::error;
+					$obj->response = $return;
+					if($return->getStatus()){
+						$obj->progress = 100;
+					}
+				}else{
+					$this->status = self::stopped;
+				}
+				$this->end = date::time();
+				$this->save();
+				return $return;
+			}else{
+				throw new proccessAlive($this->id);
+			}
+		}else{
+			throw new proccessClass($this->name);
+		}
 	}
 	/**
      * Returns if the process is currently running.

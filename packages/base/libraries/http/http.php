@@ -91,6 +91,9 @@ class http{
 	static function redirect($url){
 		header("Location: {$url}");
 	}
+	static function pid(){
+		return getmypid();
+	}
 	static function setHttpCode($code){
 		$header = '';
 		switch($code){
