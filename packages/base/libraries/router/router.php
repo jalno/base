@@ -370,6 +370,7 @@ class router{
 							$process = new $controller($process);
 							$process->start = time();
 							$process->end = null;
+							$process->status = process::running;
 							$process->setPID();
 							$return = $process->$method($process->parameters);
 							if($return instanceof response){
