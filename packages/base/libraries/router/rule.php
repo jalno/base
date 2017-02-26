@@ -370,6 +370,7 @@ class rule{
 		foreach($path as $x => $part){
 			if($part['type'] == 'wildcard'){
 				if(isset($path[$x+1])){
+					$firstUrlx = $urlx;
 					$nextPart = $path[$x+1];
 					$found = false;
 					for($ux = $urlx+1;$ux<$urlen;$ux++){
@@ -379,10 +380,13 @@ class rule{
 							break;
 						}
 					}
-					if(!$found){
+					if($found){
+						$data[$part['name']] = implode('/', array_slice($url, $firstUrlx, $urlx - $firstUrlx+1));
+					}else{
 						return false;
 					}
 				}else{
+					$data[$part['name']] = implode('/', array_slice($url, $urlx));
 					$urlx = $urlen-1;
 				}
 			}else{
