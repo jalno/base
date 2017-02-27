@@ -152,6 +152,39 @@ class router{
 		}
 		return true;
 	}
+	static function checkLastSlash(){
+		if(strlen(http::$request['uri']) > 1){
+			$log = log::getInstance();
+			$option = options::get('packages.base.routing.lastslash');
+			if($option !== null){
+				$lastchar = substr(http::$request['uri'], -1);
+				if($option){
+					$log->debug("should have last slash");
+					if($lastchar != '/'){
+						$log->reply("it does not");
+						$newurl = self::getscheme()."://".self::gethostname().http::$request['uri'].'/';
+						$log->debug("redirect to",$newurl);
+						http::redirect($newurl);
+						return false;
+					}
+				}else{
+					$log->debug("should have not last slash");
+					if($lastchar == '/'){
+						$log->reply("it does");
+						$uri = http::$request['uri'];
+						while(substr($uri, -1) == '/'){
+							$uri = substr($uri, 0, strlen($uri)-1);
+						}
+						$newurl = self::getscheme()."://".self::gethostname().$uri;
+						$log->debug("redirect to",$newurl);
+						http::redirect($newurl);
+						return false;
+					}
+				}
+			}
+		}
+		return true;
+	}
 	static function sortExceptions(){
 		usort(self::$exceptions, function($a, $b){
 			$acount = count($a['path']);
@@ -252,16 +285,19 @@ class router{
 		}
 
 	}
-	static function checkRules($rules){
+	static function checkRules($rules, $uri = null){
 		$log = log::getInstance();
+		if($uri === null){
+			$uri = http::$request['uri'];
+		}
 		$log->info("method:",http::$request['method']);
 		$log->info("scheme:",http::$request['scheme']);
 		$log->info("hostname:",http::$request['hostname']);
-		$log->info("uri:",http::$request['uri']);
+		$log->info("uri:", $uri);
 		$log->info("url parameters:",http::$request['get']);
 		foreach($rules as $x => $rule){
 			$log->info("check in {$x}th rule");
-			$data = $rule->check(http::$request['method'], http::$request['scheme'], http::$request['hostname'], http::$request['uri'], http::$request['get']);
+			$data = $rule->check(http::$request['method'], http::$request['scheme'], http::$request['hostname'], $uri, http::$request['get']);
 			if($data !== false){
 				$log->reply("matched");
 				$log->debug("URL data:", $data);
@@ -335,8 +371,13 @@ class router{
 					$log->reply("Found");
 				}else{
 					$log->reply("Notfound");
+					self::checkLastSlash();
+					$uri = http::$request['uri'];
+					while(substr($uri, -1) == '/'){
+						$uri = substr($uri, 0, strlen($uri) - 1);
+					}
 					$log->debug("check in normal rules");
-					$found = self::checkRules($normalRules);
+					$found = self::checkRules($normalRules,$uri);
 					if($found){
 						$log->reply("Found");
 					}else{
