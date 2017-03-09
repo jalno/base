@@ -16,7 +16,17 @@ function url($page = '',$parameters = array(), $absolute = false){
 	}
 	$url = '';
 	if($absolute){
-		$url .= router::getscheme().'://'.router::gethostname();
+		$hostname = '';
+		if(isset($parameters['hostname'])){
+			$hostname = $parameters['hostname'];
+			unset($parameters['hostname']);
+		}else{
+			$hostname = router::gethostname();
+		}
+		if(!$hostname and $defaultHostnames = router::getDefaultDomains()){
+			$hostname = $defaultHostnames[0];
+		}
+		$url .= router::getscheme().'://'.$hostname;
 	}
 
 	$changelang = options::get('packages.base.translator.changelang');
