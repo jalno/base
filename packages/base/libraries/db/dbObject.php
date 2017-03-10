@@ -185,7 +185,7 @@ class dbObject {
 					break;
 			}
 		}
-		if (isset ($this->data[$name])) {
+		if (array_key_exists($name, $this->data)) {
 			return $this->data[$name];
 		}
 		if (property_exists ($this->db, $name))
