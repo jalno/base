@@ -24,6 +24,12 @@ function filesize($file){
 function unlink($filename, $context = null){
 	return \unlink($filename);
 }
+function copy($source,$dest){
+    return \copy($source,$dest);
+}
+function realpath($path){
+    return \realpath($path);
+}
 function mime_type($filename) {
 	if(is_file($filename) and function_exists('mime_content_type')) {
 		return mime_content_type($filename);

@@ -28,6 +28,14 @@ trait form{
 	public function getFormErrors(){
 		return $this->formerrors;
 	}
+	public function clearInputErrors($input){
+		foreach($this->formerrors as $key => $error){
+			if($error->input == $input){
+				unset($this->formerrors[$key]);
+			}
+		}
+		return true;
+	}
 	public function setDataForm($data, $key = null){
 		if($key){
 			$this->dataform[$key] = $data;

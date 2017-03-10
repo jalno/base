@@ -351,12 +351,13 @@ class theme{
 			if(!self::hasSource($source->getPath())){
 				$appendIndex = count(self::$sources);
 				array_splice(self::$sources, $appendIndex, 0, array($source));
+				/*
 				usort(self::$sources, function($a, $b){
 					if($a->getParent() and !$b->getParent()){
 						return 1;
 					}
 					return 0;
-				});
+				});*/
 				return true;
 			}
 		}

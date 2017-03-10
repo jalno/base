@@ -4,10 +4,29 @@ use \packages\base\router;
 use \packages\base\options;
 use \packages\base\IO;
 function url($page = '',$parameters = array(), $absolute = false){
-	$page = IO\removeLastSlash($page);
+	$lastSlash = options::get('packages.base.routing.lastslash');
+	if($lastSlash == true){
+		if(substr($page, -1) != '/'){
+			$page .= '/';
+		}
+	}else{
+		while(substr($page,-1) == '/'){
+			$page = substr($page, 0, strlen($page) - 1);
+		}
+	}
 	$url = '';
 	if($absolute){
-		$url .= router::getscheme().'://'.router::gethostname();
+		$hostname = '';
+		if(isset($parameters['hostname'])){
+			$hostname = $parameters['hostname'];
+			unset($parameters['hostname']);
+		}else{
+			$hostname = router::gethostname();
+		}
+		if(!$hostname and $defaultHostnames = router::getDefaultDomains()){
+			$hostname = $defaultHostnames[0];
+		}
+		$url .= router::getscheme().'://'.$hostname;
 	}
 
 	$changelang = options::get('packages.base.translator.changelang');

@@ -519,6 +519,9 @@ class dbObject {
 	public function toArray ($recursive = false) {
 		$data = $this->data;
 		$this->processAllWith ($data);
+		if(!is_array($data)){
+			$data = array();
+		}
 		foreach ($data as $key => $d) {
 			if(is_array($d)){
 				foreach($d as $key2 => $val2){
