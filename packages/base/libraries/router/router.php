@@ -12,25 +12,39 @@ class router{
 	static private $exceptions = array();
 	static private $hostname;
 	static private $scheme;
+	static private $defaultDomains;
+	static private $isDefaultDomain;
 	public static function getDefaultDomains(){
-		$log = log::getInstance();
-		$log->debug("looking for packages.base.router.defaultDomain option");
-		$option = options::get('packages.base.router.defaultDomain');
-		if($option){
-			$log->reply($option);
-			if(!is_array($option)){
-				$option = array($option);
+		if(!self::$defaultDomains){
+			$log = log::getInstance();
+			$log->debug("looking for packages.base.router.defaultDomain option");
+			$option = options::get('packages.base.router.defaultDomain');
+			if($option){
+				$log->reply($option);
+				if(!is_array($option)){
+					$option = array($option);
+				}
+				self::$defaultDomains = $option;
+			}else{
+				$log->reply("notfound");
 			}
-			return $option;
-		}else{
-			$log->reply("notfound");
+			if(isset(http::$server['hostname'])){
+				$log->reply("use server hostname:",http::$server['hostname']);
+				self::$defaultDomains = array(http::$server['hostname']);
+			}
+			$log->warn("faild");
 		}
-		if(isset(http::$server['hostname'])){
-			$log->reply("use server hostname:",http::$server['hostname']);
-			return array(http::$server['hostname']);
+		return self::$defaultDomains;
+	}
+	static public function isDefaultDomain(){
+		if(self::$isDefaultDomain === null){
+			$domain = strtolower(http::$request['hostname']);
+			if(substr($domain, 0, 4) == 'www.'){
+				$domain = substr($domain, 4);
+			}
+			self::$isDefaultDomain = in_array($domain, router::getDefaultDomains());
 		}
-		$log->warn("faild");
-		return null;
+		return self::$isDefaultDomain;
 	}
 	static public function addRule(rule $rule){
 		self::$rules[] = $rule;

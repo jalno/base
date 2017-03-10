@@ -43,7 +43,7 @@ class date implements date_interface{
 			return call_user_func_array(array(__NAMESPACE__.'\\date\\'.self::$calendar, "strtotime"), array($time, $now));
 		}
 	}
-	public static function mktime($hour = null, $minute = null, $second = null , $month = null, $day = null, $year = null, $is_dst = -1){
+	public static function mktime($hour = null, $minute = null, $second = null , $month = null, $day = null, $year = null){
 		if(!self::$calendar){
 			self::setDefaultcalendar();
 		}
@@ -67,7 +67,7 @@ class date implements date_interface{
 			$second = $now[5];
 		}
 		if(self::$calendar){
-			return call_user_func_array(array(__NAMESPACE__.'\\date\\'.self::$calendar, "mktime"), array($hour, $minute, $second, $month, $day, $year, $is_dst));
+			return call_user_func_array(array(__NAMESPACE__.'\\date\\'.self::$calendar, "mktime"), array($hour, $minute, $second, $month, $day, $year));
 		}
 	}
 	public static function time(){

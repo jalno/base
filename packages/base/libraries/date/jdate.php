@@ -244,7 +244,7 @@ class jdate implements date_interface{
             case('12'):return('اسف');break;
         }
     }
-    static function mktime($hour = null, $minute = null, $second = null , $month = null, $day = null, $year = null, $is_dst = -1){
+    static function mktime($hour = null, $minute = null, $second = null , $month = null, $day = null, $year = null){
     	list( $year, $month, $day ) = self::jalali_to_gregorian($year, $month, $day);
     	return mktime($hour,$minute,$second,$month,$day,$year);
     }
