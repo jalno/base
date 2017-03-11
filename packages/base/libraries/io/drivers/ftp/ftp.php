@@ -80,6 +80,12 @@ class ftp{
 			throw new NotReady();
 		}
 	}
+	public function delete($path): bool{
+		if(!$this->ready){
+			throw new NotReady();
+		}
+		return ftp_delete($this->connection, $path);
+	}
 	public function is_ready(){
 		return $this->ready;
 	}
