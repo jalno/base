@@ -76,6 +76,9 @@ class http{
 		}
 		return(null);
 	}
+	static function getDataForm($name){
+		return self::getFormData($name);
+	}
 	static function getURIData($name){
 		if(isset(self::$request['get'][$name])){
 			return(self::$request['get'][$name]);
