@@ -73,6 +73,19 @@ class ftp{
 			throw new NotReady();
 		}
 	}
+	public function rename($oldname, $newname): bool{
+		if($this->ready){
+			return ftp_rename($this->connection, $oldname, $newname);
+		}else{
+			throw new NotReady();
+		}
+	}
+	public function delete($path): bool{
+		if(!$this->ready){
+			throw new NotReady();
+		}
+		return ftp_delete($this->connection, $path);
+	}
 	public function is_ready(){
 		return $this->ready;
 	}
