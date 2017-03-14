@@ -36,14 +36,40 @@ trait form{
 		}
 		return true;
 	}
-	public function setDataForm($data, $key = null){
+	public function setDataForm($data, string $key = null){
+
+		$form = $this->getData('form');
 		if($key){
-			$this->dataform[$key] = $data;
+			$form[$key] = $data;
 		}else{
-			$this->dataform = $data;
+			$form = $data;
+		}
+		if(is_array($data)){
+			foreach($data as $dataKey => $dataVal){
+				$this->setDataInput($dataVal, $key ? $key."[$dataKey]" : $dataKey);
+			}
+		}else{
+			$this->setDataInput($data, $key);
+		}
+		$this->setData($form, 'form');
+	}
+	public function setDataInput($data, string $key){
+		if(is_array($data)){
+			foreach($data as $dataKey => $dataVal){
+				$this->setDataInput($dataVal, $key."[$dataKey]");
+			}
+		}else{
+			$inputs = $this->getData('inputs');
+			$inputs[$key] = $data;
+			$this->setData($inputs, 'inputs');
 		}
 	}
-	public function getDataForm($key){
-		return(isset($this->dataform[$key]) ? $this->dataform[$key] : false);
+	public function getDataForm(string $key){
+		$form = $this->getData('form');
+		return(isset($form[$key]) ? $form[$key] : null);
+	}
+	public function getDataInput(string $key):string {
+		$inputs = $this->getData('inputs');
+		return(isset($inputs[$key]) ?  $inputs[$key] : '');
 	}
 }
