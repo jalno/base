@@ -7,5 +7,5 @@ interface session_handler{
 	public function getID();
 	public function set($key, $value);
 	public function get($key);
+	public function destroy();
 }
-?>

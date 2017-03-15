@@ -23,6 +23,13 @@ class session{
 		self::$status = (self::$resource ? self::$resource->start() : false);
 		return self::$status;
 	}
+	static function destroy(){
+		if(self::$resource){
+			self::$resource->destroy();
+			self::$status = false;
+		}
+		return self::$status;
+	}
 	static function set($key, $val){
 		if(self::$resource){
 			return self::$resource->set($key, $val);

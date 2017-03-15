@@ -60,5 +60,9 @@ class php implements session_handler{
 		}
 		return true;
 	}
+	public function destroy(){
+		session_destroy();
+		http::setcookie($this->cookie['name'],null,86400);
+		return true;
+	}
 }
-?>

@@ -95,4 +95,7 @@ class file implements session_handler{
 		$data = serialize($this->data);
 		return (@file_put_contents($this->file, $data,  LOCK_EX) == $data);
 	}
+	public function destroy(){
+		return(@is_file($this->file) and @unlink($this->file));
+	}
 }
