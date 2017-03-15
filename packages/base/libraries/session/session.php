@@ -54,7 +54,9 @@ class session{
 	static function setup(){
 		$defaultOption = array(
 			'handler' => 'php',
-			'cookie' => array(),
+			'cookie' => array(
+				'expire' => 86400*365
+			),
 			'ip' => false
 		);
 		$foption  = $defaultOption;
