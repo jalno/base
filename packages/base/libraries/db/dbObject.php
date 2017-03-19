@@ -58,13 +58,13 @@ class dbObject {
 	 *
 	 * @var array
 	 */
-	public $original_data;
+	public $original_data = array();
 	/**
 	 * An array that holds object data
 	 *
 	 * @var array
 	 */
-	public $data;
+	public $data = array();
 	/**
 	 * Flag to define is object is new or loaded from database
 	 *
@@ -118,7 +118,7 @@ class dbObject {
 	/**
 	 * @param array $data Data to preload on object creation
 	 */
-	public function __construct ($data = null, $connection = 'default') {
+	public function __construct ($data = array(), $connection = 'default') {
 		if($connection == 'default'){
     		loader::requiredb();
 		}
@@ -188,8 +188,10 @@ class dbObject {
 		if (is_array($this->data) and array_key_exists($name, $this->data)) {
 			return $this->data[$name];
 		}
-		if (property_exists ($this->db, $name))
+		$properties = get_class_vars(MysqliDb::class);
+		if (array_key_exists($name,$properties)){
 			return $this->db->$name;
+		}
 	}
 	public function __isset ($name) {
 		if (isset ($this->data[$name]))
