@@ -2,6 +2,7 @@
 	"permissions": "*",
 	"routing": "routing.json",
 	"autoload": "autoloader.json",
+	"frontend" : "frontend",
 	"languages":{
 		"fa_IR": "langs/fa_IR.json"
 	}

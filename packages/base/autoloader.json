@@ -121,6 +121,10 @@
 				"view\\events\\afterOutput"
 			],
 			"file":"libraries/mvc/events/view.php"
+		},
+		{
+			"classes":["frontend\\events\\throwDynamicData"],
+			"file":"libraries/frontend/events/throwDynamicData.php"
 		}
 	]
 }
