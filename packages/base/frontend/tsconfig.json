@@ -1,0 +1,12 @@
+{
+    "files": [
+        "src/js/Options.ts",
+		"src/js/Router.ts",
+		"src/js/Translator.ts"
+    ],
+    "compilerOptions": {
+        "noImplicitAny": true,
+        "target": "es5",
+        "module":"CommonJS"
+    }
+}

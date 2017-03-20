@@ -3,6 +3,7 @@ namespace packages\base;
 use \packages\base\frontend\theme;
 use \packages\base\frontend\location;
 use \packages\base\frontend\source;
+use \packages\base\frontend\events\throwDynamicData;
 use \packages\base\view\error;
 use \packages\base\view\events\beforeLoad;
 use \packages\base\view\events\afterLoad;
@@ -16,6 +17,11 @@ class view{
 	protected $js = array();
 	protected $data = array();
 	protected $errors = array();
+	protected $dynamicData;
+	public function __construct(){
+		$this->dynamicData = new throwDynamicData();
+		$this->dynamicData->setView($this);
+	}
 	public function setTitle($title){
 		if(is_array($title)){
 			$this->title = $title;
@@ -108,6 +114,14 @@ class view{
 			}
 		}
 	}
+
+	public function dynamicData(){
+		if(!$this->dynamicData){
+			$this->dynamicData = new throwDynamicData();
+			$this->dynamicData->setView($this);
+		}
+		return $this->dynamicData;
+	}
 	public function setSource(source $source){
 		$this->source = $source;
 		theme::setPrimarySource($this->source);
@@ -169,10 +183,12 @@ class view{
 		if($this->file){
 			theme::loadViews();
 			events::trigger(new beforeLoad($this));
+			$this->dynamicData()->trigger();
 			if(method_exists($this, '__beforeLoad')){
 				$this->__beforeLoad();
 			}
 			events::trigger(new afterLoad($this));
+			$this->dynamicData()->addAssets();
 			$path = $this->source->getPath()."/".$this->file;
 			require_once($path);
 			events::trigger(new afterOutput($this));
