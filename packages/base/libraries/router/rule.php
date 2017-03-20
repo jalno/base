@@ -24,6 +24,8 @@ class rule{
 	private $controller;
 	private $schemes = array();
 	private $lang = null;
+	private $wildcards = 0;
+	private $dynamics = 0;
 	static function import($data){
 		$rule = new rule();
 		if(isset($data['method'])){
@@ -36,7 +38,7 @@ class rule{
 			}
 		}
 		if(isset($data['path'])){
-			$rule->addPath($data['path']);
+			$rule->setPath($data['path']);
 		}
 		if(isset($data['domain'])){
 			if(is_array($data['domain'])){
@@ -109,26 +111,34 @@ class rule{
 			$log->debug("already added");
 		}
 	}
-	public function addPath($path){
+	public function setPath($path){
 		$log = log::getInstance();
 		$log->debug("add path", $path);
 		if(is_string($path)){
 			$log->debug("explode to array");
 			$path = explode("/", $path);
-			return $this->addPath($path);
+			return $this->setPath($path);
 		}
 		if(!is_array($path)){
 			$log->reply()->reply("not array");
 			throw new pathException($path);
 		}
-		$parts = array();
+		$this->path = array();
+		$this->wildcards = 0;
+		$this->dynamics = 0;
 		foreach($path as $x => $part){
 			if($x == 0 or $part !== ''){
 				$log->debug("valid part", $part);
-				$parts[] = self::validPart($part);
+				$valid = self::validPart($part);
+				if($valid['type'] == 'wildcard'){
+					$this->wildcards++;
+					$this->dynamics++;
+				}elseif($valid['type'] == 'dynamic'){
+					$this->dynamics++;
+				}
+				$this->path[] = $valid;
 			}
 		}
-		$this->paths[] = $parts;
 	}
 	public function setController($class, $method){
 		$log = log::getInstance();
@@ -281,6 +291,15 @@ class rule{
 			}
 		}
 	}
+	public function wildcardParts(){
+		return $this->wildcards;
+	}
+	public function dynamicParts(){
+		return $this->dynamics;
+	}
+	public function parts(){
+		return count($this->path);
+	}
 	public function check($method, $scheme,$domain,$url, $data){
 		$log = log::getInstance();
 		$log->debug("checking method");
@@ -332,20 +351,17 @@ class rule{
 						$url[0] = "";
 					}
 
-					foreach($this->paths as $x => $path){
-						$log->debug("check {$x}th path");
-						if($checkPath = $this->checkPath($url, $path)){
+					if($checkPath = $this->checkPath($url, $this->path)){
+						$log->reply("pass");
+						$log->debug("check permissions");
+						if($this->checkPermissions($data)){
 							$log->reply("pass");
-							$log->debug("check permissions");
-							if($this->checkPermissions($data)){
-								$log->reply("pass");
-								return $checkPath;
-							}else{
-								$log->reply("failed");
-							}
+							return $checkPath;
 						}else{
 							$log->reply("failed");
 						}
+					}else{
+						$log->reply("failed");
 					}
 				}else{
 					$log->reply("failed");

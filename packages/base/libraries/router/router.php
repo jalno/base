@@ -299,7 +299,22 @@ class router{
 		}
 
 	}
-	static function checkRules($rules, $uri = null){
+	static private function sortRules(&$rules){
+		usort($rules, function($a, $b){
+			$a_wildcards = $a->wildcardParts();
+			$b_wildcards = $b->wildcardParts();
+			if($a_wildcards != $b_wildcards){
+				return $a_wildcards - $b_wildcards;
+			}
+			$a_dynamics = $a->dynamicParts();
+			$b_dynamics = $b->dynamicParts();
+			if($a_dynamics != $b_dynamics){
+				return $a_dynamics - $b_dynamics;
+			}
+			return $a->parts() - $b->parts();
+		});
+	}
+	static function checkRules(&$rules, $uri = null){
 		$log = log::getInstance();
 		if($uri === null){
 			$uri = http::$request['uri'];
@@ -390,6 +405,9 @@ class router{
 					while(substr($uri, -1) == '/'){
 						$uri = substr($uri, 0, strlen($uri) - 1);
 					}
+					$log->debug("sort normal rules");
+					self::sortRules($normalRules);
+					$log->reply("Success");
 					$log->debug("check in normal rules");
 					$found = self::checkRules($normalRules,$uri);
 					if($found){
