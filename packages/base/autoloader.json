@@ -125,6 +125,35 @@
 		{
 			"classes":["frontend\\events\\throwDynamicData"],
 			"file":"libraries/frontend/events/throwDynamicData.php"
+		},
+		{
+			"classes":["http\\client"],
+			"file":"libraries/http/client.php"
+		},
+		{
+			"classes":["http\\curl"],
+			"file":"libraries/http/curl.php"
+		},
+		{
+			"classes":["http\\handler"],
+			"file":"libraries/http/handler.php"
+		},
+		{
+			"classes":[
+				"http\\responseException",
+				"http\\serverException",
+				"http\\clientException",
+				"http\\timeoutException"
+			],
+			"file":"libraries/http/exceptions.php"
+		},
+		{
+			"classes":["http\\request"],
+			"file":"libraries/http/request.php"
+		},
+		{
+			"classes":["http\\response"],
+			"file":"libraries/http/response.php"
 		}
 	]
 }
