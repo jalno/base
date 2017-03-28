@@ -30,11 +30,11 @@ class client{
 	public function request(string $method, string $URI, array $options = array()):response{
 		$thisOptions = array_replace($this->options, $options);
 		if($thisOptions['auth']){
-			if(isset($thisOptions['headers']['authorization'])){
+			if(!isset($thisOptions['headers']['authorization'])){
 				if(is_array($thisOptions['auth'])){
-					if(isset($thisOptions['auth']['user'])){
+					if(isset($thisOptions['auth']['username'])){
 						if(isset($thisOptions['auth']['password'])){
-							$thisOptions['headers']['authorization'] = 'Basic '.base64_encode($thisOptions['auth']['user'].':'.$thisOptions['auth']['password']);
+							$thisOptions['headers']['authorization'] = 'Basic '.base64_encode($thisOptions['auth']['username'].':'.$thisOptions['auth']['password']);
 						}
 					}
 				}else{
@@ -79,11 +79,16 @@ class client{
 		$request->setMethod($method);
 		if(isset($url_parse['query']) and $url_parse['query']){
 			parse_str($url_parse['query'], $query);
-			$request->setQuery($query);
+			$thisOptions['query'] = array_replace_recursive($query, $thisOptions['query']);
 		}
+
+		$request->setQuery($thisOptions['query']);
 		$request->setBody($thisOptions['body']);
 		if($thisOptions['delay'] > 0){
 			usleep($thisOptions['delay']);
+		}
+		if(is_array($thisOptions['headers'])){
+			$request->setHeaders($thisOptions['headers']);
 		}
 		$handler = new curl();
 		$response = $handler->fire($request, $thisOptions);
