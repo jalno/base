@@ -27,6 +27,9 @@ class request{
 		return $this->host;
 	}
 	public function setURI(string $uri){
+		while(substr($uri, 0, 1) == '/'){
+			$uri = substr($uri, 1);
+		}
 		$this->uri = $uri;
 	}
 	public function getURI():string{
@@ -47,7 +50,6 @@ class request{
 		if($this->query){
 			$url .= '?'.http_build_query($this->query);
 		}
-		var_dump($url);
 		return $url;
 	}
 	public function setScheme(string $scheme){
