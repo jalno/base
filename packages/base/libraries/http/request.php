@@ -39,10 +39,15 @@ class request{
 		return $this->query;
 	}
 	public function getURL():string{
-		$url = $this->scheme . '://'.$this->host.'/'.$this->uri;
+		$url = $this->scheme . '://'.$this->host;
+		if($this->port){
+			$url .= ':'.$this->port;
+		}
+		$url .= '/'.$this->uri;
 		if($this->query){
 			$url .= '?'.http_build_query($this->query);
 		}
+		var_dump($url);
 		return $url;
 	}
 	public function setScheme(string $scheme){
