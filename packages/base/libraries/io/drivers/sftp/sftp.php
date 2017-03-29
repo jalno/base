@@ -72,4 +72,7 @@ class sftp{
 	public function stat($filename){
 		return @ssh2_sftp_stat($this->connection,$filename);
 	}
+	public function opendir($dir){
+		return opendir("ssh2.sftp://".$this->connection.$dir);
+	}
 }
