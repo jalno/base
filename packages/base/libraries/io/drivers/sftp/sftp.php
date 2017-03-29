@@ -58,7 +58,7 @@ class sftp{
 		return $this->stat($filename) ? true : false;
 	}
 	public function is_dir($filename){
-		return $this->is_file($filename);
+		return is_dir("ssh2.sftp://".$this->connection.$filename);
 	}
 	public function mkdir($pathname, $mode=0755){
 		return ssh2_sftp_mkdir($this->connection,$pathname, $mode);
@@ -69,5 +69,4 @@ class sftp{
 	public function stat($filename){
 		return @ssh2_sftp_stat($this->connection,$filename);
 	}
-
 }
