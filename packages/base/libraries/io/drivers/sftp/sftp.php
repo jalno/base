@@ -75,4 +75,26 @@ class sftp{
 	public function opendir($dir){
 		return opendir("ssh2.sftp://".$this->connection.$dir);
 	}
+	public function listOfFiles($dir, bool $dirs = true, bool $subdirs = false){
+		$items = array();
+		$handle = $this->opendir($dir);
+		while (false !== ($entry = readdir($handle))) {
+			if($entry == '.' or $entry == '..'){
+				continue;
+			}
+			$filename = $dir.'/'.$entry;
+			$is_dir = $this->is_dir($filename);
+			if($is_dir){
+				if($dirs){
+					$items[] = $filename;
+				}
+				if($subdirs){
+					$items = array_merge($items, $this->listOfFiles($filename, $dirs, $subdirs));
+				}
+			}else{
+				$items[] = $filename;
+			}
+		}
+		return $items;
+	}
 }
