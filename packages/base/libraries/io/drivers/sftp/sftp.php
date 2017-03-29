@@ -97,4 +97,19 @@ class sftp{
 		}
 		return $items;
 	}
+	public function delete($path){
+		if($this->is_dir($path)){
+			$handle = $this->opendir($path);
+			while (false !== ($entry = readdir($handle))) {
+				if($entry == '.' or $entry == '..'){
+					continue;
+				}
+				$this->delete($path.'/'.$entry);
+				$this->rmdir($path.'/'.$entry);
+			}
+			$this->rmdir($path);
+		}else{
+			$this->unlink($path);
+		}
+	}
 }
