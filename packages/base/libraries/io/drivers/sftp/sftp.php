@@ -63,6 +63,9 @@ class sftp{
 	public function mkdir($pathname, $mode=0755){
 		return ssh2_sftp_mkdir($this->connection,$pathname, $mode);
 	}
+	public function rmdir($pathname){
+		return ssh2_sftp_rmdir($this->connection, $pathname);
+	}
 	public function unlink($filename){
 		return ssh2_sftp_unlink($this->connection,$filename);
 	}
