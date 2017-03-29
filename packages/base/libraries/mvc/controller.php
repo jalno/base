@@ -29,7 +29,7 @@ class controller{
 						$data = null;
 						if($type == 'number'){
 							$data = safe::number($rawdata);
-							if(!$data){
+							if(!$data and count($options['type']) == 1){
 								$data = 0;
 							}
 						}elseif($type == 'string'){
@@ -123,7 +123,6 @@ class controller{
 
 							if(is_array($rawdata['error'])){
 								$rawdata = $this->diverse_array($rawdata);
-								print_r($rawdata);
 								$allempty = true;
 								foreach ($rawdata as $filekey=> $file) {
 									if($file['error'] != 0){
@@ -152,7 +151,7 @@ class controller{
 						}
 					}
 				}elseif(isset($options['empty']) and $options['empty']){
-					$return[$field] = null;;
+					$return[$field] = null;
 				}else{
 					throw new inputValidation($field);
 				}
