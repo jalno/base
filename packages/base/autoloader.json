@@ -158,6 +158,10 @@
 		{
 			"classes":["http\\response"],
 			"file":"libraries/http/response.php"
+		},
+		{
+			"classes":["IO\\buffer"],
+			"file":"libraries/io/buffer.php"
 		}
 	]
 }
