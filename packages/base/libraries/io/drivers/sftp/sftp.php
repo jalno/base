@@ -58,10 +58,13 @@ class sftp{
 		return $this->stat($filename) ? true : false;
 	}
 	public function is_dir($filename){
-		return $this->is_file($filename);
+		return is_dir("ssh2.sftp://".$this->connection.$filename);
 	}
 	public function mkdir($pathname, $mode=0755){
 		return ssh2_sftp_mkdir($this->connection,$pathname, $mode);
+	}
+	public function rmdir($pathname){
+		return ssh2_sftp_rmdir($this->connection, $pathname);
 	}
 	public function unlink($filename){
 		return ssh2_sftp_unlink($this->connection,$filename);
@@ -69,5 +72,44 @@ class sftp{
 	public function stat($filename){
 		return @ssh2_sftp_stat($this->connection,$filename);
 	}
-
+	public function opendir($dir){
+		return opendir("ssh2.sftp://".$this->connection.$dir);
+	}
+	public function listOfFiles($dir, bool $dirs = true, bool $subdirs = false){
+		$items = array();
+		$handle = $this->opendir($dir);
+		while (false !== ($entry = readdir($handle))) {
+			if($entry == '.' or $entry == '..'){
+				continue;
+			}
+			$filename = $dir.'/'.$entry;
+			$is_dir = $this->is_dir($filename);
+			if($is_dir){
+				if($dirs){
+					$items[] = $filename;
+				}
+				if($subdirs){
+					$items = array_merge($items, $this->listOfFiles($filename, $dirs, $subdirs));
+				}
+			}else{
+				$items[] = $filename;
+			}
+		}
+		return $items;
+	}
+	public function delete($path){
+		if($this->is_dir($path)){
+			$handle = $this->opendir($path);
+			while (false !== ($entry = readdir($handle))) {
+				if($entry == '.' or $entry == '..'){
+					continue;
+				}
+				$this->delete($path.'/'.$entry);
+				$this->rmdir($path.'/'.$entry);
+			}
+			$this->rmdir($path);
+		}else{
+			$this->unlink($path);
+		}
+	}
 }
