@@ -6,6 +6,9 @@ class sftp{
 	function __construct(ssh $ssh){
 		$this->connection = ssh2_sftp($ssh->connection());
 	}
+	public function getConnection():ssh{
+		return $this->connection;
+	}
 	public function upload($local,$remote,$mode = 0644){
     	if($fs = @fopen($local, 'rb')){
     		if($fd = @fopen("ssh2.sftp://".$this->connection.$remote, 'wb')){
