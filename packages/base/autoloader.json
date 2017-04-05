@@ -1,6 +1,10 @@
 {
 	"files":[
 		{
+			"classes":["frontend\\source"],
+			"file":"libraries/frontend/source.php"
+		},
+		{
 			"classes":["controller"],
 			"file":"libraries/mvc/controller.php"
 		},
