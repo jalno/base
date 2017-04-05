@@ -5,13 +5,22 @@ class ssh{
     private $connection = null;
     private $sftp = null;
     public $connectd = false;
-    function __construct($host, $port){
+    private $host;
+    private $port;
+    private $username;
+    function __construct(string $host, int $port){
         if(($this->connection = @ssh2_connect($host, $port)) === false){
             throw new ConnectionException;
         }
+        $this->host = $host;
+        $this->port = $port;
     }
-	function AuthByPassword($username,$password){
-		return @ssh2_auth_password($this->connection, $username, $password);
+	function AuthByPassword(string $username,string $password):bool{
+		if(@ssh2_auth_password($this->connection, $username, $password)){
+            $this->username = $username;
+            return true;
+        }
+        return false;
 	}
 	public function connection(){
 		return $this->connection;
@@ -30,5 +39,14 @@ class ssh{
 			$status = false;
 		}
         return $output;
+    }
+    public function getHost():string{
+        return $this->host;
+    }
+    public function getPort():int{
+        return $this->port;
+    }
+    public function getUsername():string{
+        return $this->username;
     }
 }
