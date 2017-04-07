@@ -119,4 +119,7 @@ class sftp{
 	public function open(string $filename, string $mode):buffer{
 		return new buffer(@fopen("ssh2.sftp://".$this->connection.$filename, $mode));
 	}
+	public function size(string $filename):int{
+		return @filesize("ssh2.sftp://".$this->connection.$filename);
+	}
 }
