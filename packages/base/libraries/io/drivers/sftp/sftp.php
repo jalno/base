@@ -1,6 +1,7 @@
 <?php
 namespace packages\base\IO\drivers;
 use \packages\base\ssh;
+use \packages\base\IO\buffer;
 class sftp{
 	private $connection;
 	function __construct(ssh $ssh){
@@ -114,5 +115,8 @@ class sftp{
 		}else{
 			$this->unlink($path);
 		}
+	}
+	public function open(string $filename, string $mode):buffer{
+		return new buffer(@fopen("ssh2.sftp://".$this->connection.$filename, $mode));
 	}
 }
