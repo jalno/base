@@ -11,6 +11,7 @@ class log{
 	static private $parent;
 	static protected $file;
 	static private $generation = 0;
+	static private $indentation = "\t";
 	public static function newChild(){
 		self::$generation++;
 	}
@@ -65,6 +66,9 @@ class log{
 	public static function reply(){
 		return call_user_func_array(array(self::getParent(),'reply'), func_get_args());
 	}
+	public static function setIndentation(string $indentation,int $repeat = 1){
+		self::$indentation = str_repeat($indentation,$repeat);
+	}
 	public static function write($level, $message){
 		$microtime = explode(" ",microtime());
 		$date = date("Y-m-d H:i:s.".substr($microtime[0],2)." P");
@@ -76,7 +80,7 @@ class log{
 			case(self::error):$levelText = '[ERROR]';break;
 			case(self::fatal):$levelText = '[FATAL]';break;
 		}
-		$line = $date." ".$levelText.(self::$generation > 1 ? str_repeat("\t", self::$generation-1) : ' ').$message."\n";
+		$line = $date." ".$levelText.(self::$generation > 1 ? str_repeat(self::$indentation, self::$generation-1) : ' ').$message."\n";
 		if(options::get('packages.base.logging.quiet', false) == 0){
 			echo $line;
 		}
