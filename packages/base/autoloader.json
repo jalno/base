@@ -187,6 +187,10 @@
 		{
 			"classes":["IO\\file\\tmp"],
 			"file":"libraries/io/file/tmp.php"
+		},
+		{
+			"classes":["IO\\directory\\local"],
+			"file":"libraries/io/directory/local.php"
 		}
 	]
 }
