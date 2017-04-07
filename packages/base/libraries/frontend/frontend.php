@@ -1,71 +1,85 @@
 <?php
 namespace packages\base;
+use \packages\base\frontend;
+use \packages\base\IO\directory;
+use \packages\base\IO\file;
+use \packages\base\json;
+use \packages\base\frontend\source;
 class frontend{
-	private static $title = array();
-	private static $css = array();
-	private static $js = array();
-	static function setTitle($title){
-		if(is_array($title)){
-			self::$title = $title;
-			return true;
-		}elseif(is_string($title)){
-			return self::setTitle(array($title));
+	private static function getWebpackResult():array{
+		$base = packages::package('base');
+		$privateRepo = new directory\local($base->getFilePath('storage/private/frontend'));
+		$result = array();
+		$resultFile = $privateRepo->file('result.json');
+		if($resultFile->exists()){
+			$result = json\decode($resultFile->read());
 		}
-		return false;
+		if(!is_array($result)){
+			$result = array();
+		}
+		if(!isset($result['handledFiles'])){
+			$result['handledFiles'] = [];
+		}
+		if(!isset($result['outputedFiles'])){
+			$result['outputedFiles'] = [];
+		}
+		return $result;
 	}
-	static function getTitle($spliter = '|'){
-		return $spliter ? implode($spliter, self::$title) : $title;
-	}
-	static function addCSS($code, $name = ''){
-		self::$css[] = array(
-			'name' => $name,
-			'type' => 'inline',
-			'code' => $code
-		);
-	}
-	static function addCSSFile($file,$name =''){
-		self::$css[] = array(
-			'name' => $name,
-			'type' => 'file',
-			'file' => $file
-		);
-	}
-	static function loadCSS(){
-		foreach(self::$css as $css){
-			if($css['type'] == 'file'){
-				echo("<link rel=\"stylesheet\" type=\"text/css\" href=\"{$css['file']}\" />\n");
+	public static function checkAssetsForWebpack(array $sources):array{
+		$result = self::getWebpackResult();
+		$filteredAssets = [];
+		$filteredFiles = [];
+		$commonAssets = [];
+		if(isset($result['outputedFiles']['common'])){
+			foreach($result['outputedFiles']['common'] as $file){
+				$file = new file\local($file);
+				$commonAssets[] = array(
+					'type' => $file->getExtension(),
+					'file' => "/".$file->getPath()
+				);
+				$filteredFiles[] = $file->getPath();
 			}
 		}
-		foreach(self::$css as $css){
-			if($css['type'] == 'inline'){
-				echo("<style>\n{$css['code']}\n</style>\n");
+		foreach($sources as $source){
+			$handledFiles = [];
+			$name = $source->getName();
+			$assets = $source->getAssets();
+			if(isset($result['handledFiles'][$name])){
+				$handledFiles = $result['handledFiles'][$name];
+				if($commonAssets){
+					$filteredAssets = array_merge($filteredAssets, $commonAssets);
+					$commonAssets = [];
+				}
+			}
+
+			if(isset($result['outputedFiles'][$name])){
+				foreach($result['outputedFiles'][$name] as $file){
+					$file = new file\local($file);
+					if(!in_array($file->getPath(), $filteredFiles)){
+						$filteredAssets[] = array(
+							'type' => $file->getExtension(),
+							'file' => "/".$file->getPath()
+						);
+						$filteredFiles[] = $file->getPath();
+					}
+				}
+			}
+			foreach($assets as $asset){
+				if(in_array($asset['type'], ['js', 'css', 'less', 'ts'])){
+					if(isset($asset['file'])){
+						if(!in_array($source->getPath().'/'.$asset['file'], $handledFiles)){
+							$asset['file'] = $source->url($asset['file']);
+							$filteredAssets[] = $asset;
+						}
+					}else{
+						$filteredAssets[] = $asset;
+					}
+				}
 			}
 		}
-	}
-	static function addJS($code, $name = ''){
-		self::$js[] = array(
-			'name' => $name,
-			'type' => 'inline',
-			'code' => $code
-		);
-	}
-	static function addJSFile($file,$name =''){
-		self::$js[] = array(
-			'name' => $name,
-			'type' => 'file',
-			'file' => $file
-		);
-	}
-	static function loadJS(){
-		foreach(self::$js as $js){
-			if($js['type'] == 'file'){
-				echo("<script src=\"{$js['file']}\"></script>\n");
-			}
+		if($filteredFiles){
+			
 		}
-		foreach(self::$js as $js){
-			if($js['type'] == 'inline'){
-				echo("<script>\n{$js['code']}\n</script>\n");
-			}
-		}
+		return $filteredAssets;
 	}
 }
