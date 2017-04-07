@@ -162,6 +162,19 @@
 		{
 			"classes":["IO\\buffer"],
 			"file":"libraries/io/buffer.php"
+		},
+		{
+			"classes":["IO\\file"],
+			"file":"libraries/io/file.php"
+		},
+		{
+			"classes":[
+				"IO\\Exception",
+				"IO\\ReadException",
+				"IO\\WriteException",
+				"IO\\NotFoundException"
+			],
+			"file":"libraries/io/exceptions.php"
 		}
 	]
 }
