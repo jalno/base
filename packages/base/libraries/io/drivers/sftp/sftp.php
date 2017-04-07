@@ -122,4 +122,7 @@ class sftp{
 	public function size(string $filename):int{
 		return @filesize("ssh2.sftp://".$this->connection.$filename);
 	}
+	public function rename(string $from, string $to):bool{
+		return @ssh2_sftp_rename($this->connection, $from, $to);
+	}
 }
