@@ -1,5 +1,6 @@
 <?php
 namespace packages\base;
+use \packages\base\frontend;
 use \packages\base\frontend\theme;
 use \packages\base\frontend\location;
 use \packages\base\frontend\source;
@@ -126,25 +127,24 @@ class view{
 		$this->source = $source;
 		theme::setPrimarySource($this->source);
 		$sources = theme::byName($this->source->getName());
-		foreach($sources as $source){
-			$assets = $source->getAssets();
-			foreach($assets as $asset){
-				if($asset['type'] == 'css'){
-					if(isset($asset['file'])){
-						$this->addCSSFile($source->url($asset['file']), isset($asset['name']) ? $asset['name'] : '');
-					}elseif(isset($asset['inline'])){
-						$this->addCSS($asset['inline'], isset($asset['name']) ? $asset['name'] : '');
-					}
-				}elseif($asset['type'] == 'js'){
-					if(isset($asset['file'])){
-						$this->addJSFile($source->url($asset['file']), isset($asset['name']) ? $asset['name'] : '');
-					}elseif(isset($asset['inline'])){
-						$this->addJS($asset['inline'], isset($asset['name']) ? $asset['name'] : '');
-					}
+		$assets = frontend::checkAssetsForWebpack($sources);
+		foreach($assets as $asset){
+			if($asset['type'] == 'css'){
+				if(isset($asset['file'])){
+					$this->addCSSFile($asset['file'], isset($asset['name']) ? $asset['name'] : '');
+				}elseif(isset($asset['inline'])){
+					$this->addCSS($asset['inline'], isset($asset['name']) ? $asset['name'] : '');
+				}
+			}elseif($asset['type'] == 'js'){
+				if(isset($asset['file'])){
+					$this->addJSFile($asset['file'], isset($asset['name']) ? $asset['name'] : '');
+				}elseif(isset($asset['inline'])){
+					$this->addJS($asset['inline'], isset($asset['name']) ? $asset['name'] : '');
 				}
 			}
 		}
-
+		
+		
 	}
 	public function setFile($file){
 		$this->file = $file;

@@ -5,8 +5,11 @@
 		"src/js/Translator.ts"
     ],
     "compilerOptions": {
-        "noImplicitAny": true,
-        "target": "es5",
-        "module":"CommonJS"
+        "baseUrl": "./",
+		"rootDir": "./",
+		"module": "commonjs",
+   		"target": "es5",
+		"sourceMap": false,
+		"removeComments": true
     }
 }

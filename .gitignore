@@ -1,3 +1,7 @@
 /packages/*
 !/packages/base/
 /packages/base/storage/session/*
+/packages/base/storage/private/frontend/*
+!/packages/base/storage/private/frontend/webpack.config.js
+/packages/base/storage/public/frontend/*
+!/packages/base/storage/public/frontend/.gitkeep

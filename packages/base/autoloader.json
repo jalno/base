@@ -191,6 +191,10 @@
 		{
 			"classes":["IO\\directory\\local"],
 			"file":"libraries/io/directory/local.php"
+		},
+		{
+			"classes":["processes\\frontend"],
+			"file":"processes/frontend.php"
 		}
 	]
 }
