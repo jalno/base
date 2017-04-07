@@ -52,12 +52,24 @@ class ftp{
 			throw new AuthException;
 		}
 	}
-	public function chdir($dir){
+	public function chdir(string $dir){
 		if($this->ready){
 			return @ftp_chdir($this->connection, $dir);
 		}else{
 			throw new NotReady();
 		}
+	}
+	public function cdup(){
+		if(!$this->ready){
+			throw new NotReady();
+		}
+		return @ftp_cdup($this->connection);
+	}
+	public function pwd(){
+		if(!$this->ready){
+			throw new NotReady();
+		}
+		return @ftp_pwd($this->connection);
 	}
 	public function put($local, $remote, $mode = self::BINARY, $startpos = 0){
 		if($this->ready){
@@ -88,5 +100,49 @@ class ftp{
 	}
 	public function is_ready(){
 		return $this->ready;
+	}
+	public function is_dir(string $filename):bool{
+		if(!$this->chdir($filename)){
+			return false;
+		}
+		$this->cdup();
+		return true;
+	}
+	public function listOfFiles(string $dir, bool $dirs = true, bool $subdirs = false):array{
+		$items = [];
+		$files = ftp_nlist($this->connection, $dir);
+		foreach($files as $file){
+			if($this->is_dir($file)){
+				if($dirs){
+					$items[] = $file;
+				}
+				if($subdirs){
+					$items = array_merge($items, $this->listOfFiles($file, $dirs, $subdirs));
+				}
+			}else{
+				$items[] = $file;
+			}
+		}
+		return $items;
+	}
+	public function chmod(string $dir, int $mode):bool{
+		return @ftp_chmod($this->connection, $mode, $dir);
+	}
+	public function mkdir(string $pathname, int $mode = 0755):bool{
+		$pwd = $this->pwd();
+		$parts = explode('/', $pathname);
+		foreach($parts as $part){
+			if(!$this->chdir($part)){
+				if(!@ftp_mkdir($this->connection, $part)){
+					return false;
+				}
+				$this->chdir($part);
+				if($mode != 755){
+					$this->chmod($part, $mode);
+				}
+			}
+		}
+		$this->chdir($pwd);
+		return true;
 	}
 }
