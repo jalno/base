@@ -175,6 +175,10 @@
 				"IO\\NotFoundException"
 			],
 			"file":"libraries/io/exceptions.php"
+		},
+		{
+			"classes":["IO\\directory"],
+			"file":"libraries/io/directory.php"
 		}
 	]
 }
