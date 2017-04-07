@@ -109,7 +109,7 @@ class source{
 			$assetData['name'] = $asset['name'];
 		}
 		if(isset($asset['file'])){
-			if(is_file("{$this->path}/{$asset['file']}")){
+			if(substr($asset['file'], 0, 13) == 'node_modules/' or is_file("{$this->path}/{$asset['file']}")){
 				$assetData['file'] = $asset['file'];
 			}else{
 				throw new SourceAssetFileException($asset['file'], $this->path);
