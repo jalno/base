@@ -282,7 +282,7 @@ class source{
 				list($listener, $method) = explode('@', $event['listener'], 2);
 				if(class_exists($listener) and method_exists($listener, $method)){
 					$listener = new $listener();
-					$listener->$method($e);
+					$listener->$method($e, $this);
 				}else{
 					throw new listener($event['name']);
 				}
