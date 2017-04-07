@@ -3,14 +3,19 @@ namespace packages\base\IO\drivers;
 use \packages\base\ssh;
 use \packages\base\IO\buffer;
 class sftp{
+	private $ssh;
 	private $connection;
 	function __construct(ssh $ssh){
-		$this->connection = ssh2_sftp($ssh->connection());
+		$this->ssh = $ssh;
+		$this->connection = ssh2_sftp($this->ssh->connection());
 	}
-	public function getConnection():ssh{
+	public function getConnection(){
 		return $this->connection;
 	}
-	public function upload($local,$remote,$mode = 0644){
+	public function getSSH():ssh{
+		return $this->ssh;
+	}
+	public function upload($local, $remote, $mode = 0644){
     	if($fs = @fopen($local, 'rb')){
     		if($fd = @fopen("ssh2.sftp://".$this->connection.$remote, 'wb')){
     			$error = false;
