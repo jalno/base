@@ -1,5 +1,7 @@
 <?php
 namespace packages\base\json;
+const PRETTY = JSON_PRETTY_PRINT;
+const FORCE_OBJECT = JSON_FORCE_OBJECT;
 function encode($value, $options = 0, $depth = 512){
 	if($options == 0 and defined('JSON_UNESCAPED_UNICODE'))$options =  JSON_UNESCAPED_UNICODE;
 	if(phpversion() >= '5.4.0'){
