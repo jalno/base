@@ -86,37 +86,57 @@ class source{
 		return $this->name;
 	}
 	public function addAsset($asset){
-		if($asset['type'] == 'js' or $asset['type'] == 'css'){
-			if(isset($asset['file'])){
-				if(is_file("{$this->path}/{$asset['file']}")){
-					$assetData = array(
-						'type' => $asset['type'],
-						'file' => $asset['file']
-					);
-					if(isset($asset['name'])){
-						$assetData['name'] = $asset['name'];
-					}
-					$this->assets[] = $assetData;
-					return true;
-				}else{
-					throw new SourceAssetFileException($asset['file'], $this->path);
-				}
-			}elseif(isset($asset['inline'])){
-				$assetData = array(
-					'type' => $asset['type'],
-					'inline' => $asset['inline']
-				);
-				if(isset($asset['name'])){
-					$assetData['name'] = $asset['name'];
-				}
-				$this->assets[] = $assetData;
-			}else{
-				throw new SourceAssetException("No file and no Code for asset",$this->path);
-			}
-		}else{
-			throw new SourceAssetException("Unkown asset type", $this->path);
+		switch($asset['type']){
+			case('js'):
+			case('css'):
+			case('less'):
+			case('sass'):
+			case('ts'):
+				$this->addCodeAsset($asset);
+				break;
+			case('package'):
+				$this->addNodePackageAsset($asset);
+				break;
+			default:
+				throw new SourceAssetException("Unkown asset type", $this->path);
 		}
 	}
+	private function addCodeAsset(array $asset){
+		$assetData = array(
+			'type' => $asset['type']
+		);
+		if(isset($asset['name'])){
+			$assetData['name'] = $asset['name'];
+		}
+		if(isset($asset['file'])){
+			if(is_file("{$this->path}/{$asset['file']}")){
+				$assetData['file'] = $asset['file'];
+			}else{
+				throw new SourceAssetFileException($asset['file'], $this->path);
+			}
+		}elseif(isset($asset['inline'])){
+			$assetData['inline'] = $asset['inline'];
+		}else{
+			throw new SourceAssetException("No file and no Code for asset",$this->path);
+		}
+		$this->assets[] = $assetData;
+	}
+	private function addNodePackageAsset(array $asset){
+		$assetData = array(
+			'type' => 'package'
+		);
+		if(isset($asset['name'])){
+			if(preg_match("/^[a-z0-9\\-\\.\\@\\_\\!\/]{1,214}$/", $asset['name'])){
+				$assetData['name'] = $asset['name'];
+			}else{
+				throw new SourceAssetException("invalid node package name", $this->path);
+			}
+		}else{
+			throw new SourceAssetException("No node package name",$this->path);
+		}
+		$this->assets[] = $assetData;
+	}
+	
 	public function getAssets($type = null){
 		$assets = array();
 		foreach($this->assets as $asset){
