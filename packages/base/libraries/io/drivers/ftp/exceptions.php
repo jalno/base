@@ -1,5 +1,5 @@
 <?php
-namespace \packages\base\IO\drivers\ftp;
+namespace packages\base\IO\drivers\ftp;
 class CannectionException extends \Exception{
 
 }
