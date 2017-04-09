@@ -64,7 +64,7 @@ class local extends file{
 			'basename' => $this->basename
 		));
     }
-    public function unserialize(string $data){
+    public function unserialize($data){
 		$data = unserialize($data);
 		$this->directory = isset($data['directory']) ? $data['directory'] : null;
 		$this->basename = isset($data['basename']) ? $data['basename'] : null;
