@@ -30,11 +30,7 @@ function isExternal(module) {
 	}
 	commonFiles.push(userRequest);
 	var node_modules = path.resolve('./node_modules');
-	var baseLibrary = path.resolve('./src/packages/base/frontend/src/js/');
-	return (
-		userRequest.substr(0, node_modules.length) == node_modules ||
-		userRequest.substr(0, baseLibrary.length) == baseLibrary
-	);
+	return (userRequest.substr(0, node_modules.length) == node_modules);
 }
 
 module.exports = {
@@ -45,12 +41,7 @@ module.exports = {
 		path: path.resolve(__dirname, "../../public/frontend/dist/")
 	},
 	resolve: {
-		extensions: ['.ts', '.js',".less", ".css"],
-		alias: {
-			"Options":path.resolve(__dirname,'./src/packages/base/frontend/src/js/Options.ts'),
-			"Router":path.resolve(__dirname,'./src/packages/base/frontend/src/js/Router.ts'),
-			"Translator":path.resolve(__dirname,'./src/packages/base/frontend/src/js/Translator.ts')
-		}
+		extensions: ['.ts', '.js',".less", ".css"]
 	},
 	module: {
 		rules: [
