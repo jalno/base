@@ -45,7 +45,7 @@ class local extends file{
         }
     }
     public function copyFrom(file $source): bool{
-        if($dest instanceof self){
+        if($source instanceof self){
             return copy($source->getPath(), $this->getPath());
         }
     }
