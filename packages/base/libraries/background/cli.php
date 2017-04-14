@@ -34,4 +34,14 @@ class cli{
         }
         return($return);
     }
+    public static function readLine(string $message = ""):string{
+        if($message){
+            echo $message;
+        }
+        $line = fgets(STDIN);
+        if(substr($line, -1) == "\n"){
+            $line = substr($line, 0, strlen($line)-1);
+        }
+        return $line;
+    }
 }
