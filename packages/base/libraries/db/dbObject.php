@@ -660,7 +660,13 @@ class dbObject {
 	private function validate ($data) {
 		if (!$this->dbFields)
 			return true;
-		foreach ($this->dbFields as $key => $desc) {
+		$dbFields = $this->dbFields;
+		if(!isset($dbFields[$this->primaryKey])){
+			$dbFields[$this->primaryKey] = array(
+				'type' => 'int'
+			);
+		}
+		foreach ($dbFields as $key => $desc) {
 			$type = isset($desc['type']) ? $desc['type'] : null;
 			$required = (isset($desc['required']) and $desc['required']);
 			$unique = (isset($desc['unique']) and $desc['unique']);
@@ -723,7 +729,7 @@ class dbObject {
 		if (!$this->dbFields)
 			return $this->data;
 		foreach ($this->data as $key => &$value) {
-			if (!in_array ($key, array_keys ($this->dbFields)))
+			if (!in_array ($key, array_keys ($this->dbFields)) and $this->primaryKey != $key)
 				continue;
 			if ($value instanceof dbObject) {
 				if($value->isNew == true){
