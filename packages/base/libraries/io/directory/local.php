@@ -140,4 +140,16 @@ class local extends directory{
 	public function getRealPath():string{
 		return realpath($this->getPath());
 	}
+
+    public function serialize():string{
+		return serialize(array(
+			'directory' => $this->directory,
+			'basename' => $this->basename
+		));
+    }
+    public function unserialize($data){
+		$data = unserialize($data);
+		$this->directory = isset($data['directory']) ? $data['directory'] : null;
+		$this->basename = isset($data['basename']) ? $data['basename'] : null;
+    }
 }
