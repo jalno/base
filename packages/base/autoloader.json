@@ -193,6 +193,10 @@
 			"file":"libraries/io/directory/local.php"
 		},
 		{
+			"classes":["IO\\directory\\tmp"],
+			"file":"libraries/io/directory/tmp.php"
+		},
+		{
 			"classes":["processes\\frontend"],
 			"file":"processes/frontend.php"
 		}
