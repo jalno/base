@@ -1,6 +1,6 @@
 <?php
 namespace packages\base\IO;
-abstract class directory{
+abstract class directory implements \Serializable{
 	public $directory;
 	public $basename;
 	public function __construct(string $path = ''){
