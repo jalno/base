@@ -5,7 +5,11 @@ use \packages\base\IO\directory;
 use \packages\base\IO\NotFoundException;
 class local extends directory{
     public function size(): int{
-        return 0;
+        $size = 0;
+        foreach($this->files(true) as $file){
+            $size += $file->size();
+        }
+        return $size;
     }
     public function move(directory $dest): bool{
         if(!$dest->exists()){
