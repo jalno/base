@@ -8,7 +8,14 @@ class local extends directory{
         return 0;
     }
     public function move(directory $dest): bool{
-        
+        if(!$dest->exists()){
+            $dest->make(true);
+        }
+        if(rename($this->getPath(), $dest->getPath().'/'.$this->basename)){
+            $this->directory = $dest->getPath();
+            return true;
+        }
+        return false;
     }
     public function rename(string $newName): bool{
         if(rename($this->getPath(), $this->directory.'/'.$newName)){
