@@ -11,7 +11,11 @@ class local extends directory{
         
     }
     public function rename(string $newName): bool{
-        
+        if(rename($this->getPath(), $this->directory.'/'.$newName)){
+            $this->basename = $newName;
+            return true;
+        }
+        return false;
     }
     public function delete(){
 		foreach($this->items(false) as $item){
