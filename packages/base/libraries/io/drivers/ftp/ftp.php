@@ -98,6 +98,9 @@ class ftp{
 		}
 		return ftp_delete($this->connection, $path);
 	}
+	public function rmdir(string $dir):bool{
+		return @ftp_rmdir($this->connection, $dir);
+	}
 	public function is_ready(){
 		return $this->ready;
 	}
