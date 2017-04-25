@@ -189,12 +189,20 @@
 			"file":"libraries/io/file/tmp.php"
 		},
 		{
+			"classes":["IO\\file\\ftp"],
+			"file":"libraries/io/file/ftp.php"
+		},
+		{
 			"classes":["IO\\directory\\local"],
 			"file":"libraries/io/directory/local.php"
 		},
 		{
 			"classes":["IO\\directory\\tmp"],
 			"file":"libraries/io/directory/tmp.php"
+		},
+		{
+			"classes":["IO\\directory\\ftp"],
+			"file":"libraries/io/directory/ftp.php"
 		},
 		{
 			"classes":["processes\\frontend"],
