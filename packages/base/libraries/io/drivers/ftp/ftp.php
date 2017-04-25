@@ -108,6 +108,9 @@ class ftp{
 		$this->cdup();
 		return true;
 	}
+	public function is_file(string $filename):bool{
+		return $this->size($filename);
+	}
 	public function listOfFiles(string $dir, bool $dirs = true, bool $subdirs = false):array{
 		$items = [];
 		$files = $this->nlist($dir);
