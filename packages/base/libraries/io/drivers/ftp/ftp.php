@@ -102,11 +102,11 @@ class ftp{
 		return $this->ready;
 	}
 	public function is_dir(string $filename):bool{
+		$pwd = $this->pwd();
 		if(!$this->chdir($filename)){
 			return false;
 		}
-		$this->cdup();
-		return true;
+		return $this->chdir($pwd);
 	}
 	public function is_file(string $filename):bool{
 		return $this->size($filename);
