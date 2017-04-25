@@ -99,15 +99,13 @@ class process extends dbObject{
 		}
 		$this->save();
 	}
-	public function runAndWaitFor($seconds){
+	public function runAndWaitFor(int $seconds = 0){
 		if($this->background_run()){
-			$startime = time();
-			while((time() - $startime < $seconds) and $this->isRunning());
-			if($this->isRunning()){
-				return self::running;
-			}else{
+			if($this->waitFor($seconds)){
 				$this->byId($this->id);
 				return $this->response;
+			}else{
+				return self::running;
 			}
 		}
 	}
@@ -191,5 +189,12 @@ class process extends dbObject{
             return self::OS_NIX;
         }
         return self::OS_OTHER;
+	}
+	public function waitFor(int $timeout = 0):bool{
+		$ftime = time();
+		while($this->isRunning() and ($timeout == 0 or time() - $ftime < $timeout)){
+			usleep(250000);
+		}
+		return !$this->isRunning();
 	}
 }
