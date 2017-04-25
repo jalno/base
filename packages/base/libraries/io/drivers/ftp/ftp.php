@@ -145,4 +145,16 @@ class ftp{
 		$this->chdir($pwd);
 		return true;
 	}
+	public function getHostname():string{
+		return $this->options['host'];
+	}
+	public function getPort():int{
+		return $this->options['port'];
+	}
+	public function getUsername():string{
+		return $this->options['username'];
+	}
+	public function getPassword():string{
+		return $this->options['password'];
+	}
 }
