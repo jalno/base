@@ -41,7 +41,7 @@ use \packages\base\json;
  * @method string getLastQuery ()
  **/
 class dbObject implements \Serializable{
-	private $connection;
+	private $connection = 'default';
 	/**
 	 * Working instance of MysqliDb created earlier
 	 *
@@ -794,11 +794,16 @@ class dbObject implements \Serializable{
 			$result['@connection'] = $this->connection;
 		}
 		if(self::$recursivelySerialize){
+			$fields = $this->getFields();
+			$relations = $this->getRelations();
+			$jsonFields = property_exists($this, 'jsonFields') ? $this->jsonFields : [];
+			$arrayFields = property_exists($this, 'arrayFields') ? $this->arrayFields : [];
+			$serializeFields = property_exists($this, 'serializeFields') ? $this->serializeFields : [];
+			$arrayFields = array_merge($arrayFields,$jsonFields, $serializeFields );
 			foreach($this->data as $key => $value){
-				if(is_array($value) and property_exists($this,'relations') and strtolower($this->relations[$key][0]) != 'getone'){
-					continue;
+				if(!is_array($value) or (isset($fields[$key]) and in_array($key, $arrayFields)) or (isset($relations[$key]) and strtolower($relations[$key][0]) == 'hasone')){
+					$result[$key] = $value;
 				}
-				$result[$key] = $value;
 			}
 		}else{
 			$result = array_merge($result, $this->toArray(false));
@@ -807,10 +812,11 @@ class dbObject implements \Serializable{
     }
     public function unserialize($data) {
         $data = unserialize($data);
-		if(!isset($data['@connection']) or $data['@connection'] == 'default'){
+		$this->connection = isset($data['@connection']) ? $data['@connection'] : 'default';
+		if($this->connection == 'default'){
     		loader::requiredb();
 		}
-		$this->db = db::connection(isset($data['@connection']) ? $data['@connection'] : 'default');
+		$this->db = db::connection($this->connection);
 		
 		if( $this->primaryKey and isset($data[$this->primaryKey]) and $data[$this->primaryKey]){
 			$this->isNew = false;
