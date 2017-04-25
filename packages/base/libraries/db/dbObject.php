@@ -40,7 +40,8 @@ use \packages\base\json;
  * @method string getLastError ()
  * @method string getLastQuery ()
  **/
-class dbObject {
+class dbObject implements \Serializable{
+	private $connection;
 	/**
 	 * Working instance of MysqliDb created earlier
 	 *
@@ -118,22 +119,25 @@ class dbObject {
 	/**
 	 * @param array $data Data to preload on object creation
 	 */
+	protected static $recursivelySerialize = false;
+
 	public function __construct ($data = array(), $connection = 'default') {
 		if($connection == 'default'){
     		loader::requiredb();
 		}
-		$this->db = db::connection($connection);;
+		$this->db = db::connection($connection);
+		$this->connection = $connection;
 		if (empty ($this->dbTable))
 			$this->dbTable = get_class ($this);
 		if ($data){
+			$this->original_data = $data;
 			if(is_object($data) and $data instanceof dbObject){
-				$data = $data->toArray();
+				$this->original_data = $data->data;
 			}
-			if(is_array($data) and $this->primaryKey and isset($data[$this->primaryKey]) and $data[$this->primaryKey]){
+			if(is_array($this->original_data) and $this->primaryKey and isset($this->original_data[$this->primaryKey]) and $this->original_data[$this->primaryKey]){
 				$this->isNew = false;
 			}
-			$this->data = $data;
-			$this->original_data = $data;
+			$this->data = $this->original_data;
 		}
 	}
 	/**
@@ -629,7 +633,6 @@ class dbObject {
 			}
 		}
 		if (isset ($this->serializeFields) && is_array ($this->serializeFields)) {
-
 			foreach ($this->serializeFields as $key){
 				if($data[$key]){
 					$data[$key] = unserialize ($data[$key]);
@@ -785,4 +788,35 @@ class dbObject {
 	public function getRelations(){
 		return(property_exists($this,'relations') ? $this->relations : array());
 	}
+	public function serialize() {
+		$result = [];
+		if($this->connection != 'default'){
+			$result['@connection'] = $this->connection;
+		}
+		if(self::$recursivelySerialize){
+			foreach($this->data as $key => $value){
+				if(is_array($value) and property_exists($this,'relations') and strtolower($this->relations[$key][0]) != 'getone'){
+					continue;
+				}
+				$result[$key] = $value;
+			}
+		}else{
+			$result = array_merge($result, $this->toArray(false));
+		}
+		return serialize($result);
+    }
+    public function unserialize($data) {
+        $data = unserialize($data);
+		if(!isset($data['@connection']) or $data['@connection'] == 'default'){
+    		loader::requiredb();
+		}
+		$this->db = db::connection(isset($data['@connection']) ? $data['@connection'] : 'default');
+		
+		if( $this->primaryKey and isset($data[$this->primaryKey]) and $data[$this->primaryKey]){
+			$this->isNew = false;
+		}
+		$this->data = $data;
+		$this->original_data = $data;
+		
+    }
 }
