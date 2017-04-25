@@ -110,7 +110,7 @@ class ftp{
 	}
 	public function listOfFiles(string $dir, bool $dirs = true, bool $subdirs = false):array{
 		$items = [];
-		$files = ftp_nlist($this->connection, $dir);
+		$files = $this->nlist($dir);
 		foreach($files as $file){
 			if($this->is_dir($file)){
 				if($dirs){
@@ -124,6 +124,16 @@ class ftp{
 			}
 		}
 		return $items;
+	}
+	public function nlist(string $dir):array{
+		if(!$this->ready){
+			throw new NotReady();
+		}
+		$list = @ftp_nlist($this->connection, $dir);
+		if(!is_array($list)){
+			$list = [];
+		}
+		return $list;
 	}
 	public function chmod(string $dir, int $mode):bool{
 		return @ftp_chmod($this->connection, $mode, $dir);
