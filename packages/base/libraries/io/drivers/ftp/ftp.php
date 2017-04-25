@@ -108,6 +108,12 @@ class ftp{
 		}
 		return $this->chdir($pwd);
 	}
+	public function size($path): int{
+		if(!$this->ready){
+			throw new NotReady();
+		}
+		return ftp_size($this->connection, $path);
+	}
 	public function is_file(string $filename):bool{
 		return $this->size($filename);
 	}
