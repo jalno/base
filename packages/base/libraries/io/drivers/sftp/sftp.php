@@ -64,10 +64,20 @@ class sftp{
 		return file_get_contents("ssh2.sftp://".$this->connection.$filename);
 	}
 	public function is_file($filename){
-		return $this->stat($filename) ? true : false;
+		$stat = $this->stat($filename);
+		if(!$stat or !isset($stat['mode'])){
+			return false;
+		}
+		$t = decoct($stat['mode'] & 0170000);
+		return(octdec($t) == 0100000);
 	}
 	public function is_dir($filename){
-		return is_dir("ssh2.sftp://".$this->connection.$filename);
+		$stat = $this->stat($filename);
+		if(!$stat or !isset($stat['mode'])){
+			return false;
+		}
+		$t = decoct($stat['mode'] & 0170000);
+		return(octdec($t) == 0040000);
 	}
 	public function mkdir($pathname, $mode=0755){
 		return ssh2_sftp_mkdir($this->connection,$pathname, $mode);
