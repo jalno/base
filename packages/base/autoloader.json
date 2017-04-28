@@ -193,6 +193,10 @@
 			"file":"libraries/io/file/ftp.php"
 		},
 		{
+			"classes":["IO\\file\\sftp"],
+			"file":"libraries/io/file/sftp.php"
+		},
+		{
 			"classes":["IO\\directory\\local"],
 			"file":"libraries/io/directory/local.php"
 		},
@@ -203,6 +207,10 @@
 		{
 			"classes":["IO\\directory\\ftp"],
 			"file":"libraries/io/directory/ftp.php"
+		},
+		{
+			"classes":["IO\\directory\\sftp"],
+			"file":"libraries/io/directory/sftp.php"
 		},
 		{
 			"classes":["processes\\frontend"],
