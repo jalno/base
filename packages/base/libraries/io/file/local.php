@@ -43,9 +43,9 @@ class local extends file{
         if($dest instanceof self){
             return copy($this->getPath(), $dest->getPath());
         }elseif($dest instanceof file\ftp){
-            return $driver->put($this->getPath(), $dest->getPath());
+            return $dest->getDriver()->put($this->getPath(), $dest->getPath());
         }elseif($dest instanceof file\sftp){
-            return $driver->upload($this->getPath(), $dest->getPath());
+            return $dest->getDriver()->upload($this->getPath(), $dest->getPath());
         }
     }
     public function getDirectory():directory\local{
