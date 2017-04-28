@@ -64,16 +64,6 @@ class sftp extends file{
 			return $driver->download($this->getPath(), $dest->getPath());
 		}
 	}
-	public function copyFrom(file $source): bool{
-		if($source instanceof self){
-			$tmp = new tmp();
-			if($source->copyTo($tmp)){
-				return $this->copyFrom($tmp);
-			}
-		}elseif($source instanceof local){
-			return $this->getDriver()->upload($source->getPath(), $this->getPath());
-		}
-	}
 	public function getDirectory():directory\sftp{
 		$directory = new directory\sftp($this->directory);
 		$directory->setDriver($this->getDriver());

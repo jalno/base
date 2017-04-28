@@ -68,20 +68,6 @@ class ftp extends file{
 			return $dest->copyFrom($tmp);
 		}
 	}
-	public function copyFrom(file $source): bool{
-		if($source instanceof self){
-			$tmp = new tmp();
-			if($source->copyTo($tmp)){
-				return $this->copyFrom($tmp);
-			}
-		}elseif($source instanceof local){
-			return $this->getDriver()->put($source->getPath(), $this->getPath());
-		}elseif($source instanceof sftp){
-			$tmp = new tmp();
-			$source->copyTo($tmp);
-			return $this->copyFrom($tmp);
-		}
-	}
 	public function getDirectory():directory\ftp{
 		$directory = new directory\ftp($this->directory);
 		$directory->setDriver($this->getDriver());

@@ -44,11 +44,6 @@ class local extends file{
             return copy($this->getPath(), $dest->getPath());
         }
     }
-    public function copyFrom(file $source): bool{
-        if($source instanceof self){
-            return copy($source->getPath(), $this->getPath());
-        }
-    }
     public function getDirectory():directory\local{
         return new directory\local($this->directory);
     }

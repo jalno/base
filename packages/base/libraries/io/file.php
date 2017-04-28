@@ -9,7 +9,6 @@ abstract class file implements \Serializable{
 			$this->basename = basename($path);
 		}
 	}
-	abstract public function copyFrom(file $source): bool;
 	abstract public function copyTo(file $dest): bool;
 	abstract public function delete();
 	abstract public function rename(string $newName): bool;
@@ -20,6 +19,9 @@ abstract class file implements \Serializable{
 	abstract public function getDirectory();
 	public function getPath():string {
 		return ($this->directory and $this->basename) ? $this->directory.'/'.$this->basename : '';
+	}
+	public function copyFrom(file $source): bool{
+		return $source->copyTo($this);
 	}
 	public function getExtension():string{
 		return substr($this->basename, strrpos($this->basename, '.')+1);
