@@ -82,9 +82,6 @@ class ftp extends directory{
 		}
 		return true;
 	}
-	public function copyFrom(directory $source): bool{
-		return $source->copyTo($this);
-	}
 	public function files(bool $recursively = false):array{
 		$driver = $this->getDriver();
 		$scanner = function($dir) use($recursively, $driver, &$scanner){

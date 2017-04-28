@@ -73,9 +73,6 @@ class local extends directory{
         }
 		return true;
     }
-    public function copyFrom(directory $source): bool{
-        return $source->copyTo($this);
-    }
     public function files(bool $recursively = true):array{
         $scanner = function($dir) use($recursively, &$scanner){
             $files = [];

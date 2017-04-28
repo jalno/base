@@ -9,7 +9,6 @@ abstract class directory implements \Serializable{
 			$this->basename = basename($path);
 		}
 	}
-	abstract public function copyFrom(directory $source): bool;
 	abstract public function copyTo(directory $dest):bool;
 	abstract public function delete();
 	abstract public function rename(string $newName): bool;
@@ -24,6 +23,9 @@ abstract class directory implements \Serializable{
 	abstract public function directory(string $name);
 	public function getPath():string {
 		return ($this->directory and $this->basename) ? $this->directory.'/'.$this->basename : '';
+	}
+	public function copyFrom(directory $source): bool{
+		return $source->copyTo($this);
 	}
 	public function isEmpty():bool{
 		return empty($this->items(false));
