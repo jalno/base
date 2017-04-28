@@ -55,13 +55,13 @@ class sftp extends file{
 	}
 	public function copyTo(file $dest): bool{
 		$driver = $this->getDriver();
-		if($dest instanceof self){
+		if($dest instanceof local){
+			return $driver->download($this->getPath(), $dest->getPath());
+		}else{
 			$tmp = new tmp();
 			if($this->copyTo($tmp)){
-				return $dest->copyFrom($tmp);
+				return $tmp->copyTo($dest);
 			}
-		}elseif($dest instanceof local){
-			return $driver->download($this->getPath(), $dest->getPath());
 		}
 	}
 	public function getDirectory():directory\sftp{

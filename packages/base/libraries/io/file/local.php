@@ -42,6 +42,10 @@ class local extends file{
     public function copyTo(file $dest): bool{
         if($dest instanceof self){
             return copy($this->getPath(), $dest->getPath());
+        }elseif($dest instanceof file\ftp){
+            return $driver->put($this->getPath(), $dest->getPath());
+        }elseif($dest instanceof file\sftp){
+            return $driver->upload($this->getPath(), $dest->getPath());
         }
     }
     public function getDirectory():directory\local{

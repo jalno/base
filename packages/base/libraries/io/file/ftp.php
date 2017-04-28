@@ -55,17 +55,13 @@ class ftp extends file{
 	}
 	public function copyTo(file $dest): bool{
 		$driver = $this->getDriver();
-		if($dest instanceof self){
+		if($dest instanceof local){
+			return $driver->get($this->getPath(), $dest->getPath());
+		}else{
 			$tmp = new tmp();
 			if($this->copyTo($tmp)){
-				return $dest->copyFrom($tmp);
+				return $tmp->copyTo($dest);
 			}
-		}elseif($dest instanceof local){
-			return $driver->get($this->getPath(), $dest->getPath());
-		}elseif($dest instanceof sftp){
-			$tmp = new tmp();
-			$driver->get($this->getPath(), $tmp->getPath());
-			return $dest->copyFrom($tmp);
 		}
 	}
 	public function getDirectory():directory\ftp{
