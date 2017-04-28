@@ -8,6 +8,7 @@ class ssh{
     private $host;
     private $port;
     private $username;
+    private $password;
     function __construct(string $host, int $port){
         if(($this->connection = @ssh2_connect($host, $port)) === false){
             throw new ConnectionException;
@@ -18,6 +19,7 @@ class ssh{
 	function AuthByPassword(string $username,string $password):bool{
 		if(@ssh2_auth_password($this->connection, $username, $password)){
             $this->username = $username;
+            $this->password = $password;
             return true;
         }
         return false;
@@ -48,5 +50,8 @@ class ssh{
     }
     public function getUsername():string{
         return $this->username;
+    }
+    public function getPassword():string{
+        return $this->password;
     }
 }
