@@ -51,28 +51,6 @@ class local extends directory{
             return mkdir($this->getPath());
         }
     }
-    public function copyTo(directory $dest): bool{
-        $sourcePath = $this->getPath();
-		if(!$dest->exists()){
-			$dest->make(true);
-		}
-        foreach($this->items(true) as $item){
-            $relativePath = substr($item->getPath(), strlen($sourcePath)+1);
-            if($item instanceof file){
-                if(!$item->copyTo($dest->file($relativePath))){
-					return false;	
-				}
-            }else{
-				$destDir = $dest->directory($relativePath);
-				if(!$destDir->exists()){
-					if(!$destDir->make(true)){
-						return false;	
-					}
-				}
-			}
-        }
-		return true;
-    }
     public function files(bool $recursively = true):array{
         $scanner = function($dir) use($recursively, &$scanner){
             $files = [];
