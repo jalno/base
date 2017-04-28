@@ -150,12 +150,12 @@ class ftp{
 	public function chmod(string $dir, int $mode):bool{
 		return @ftp_chmod($this->connection, $mode, $dir);
 	}
-	public function mkdir(string $pathname, int $mode = 0755):bool{
+	public function mkdir(string $pathname, int $mode = 755):bool{
 		$pwd = $this->pwd();
 		$parts = explode('/', $pathname);
 		foreach($parts as $part){
-			if(!$this->chdir($part)){
-				if(!@ftp_mkdir($this->connection, $part)){
+			if($part and !$this->chdir($part)){
+				if(!ftp_mkdir($this->connection, $part)){
 					return false;
 				}
 				$this->chdir($part);
