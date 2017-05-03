@@ -156,9 +156,9 @@ class dbObject implements \Serializable{
 	 * @return mixed
 	 */
 	public function __get ($name) {
-		if (isset ($this->data[$name]) && $this->data[$name] instanceof dbObject)
+		if (isset ($this->data[$name]) and $this->data[$name] instanceof dbObject)
 			return $this->data[$name];
-		if (property_exists ($this, 'relations') && isset ($this->relations[$name])) {
+		if (property_exists ($this, 'relations') and isset ($this->relations[$name])) {
 			$relationType = strtolower ($this->relations[$name][0]);
 			$modelName = $this->relations[$name][1];
 			switch ($relationType) {
@@ -250,13 +250,13 @@ class dbObject implements \Serializable{
 	 * @return mixed insert id or false in case of failure
 	 */
 	public function insert () {
-		if (!empty ($this->timestamps) && in_array ("createdAt", $this->timestamps))
+		if (!empty ($this->timestamps) and in_array ("createdAt", $this->timestamps))
 			$this->createdAt = date("Y-m-d H:i:s");
 		$sqlData = $this->prepareData ();
 		if (!$this->validate ($sqlData))
 			return false;
 		$id = $this->db->insert ($this->dbTable, $sqlData);
-		if (!empty ($this->primaryKey) && empty ($this->data[$this->primaryKey]))
+		if (!empty ($this->primaryKey) and empty ($this->data[$this->primaryKey]))
 			$this->data[$this->primaryKey] = $id;
 		$this->isNew = false;
 		$this->original_data = $this->data;
@@ -274,7 +274,7 @@ class dbObject implements \Serializable{
 			foreach ($data as $k => $v)
 				$this->$k = $v;
 		}
-		if (!empty ($this->timestamps) && in_array ("updatedAt", $this->timestamps))
+		if (!empty ($this->timestamps) and in_array ("updatedAt", $this->timestamps))
 			$this->updatedAt = date("Y-m-d H:i:s");
 		$sqlData = $this->prepareData ();
 		if (!$this->validate ($sqlData))
@@ -399,7 +399,7 @@ class dbObject implements \Serializable{
 	 * @return dbObject
 	 */
 	private function with ($objectName) {
-		if (!property_exists ($this, 'relations') && !isset ($this->relations[$name]))
+		if (!property_exists ($this, 'relations') and !isset ($this->relations[$name]))
 			die ("No relation with name $objectName found");
 		$this->_with[$objectName] = $this->relations[$objectName];
 		return $this;
@@ -624,7 +624,7 @@ class dbObject implements \Serializable{
 	 * @param array $data
 	 */
 	private function processArrays (&$data) {
-		if (isset ($this->jsonFields) && is_array ($this->jsonFields)) {
+		if (isset ($this->jsonFields) and is_array ($this->jsonFields)) {
 			foreach ($this->jsonFields as $key){
 				$firstChars  = substr($data[$key], 0,1);
 				if($firstChars == '{' or $firstChars == '['){
@@ -632,14 +632,14 @@ class dbObject implements \Serializable{
 				}
 			}
 		}
-		if (isset ($this->serializeFields) && is_array ($this->serializeFields)) {
+		if (isset ($this->serializeFields) and is_array ($this->serializeFields)) {
 			foreach ($this->serializeFields as $key){
-				if($data[$key]){
+				if(preg_match('/^(?:(?:a|i|s|C|O|b|d)\:\d+|N;)/', $data[$key])){
 					$data[$key] = unserialize ($data[$key]);
 				}
 			}
 		}
-		if (isset ($this->arrayFields) && is_array($this->arrayFields)) {
+		if (isset ($this->arrayFields) and is_array($this->arrayFields)) {
 			foreach ($this->arrayFields as $key)
 				$data[$key] = explode ("|", $data[$key]);
 		}
@@ -731,39 +731,33 @@ class dbObject implements \Serializable{
 			$this->data = $this->preLoad ($this->data);
 		if (!$this->dbFields)
 			return $this->data;
-		foreach ($this->data as $key => &$value) {
+		foreach ($this->data as $key => $value) {
 			if (!in_array ($key, array_keys ($this->dbFields)) and $this->primaryKey != $key)
 				continue;
-			if ($value instanceof dbObject) {
-				if($value->isNew == true){
-					$id = $value->save();
-					if ($id){
-						$value = $id;
-					}else{
-						$this->errors = array_merge ($this->errors, $value->errors);
-					}
+			if (is_object($value) and $value instanceof dbObject and $value->isNew == true) {
+				$id = $value->save();
+				if ($id){
+					$value = $id;
 				}else{
-					$pkey = $value->getPrimaryKey();
-					$sqlData[$key] = $value->$pkey;
-					continue;
+					$this->errors = array_merge ($this->errors, $value->errors);
 				}
 			}
-
-			if (!is_array($value) and !is_object($value)) {
-				$sqlData[$key] = $value;
-				continue;
-			}
-			if (isset ($this->jsonFields) && in_array ($key, $this->jsonFields)){
+			if (property_exists ($this, 'jsonFields') and in_array ($key, $this->jsonFields)){
 				if(is_array($value) or is_object($value)){
+					if($value instanceof dbObject){
+						$value = $value->toArray($value->isNew);
+					}
 					$sqlData[$key] = json\encode($value);
 				}else{
 					$sqlData[$key] = $value;
 				}
-			}else if (isset ($this->arrayFields) && in_array ($key, $this->arrayFields)){
-				$sqlData[$key] = implode ("|", $value);
-			}elseif (isset ($this->serializeFields) && in_array ($key, $this->serializeFields)){
+			}elseif(property_exists($this, 'serializeFields') and in_array ($key, $this->serializeFields) and (is_array($value) or is_object($value))){
 				$sqlData[$key] = serialize($value);
 			}else{
+				if (is_object($value) and $value instanceof dbObject and !$value->isNew == true) {
+					$pkey = $value->getPrimaryKey();
+					$value = $value->$pkey;
+				}
 				$sqlData[$key] = $value;
 			}
 		}
@@ -823,6 +817,5 @@ class dbObject implements \Serializable{
 		}
 		$this->data = $data;
 		$this->original_data = $data;
-		
     }
 }
