@@ -27,6 +27,12 @@ class curl implements handler{
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER,$options['ssl_verify']);
 			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST,$options['ssl_verify'] ? 2 : 0);
 		}
+		if(isset($options['proxy'])){
+			curl_setopt($ch, CURLOPT_PROXY, $options['proxy']['hostname'].":".$options['proxy']['port']);
+			if(isset($options['proxy']['username'], $options['proxy']['password']) and $options['proxy']['username']){
+				curl_setopt($ch, CURLOPT_PROXYUSERPWD, $options['proxy']['username'].':'.$options['proxy']['password']);
+			}
+		}
 		$headers = array();
 		foreach($request->getHeaders() as $name => $value){
 			$headers[] = $name.': '.$value;

@@ -10,6 +10,7 @@ class request{
 	private $port = 80;
 	private $headers = array();
 	private $body = '';
+	private $proxy;
 	public function __construct(string $host,string $uri){
 		$this->setHost($host);
 		$this->setURI($uri);
@@ -95,5 +96,11 @@ class request{
 	}
 	public function getBody():string{
 		return $this->body;
+	}
+	public function setProxy(array $proxy){
+		$this->proxy = $proxy;
+	}
+	public function getProxy(){
+		return $this->proxy;
 	}
 }
