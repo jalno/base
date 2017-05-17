@@ -101,6 +101,10 @@ class client{
 		}
 		if(isset($url_parse['port'])){
 			$request->setPort($url_parse['port']);
+		}elseif(isset($url_parse['scheme'])){
+			if($url_parse['scheme'] == 'https'){
+				$request->setPort(443);
+			}
 		}
 		$request->setMethod($method);
 		if(isset($url_parse['query']) and $url_parse['query']){
