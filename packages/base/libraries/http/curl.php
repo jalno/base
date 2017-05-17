@@ -25,7 +25,7 @@ class curl implements handler{
 		}
 		if(isset($options['ssl_verify'])){
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER,$options['ssl_verify']);
-			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST,$options['ssl_verify']);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST,$options['ssl_verify'] ? 2 : 0);
 		}
 		$headers = array();
 		foreach($request->getHeaders() as $name => $value){
