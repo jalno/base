@@ -81,8 +81,9 @@ class client{
 			parse_str($url_parse['query'], $query);
 			$thisOptions['query'] = array_replace_recursive($query, $thisOptions['query']);
 		}
-
-		$request->setQuery($thisOptions['query']);
+		if($thisOptions['query']){
+			$request->setQuery($thisOptions['query']);
+		}
 		$request->setBody($thisOptions['body']);
 		if($thisOptions['delay'] > 0){
 			usleep($thisOptions['delay']);
