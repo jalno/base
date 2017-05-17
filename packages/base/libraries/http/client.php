@@ -23,7 +23,8 @@ class client{
 		'proxy' => null,
 		'query' => null,
 		'ssl_verify' => true,
-		'timeout' => 0
+		'timeout' => 0,
+		'save_as' => null
 	);
 	private $options;
 	public function __construct(array $options = array()){
@@ -78,6 +79,13 @@ class client{
 				throw new TypeError("proxy passed to ".__NAMESPACE__."\\".__CLASS__."::".__METHOD__."() must be of the type array");
 			}
 		}
+		if(isset($thisOptions['save_as'])){
+			if(is_string($thisOptions['save_as'])){
+				$thisOptions['save_as'] = new file\local($thisOptions['save_as']);
+			}elseif(!$thisOptions['save_as'] instanceof file){
+				throw new TypeError("save_as passed to ".__NAMESPACE__."\\".__CLASS__."::".__METHOD__."() must be of the type string or packages\base\IO\file");
+			}
+		}
 		if(preg_match("/^[a-z]+\:\/\//i", $URI)){
 			$url = $URI;
 		}else{
@@ -111,6 +119,9 @@ class client{
 		}
 		if($thisOptions['proxy']){
 			$request->setProxy($thisOptions['proxy']);
+		}
+		if(isset($thisOptions['save_as'])){
+			$request->saveAs($thisOptions['save_as']);
 		}
 		$handler = new curl();
 		$response = $handler->fire($request, $thisOptions);
