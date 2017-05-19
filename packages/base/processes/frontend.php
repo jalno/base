@@ -12,9 +12,10 @@ use \packages\base\frontend\source;
 class frontend extends process{
 	private $repo;
 	private $repoConfig;
-	public function prepareAssets(){
+	private $inotifyHandler;
+	private $watchFiles = [];
+	private function getListOfSources():array{
 		$log = log::getInstance();
-		$log->debug("get list of frontend sources");
 		$sources = theme::get();
 		if(!$sources){
 			$log->reply("empty");
@@ -23,15 +24,16 @@ class frontend extends process{
 			$log->debug("get list of frontend sources");
 			$sources = theme::get();
 		}
+		return $sources;
+	}
+	public function prepareAssets(){
+		$log = log::getInstance();
+		$log->debug("get list of frontend sources");
+		$sources = $this->getListOfSources();
 		if(!$sources){
 			$log->reply("empty");
 			$log->debug("nothing to do");
 			return true;
-		}
-		foreach($sources as $key => $source){
-			if(!in_array($source->getPath(), ['packages/base/frontend', 'packages/userpanel/frontend', 'packages/stats/frontend'])){
-				unset($sources[$key]);
-			}
 		}
 		foreach($sources as $source){
 			$this->prepareSource($source);
@@ -167,8 +169,8 @@ class frontend extends process{
 			$log->debug("nothing to do");
 		}
 	}
-	private function getRelativePathOfSource(source $source):string{
-		$sourcePath = $source->getPath();
+	private function getRelativePathOfSource($source):string{
+		$sourcePath = $source instanceof source ?  $source->getPath() : $source;
 		if(preg_match("/(packages\/([a-zA-Z0-9|_]+).+)$/", $sourcePath, $matches)){
 			$sourcePath = $matches[1];
 		}
@@ -296,15 +298,16 @@ class frontend extends process{
 		$webpack = $this->repo->file('node_modules/.bin/webpack')->getPath();
 		$context = $this->repo->getRealPath().'/';
 		$config = $this->repo->file('webpack.config.js')->getRealPath();
-		$output = shell_exec("{$webpack} --context={$context} --config={$config} --progress=false --colors=false --json --hide-modules");
+		$cmd = "{$webpack} --context={$context} --config={$config} --progress=false --colors=false --json --hide-modules";
+		$output = shell_exec($cmd);
 		$parsedOutput = json\decode($output);
 		if(!$parsedOutput){
 			$log->reply()->fatal('cannot parse response');
-			throw new WebpackException($output);
+			throw new WebpackException($cmd, $output);
 		}
 		if(!isset($parsedOutput['errors']) or !empty($parsedOutput['errors'])){
 			$log->reply()->fatal('there is some errors');
-			throw new WebpackException($output);
+			throw new WebpackException($cmd, $output);
 		}
 		$log->reply("Success");
 		$log->debug("save chunk paths");
@@ -341,6 +344,86 @@ class frontend extends process{
 		$repo = new directory(packages::package('base')->getFilePath('storage/public/frontend'));
 		$repo->delete();
 	}
+	private function watchSource(source $source){
+		$log = log::getInstance();
+		$log->debug("get list of files in source");
+		$files = (new directory($source->getPath()))->files(true);
+		$log->reply(count($files), "files found");
+        foreach($files as $file){
+			$path = $file->getPath();
+			$log->debug("watch", $path);
+			if(strpos($path, 'node_modules') === false){
+				if($file->getExtension() != 'php'){
+					$watchID = inotify_add_watch($this->inotifyHandler, $path, IN_MODIFY);
+					$this->watchFiles[$watchID] = $file;
+					if($watchID){
+						$log->reply("Success");
+					}else{
+						$log->reply()->fatal("Failed");
+						return false;
+					}
+				}else{
+					$log->reply("skipped, bacause It is php file");
+				}
+			}else{
+				$log->reply("skipped, bacause It is a node module");
+			}
+        }
+		return true;
+
+	}
+	public function watch(){
+		$log = log::getInstance();
+		$log->debug('looking for inotify extension');
+		if(extension_loaded('inotify')){
+			$log->reply("found");
+			$this->prepareAssets();
+			$this->inotifyHandler = inotify_init();
+			$log->debug("get list of frontend sources");
+			$sources = $this->getListOfSources();
+			if(!$sources){
+				$log->reply("empty");
+				$log->debug("nothing to do");
+				return true;
+			}
+			foreach($sources as $source){
+				$log->info("watch source", $source->getPath());
+				if($this->watchSource($source)){
+					$log->reply("success");
+				}else{
+					$log->reply()->fatal('failed');
+					return false;
+				}
+			}
+			$log->info("run webpack wacher");
+			$webpack = $this->repo->file('node_modules/.bin/webpack')->getPath();
+			$context = $this->repo->getRealPath().'/';
+			$config = $this->repo->file('webpack.config.js')->getRealPath();
+			$cmd = "{$webpack} --context={$context} --config={$config} --progress=false --colors=false --json --hide-modules --watch > /dev/null 2>&1 &";
+			$output = shell_exec($cmd);
+			$log->info("watch for file's events");
+			while(true){
+				$queue = inotify_queue_len($this->inotifyHandler);
+				if($queue > 0){
+					$events = inotify_read($this->inotifyHandler);
+					$log->reply("got", count($events), "events");
+					foreach($events as $key => $event){
+						$file = $this->watchFiles[$event['wd']];
+						$filePath = $file->getPath();
+						$log->info("handle #{$key}", $filePath);
+						$relativePath = $this->getRelativePathOfSource($filePath);
+						$distFile = $this->repo->file('src/'.$relativePath);
+						$file->copyTo($distFile);
+						$log->reply("copied");
+					}
+				}else{
+					usleep(250000);
+				}
+			}
+		}else{
+			$log->reply()->fatal('notfound');
+		}
+	}
 }
 class InstallNpmPackageException extends \Exception{
 	protected $package;
@@ -353,5 +436,14 @@ class InstallNpmPackageException extends \Exception{
 	}
 
 }
-class WebpackException extends \Exception{}
+class WebpackException extends \Exception{
+	protected $cmd;
+	public function __construct(string $cmd, $message){
+		$this->cmd = $cmd;
+		parent::__construct($message);
+	}
+	public function getCMD():string{
+		return $this->cmd;
+	}
+}
 class WebpackChunkFileException extends \Exception{}
