@@ -223,6 +223,10 @@
 		{
 			"classes":["image\\gd"],
 			"file":"libraries/image/gd.php"
+		},
+		{
+			"classes":["image\\jpeg"],
+			"file":"libraries/image/jpeg.php"
 		}
 	]
 }
