@@ -227,6 +227,10 @@
 		{
 			"classes":["image\\jpeg"],
 			"file":"libraries/image/jpeg.php"
+		},
+		{
+			"classes":["image\\png"],
+			"file":"libraries/image/png.php"
 		}
 	]
 }
