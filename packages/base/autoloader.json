@@ -219,6 +219,10 @@
 		{
 			"classes":["image\\InvalidColorRangeException"],
 			"file":"libraries/image/exceptions.php"
+		},
+		{
+			"classes":["image\\gd"],
+			"file":"libraries/image/gd.php"
 		}
 	]
 }
