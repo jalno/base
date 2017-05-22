@@ -13,8 +13,7 @@ abstract class image{
 			$this->file = $param;
 			$this->fromFile();
 		}elseif($param instanceof self){
-			$this->file = $param->file;
-			$this->image = $param->image;
+			$this->fromImage($param);
 		}else{
 			$this->createBlank($param, $height, $bg);
 		}
@@ -27,6 +26,18 @@ abstract class image{
 	abstract public function getWidth():int;
 	abstract public function getHeight():int;
 	abstract public function saveToFile(file $file, int $quality = 75);
+	protected function fromImage(image $other){
+		$width = $other->getWidth();
+		$height = $other->getHeight();
+		$bg = color::fromRGBA(0,0,0,0);
+		$this->createBlank($width, $height, $bg);
+		for($x = 0;$x < $width;$x++){
+			for($y = 0;$y < $height;$y++){
+				$color = $other->colorAt($x, $y);
+				$this->setColorAt($x, $y, $color);
+			}
+		}
+	}
 	public function save(int $quality = 75){
 		$this->saveToFile($this->file, $quality);	
 	}
