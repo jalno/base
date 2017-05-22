@@ -19,7 +19,9 @@ class gd extends image{
 		imagefilledrectangle($this->image, 0, 0, $width, $height, $rgba);
 	}
 	public function __destruct(){
-		imagedestroy($this->image);
+		if(is_resource($this->image)){
+			imagedestroy($this->image);
+		}
 	}
 	public function getWidth():int{
 		return imagesx($this->image);
@@ -44,5 +46,12 @@ class gd extends image{
 		$colors[3] = round(127 - ($colors[3] * 127));
 		$rgba = imagecolorallocatealpha($this->image, $colors[0], $colors[1], $colors[2], $colors[3]);
 		imagesetpixel($this->image,$x, $y, $rgba);
+	}
+	protected function fromImage(image $other){
+		if($other instanceof self){
+			$this->image = $other->image;
+		}else{
+			parent::fromImage($other);
+		}
 	}
 }
