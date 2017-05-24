@@ -3,18 +3,18 @@ const path = require('path');
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
 const CleanCSSPlugin = require("less-plugin-clean-css");
 const extractText = new ExtractTextPlugin({
-    filename: "style.css"
+    filename: "[name].css"
 });
 const entries = require('./webpack.entries.json');
 var commonFiles = [];
 function isExternal(module) {
-	var userRequest = module.userRequest;
+	const userRequest = module.userRequest;
 
 	if (typeof userRequest !== 'string') {
 		return false;
 	}
-	var found = false;
-	var exts = ['.ts', '.js'];
+	let found = false;
+	let exts = ['.ts', '.js'];
 
 	exts = exts.sort();
 	for(var i = 0;i < exts.length && !found;i++){
@@ -29,7 +29,7 @@ function isExternal(module) {
 		return true;
 	}
 	commonFiles.push(userRequest);
-	var node_modules = path.resolve('./node_modules');
+	const node_modules = path.resolve(__dirname, 'node_modules');
 	return (userRequest.substr(0, node_modules.length) == node_modules);
 }
 
@@ -53,6 +53,9 @@ module.exports = {
 			}, {
 				loader: "less-loader",
 				options: {
+					paths: [
+                        __dirname
+                    ],
                     plugins: [
                         new CleanCSSPlugin({ advanced: true })
                     ]
@@ -80,10 +83,6 @@ module.exports = {
 				options:{
 					transpileOnly: true,
 					logLevel:'warn'
-					/*compilerOptions:{
-						baseUrl:'./',
-						rootDir:path.resolve('/home/hosting/webserver/')
-					}*/
 				}
 	 		}
 		]
