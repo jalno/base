@@ -6,7 +6,7 @@ use packages\base\view;
 use packages\base\views\form;
 use packages\base\views\FormError;
 use packages\base\response\file;
-class response{
+class response implements \Serializable{
 	protected $status;
 	protected $data;
 	protected $view;
@@ -175,5 +175,17 @@ class response{
 			$this->view->output();
 		}
 		$log->reply("Success");
+	}
+	public function serialize():string{
+		$result = [
+			'status' => $this->getStatus(),
+			'data' => $this->getData()
+		];
+		return serialize($result);
+	}
+	public function unserialize($data){
+		$data = unserialize($data);
+		$this->setStatus($data['status']);
+		$this->setData($data['data']);
 	}
 }
