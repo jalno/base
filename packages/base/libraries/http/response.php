@@ -1,5 +1,6 @@
 <?php
 namespace packages\base\http;
+use \packages\base\IO\file;
 class response{
 	private static $phrases = array(
 		100 => 'Continue',
@@ -65,10 +66,10 @@ class response{
 	private $reasonPhrase;
 	private $headers;
 	private $body;
-	public function __construct(int $status = 200,array $headers = [], string $body = ''){
+	private $file;
+	public function __construct(int $status = 200,array $headers = []){
 		$this->setStatusCode($status);
 		$this->setHeaders($headers);
-		$this->setBody($body);
 	}
 	public function setStatusCode(int $status){
 		$this->statusCode = $status;
@@ -94,6 +95,15 @@ class response{
 		$this->body = $body;
 	}
 	public function getBody():string{
+		if($this->file){
+			return $this->file->read();
+		}
 		return $this->body;
+	}
+	public function setFile(file $file){
+		$this->file = $file;
+	}
+	public function getFile(){
+		return $this->file;
 	}
 }

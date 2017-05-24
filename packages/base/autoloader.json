@@ -111,14 +111,6 @@
 		},
 		{
 			"classes":[
-				"image",
-				"InvalidImageException",
-				"UnknownImageException"
-			],
-			"file":"libraries/utility/image.php"
-		},
-		{
-			"classes":[
 				"view\\events\\viewEvent",
 				"view\\events\\beforeLoad",
 				"view\\events\\afterLoad",
@@ -215,6 +207,34 @@
 		{
 			"classes":["processes\\frontend"],
 			"file":"processes/frontend.php"
+		},
+		{
+			"classes":["image"],
+			"file":"libraries/image/image.php"
+		},
+		{
+			"classes":["image\\color"],
+			"file":"libraries/image/color.php"
+		},
+		{
+			"classes":["image\\InvalidColorRangeException"],
+			"file":"libraries/image/exceptions.php"
+		},
+		{
+			"classes":["image\\gd"],
+			"file":"libraries/image/gd.php"
+		},
+		{
+			"classes":["image\\jpeg"],
+			"file":"libraries/image/jpeg.php"
+		},
+		{
+			"classes":["image\\png"],
+			"file":"libraries/image/png.php"
+		},
+		{
+			"classes":["image\\gif"],
+			"file":"libraries/image/gif.php"
 		}
 	]
 }

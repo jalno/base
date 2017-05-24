@@ -1,5 +1,6 @@
 <?php
 namespace packages\base\http;
+use \packages\base\IO\file;
 class request{
 	private $method = 'GET';
 	private $query = array();
@@ -10,6 +11,8 @@ class request{
 	private $port = 80;
 	private $headers = array();
 	private $body = '';
+	private $proxy;
+	private $file;
 	public function __construct(string $host,string $uri){
 		$this->setHost($host);
 		$this->setURI($uri);
@@ -95,5 +98,17 @@ class request{
 	}
 	public function getBody():string{
 		return $this->body;
+	}
+	public function setProxy(array $proxy){
+		$this->proxy = $proxy;
+	}
+	public function getProxy(){
+		return $this->proxy;
+	}
+	public function saveAs(file $file){
+		$this->file = $file;
+	}
+	public function getSaveAs(){
+		return $this->file;
 	}
 }
