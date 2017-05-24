@@ -130,12 +130,14 @@ class dbObject implements \Serializable{
 		if (empty ($this->dbTable))
 			$this->dbTable = get_class ($this);
 		if ($data){
+			
 			$this->original_data = $data;
 			if(is_object($data) and $data instanceof dbObject){
 				$this->original_data = $data->data;
 			}
 			if(is_array($this->original_data) and $this->primaryKey and isset($this->original_data[$this->primaryKey]) and $this->original_data[$this->primaryKey]){
 				$this->isNew = false;
+				$this->processArrays($this->original_data);
 			}
 			$this->data = $this->original_data;
 		}
@@ -626,22 +628,27 @@ class dbObject implements \Serializable{
 	private function processArrays (&$data) {
 		if (isset ($this->jsonFields) and is_array ($this->jsonFields)) {
 			foreach ($this->jsonFields as $key){
-				$firstChars  = substr($data[$key], 0,1);
-				if($firstChars == '{' or $firstChars == '['){
-					$data[$key] = json\decode ($data[$key]);
+				if(is_string($data[$key])){
+					$firstChars  = substr($data[$key], 0,1);
+					if($firstChars == '{' or $firstChars == '['){
+						$data[$key] = json\decode ($data[$key]);
+					}
 				}
 			}
 		}
 		if (isset ($this->serializeFields) and is_array ($this->serializeFields)) {
 			foreach ($this->serializeFields as $key){
-				if(preg_match('/^(?:(?:a|i|s|C|O|b|d)\:\d+|N;)/', $data[$key])){
+				if(is_string($data[$key]) and preg_match('/^(?:(?:a|i|s|C|O|b|d)\:\d+|N;)/', $data[$key])){
 					$data[$key] = unserialize ($data[$key]);
 				}
 			}
 		}
 		if (isset ($this->arrayFields) and is_array($this->arrayFields)) {
-			foreach ($this->arrayFields as $key)
-				$data[$key] = explode ("|", $data[$key]);
+			foreach ($this->arrayFields as $key){
+				if(is_string($data[$key])){
+					$data[$key] = explode ("|", $data[$key]);
+				}
+			}
 		}
 	}
 	private function compareData($new, $old){
