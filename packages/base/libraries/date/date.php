@@ -89,4 +89,53 @@ class date implements date_interface{
 			self::setCanlenderName($defaultOption['calendar']);
 		}
 	}
+	public static function relativeTime(int $time, string $format = 'short'):string{
+		$now = self::time();
+		$mine = $time - $now;
+		if($mine == 0){
+			return translator::trans('date.relatively.now');
+		}
+		$steps = ['y', 'm', 'w', 'd', 'h', 'i', 's'];
+		if($format == 'short'){
+			$format = 'y';
+		}elseif($format == 'long'){
+			$format = 's';
+		}elseif(!in_array($format, $steps)){
+			throw new \TypeError('wrong format, allowed: y, m, w, d, h, i, s');
+		}
+		$maxStep = array_search($format, $steps);
+		$abs = abs($mine);
+		$expr = [];
+		foreach([['years', 31536000], ['months', 2592000], ['weeks', 604800], ['days', 86400], ['hours', 3600], ['minutes', 60]] as $key => $item){
+			$matched = false;
+			if($abs >= $item[1]){
+				$matched = true;
+			}
+			$isLast = (count($expr) + $matched and $key >= $maxStep);
+			if($matched){
+				$number = $isLast ? ceil($abs / $item[1]) : floor($abs / $item[1]);
+				$expr[] = translator::trans('date.relatively.'.$item[0], ['number' => $number ]);
+				$abs = $abs % $item[1];
+			}
+			if($isLast){
+				break;
+			}
+		}
+		if($abs and (!$expr or $maxStep == 6)){
+			$expr[] = translator::trans('date.relatively.seconds', ['number' => $abs]);
+		}
+		$expr_text = $expr[0];
+		$count = count($expr);
+		for($x = 1;$x < $count;$x++){
+			$expr_text = translator::trans('date.relatively.and', array(
+				'expr1' => $expr_text,
+				'expr2' => $expr[$x]
+			));
+		}
+        if($mine < 0){
+           return translator::trans('date.relatively.ago', ['expr' => $expr_text]);
+		}else{
+           return translator::trans('date.relatively.later', ['expr' => $expr_text]);
+		}
+	}
 }

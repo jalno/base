@@ -188,6 +188,17 @@
 	    "translations.langs.yi": "ייִדיש ",
 	    "translations.langs.yo": "Yorùbá",
 	    "translations.langs.za": "Saɯ cueŋƅ, Saw cuengh",
-	    "translations.langs.zu": "isiZulu"
+	    "translations.langs.zu": "isiZulu",
+		"date.relatively.now": "همین الان",
+		"date.relatively.ago": "{expr} پیش",
+		"date.relatively.later": "{expr} دیگر",
+		"date.relatively.and": "{expr1} و {expr2}",
+		"date.relatively.seconds": "{number} ثانیه",
+		"date.relatively.minutes": "{number} دقیقه",
+		"date.relatively.hours": "{number} ساعت",
+		"date.relatively.days": "{number} روز",
+		"date.relatively.weeks": "{number} هفته",
+		"date.relatively.months": "{number} ماه",
+		"date.relatively.years": "{number} سال"
 	}
 }
