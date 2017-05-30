@@ -48,12 +48,15 @@ require_once("packages/base/libraries/logging/instance.php");
 require_once("packages/base/libraries/events/event.php");
 require_once("packages/base/libraries/events/events.php");
 require_once("packages/base/libraries/events/exceptions.php");
+require_once("packages/base/libraries/events/PackageLoad.php");
+require_once("packages/base/libraries/events/PackageLoaded.php");
 
 
 require_once('packages/base/libraries/access/packages.php');
 
 use \packages\base\db;
 use \packages\base\router\rule;
+use \packages\base\events;
 class loader{
 	const cli = 1;
 	const cgi = 2;
@@ -69,8 +72,12 @@ class loader{
 		foreach($packages as $package){
 			if($package != '.' and $package != '..'){
 				$log->info("Loading '{$package}'");
+				if($package != 'base'){
+					events::trigger(new events\PackageLoad($package));
+				}
 				if($p = self::package($package)){
 					$log->reply("Success");
+					events::trigger(new events\PackageLoaded($p));
 					$dependencies = $p->getDependencies();
 					$alldependencies[$p->getName()] = $dependencies;
 					$allpackages[$p->getName()] = $p;
@@ -117,12 +124,14 @@ class loader{
 					self::packagerouting($name);
 					$log->reply("Success");
 					unset($allpackages[$name]);
+					events::trigger(new events\PackageRegistered($package));
 				}
 			}
 		}while($oneload);
 		if($allpackages){
 			throw new \Exception("could not register all of packages");
 		}
+		events::trigger(new events\PackagesLoaded());
 	}
 	static function package($package){
 		$log = log::getInstance();
