@@ -3,6 +3,7 @@
 error_reporting(E_ALL);
 ini_set( 'display_startup_errors', 1 );
 ini_set('display_errors', 1);
+chdir(__DIR__);
 use \packages\base\loader;
 use \packages\base\router;
 use \packages\base\http;
