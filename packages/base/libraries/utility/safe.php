@@ -50,7 +50,7 @@ class safe{
             $error = false;
 
             switch($sub4){
-            	case('0910'):case('0911'):case('0912'):case('0913'):case('0914'):case('0915'):case('0916'):case('0917'):case('0918'):case('0919')://TCI
+            	case('0910'):case('0911'):case('0912'):case('0913'):case('0914'):case('0915'):case('0916'):case('0917'):case('0918'):case('0919'):case('0990')://TCI
             	case('0931')://Spadan
             	case('0932')://Taliya
             	case('0934')://TKC
