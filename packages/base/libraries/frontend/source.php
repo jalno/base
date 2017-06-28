@@ -125,14 +125,18 @@ class source{
 		$assetData = array(
 			'type' => 'package'
 		);
-		if(isset($asset['name'])){
-			if(preg_match("/^[a-z0-9\\-\\.\\@\\_\\!\/]{1,214}$/", $asset['name'])){
-				$assetData['name'] = $asset['name'];
-			}else{
-				throw new SourceAssetException("invalid node package name", $this->path);
-			}
-		}else{
+		if(!isset($asset['name'])){
 			throw new SourceAssetException("No node package name",$this->path);
+		}
+		if(isset($asset['version'])){
+			if(!preg_match("/^[\\d\\w\\.\\-]+$/", $asset['version'])){
+				throw new SourceAssetException("invalid node package version",$this->path);
+			}
+		}
+
+		$assetData['name'] = $asset['name'];
+		if(isset($asset['version'])){
+			$assetData['version'] = $asset['version'];
 		}
 		$this->assets[] = $assetData;
 	}
