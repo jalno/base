@@ -91,6 +91,10 @@ class http{
 	static function setcookie($name, $value = "", $expire = 0, $path = "", $domain = "", $secure = false,$httponly = false){
 		return setcookie($name, $value, $expire, $path, $domain, $secure,$httponly);
 	}
+	static function removeCookie(string $name){
+		unset(self::$request['cookies']);
+		self::setcookie($name, null, 1);
+	}
 	static function redirect($url){
 		header("Location: {$url}");
 	}
