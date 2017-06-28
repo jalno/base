@@ -138,6 +138,11 @@ class ftp extends directory{
 		$directory->setDriver($this->getDriver());
 		return $directory;
 	}
+	public function getDirectory():directory\ftp{
+		$directory = new directory\ftp($this->dirname);
+		$directory->setDriver($this->getDriver());
+		return $directory;
+	}
 	public function serialize(){
 		if(!$this->hostname){
 			$this->hostname = $this->getDriver()->getHostname();

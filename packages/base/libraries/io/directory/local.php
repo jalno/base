@@ -112,6 +112,9 @@ class local extends directory{
     public function directory(string $name):directory\local{
         return new directory\local($this->getPath().'/'.$name);
     }
+    public function getDirectory():directory\local{
+        return new directory\local($this->directory);
+    }
 	public function getRealPath():string{
 		return realpath($this->getPath());
 	}

@@ -158,6 +158,11 @@ class sftp extends directory{
 		$directory->setDriver($this->getDriver());
 		return $directory;
 	}
+	public function getDirectory():directory\ftp{
+		$directory = new directory\sftp($this->dirname);
+		$directory->setDriver($this->getDriver());
+		return $directory;
+	}
 	public function serialize(){
 		if(!$this->hostname){
 			$this->hostname = $this->getDriver()->getSSH()->getHost();

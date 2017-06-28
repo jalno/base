@@ -20,6 +20,7 @@ abstract class directory implements \Serializable{
 	abstract public function exists():bool;
 	abstract public function file(string $name);
 	abstract public function directory(string $name);
+	abstract public function getDirectory();
 	public function getPath():string {
 		return ($this->directory and $this->basename) ? $this->directory.'/'.$this->basename : '';
 	}
