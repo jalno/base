@@ -5,8 +5,15 @@ class cache{
 	public static function getHandler(){
 		if(!self::$handler){
 			$option = options::get('packages.base.cache');
-			if(!is_array($option) or !isset($option['handler']) or !is_string($option['handler'])){
+			if(!$option){
+				$option = [
+					'handler' => 'file'
+				];
+			}elseif(!is_array($option) or !isset($option['handler']) or !is_string($option['handler'])){
 				throw new NotFoundHandlerException();
+			}
+			switch($option['handler']){
+				case('file'):$option['handler'] = cache\file::class;break;
 			}
 			self::$handler = new $option['handler']($option);
 			self::$handler->clear();
