@@ -267,6 +267,10 @@
 		{
 			"classes":["cache\\memcache\\ServerException"],
 			"file":"libraries/cache/memcache/ServerException.php"
+		},
+		{
+			"classes":["cache\\database"],
+			"file":"libraries/cache/database.php"
 		}
 	]
 }
