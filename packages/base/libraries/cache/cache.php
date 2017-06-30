@@ -15,6 +15,7 @@ class cache{
 			switch($option['handler']){
 				case('file'):$option['handler'] = cache\file::class;break;
 				case('memcache'):$option['handler'] = cache\memcache::class;break;
+				case('database'):$option['handler'] = cache\database::class;break;
 			}
 			self::$handler = new $option['handler']($option);
 			self::$handler->clear();
