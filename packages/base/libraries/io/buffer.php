@@ -2,7 +2,7 @@
 namespace packages\base\IO;
 class buffer{
     private $buffer;
-    public function __construct($buffer = null){
+    public function __construct($buffer){
         $this->buffer = $buffer;
     }
     public function __destruct(){
