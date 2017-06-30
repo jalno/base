@@ -255,6 +255,18 @@
 		{
 			"classes":["cache\\file\\LockTimeoutException"],
 			"file":"libraries/cache/file/LockTimeoutException.php"
+		},
+		{
+			"classes":["cache\\memcache"],
+			"file":"libraries/cache/memcache.php"
+		},
+		{
+			"classes":["cache\\memcache\\MemcacheExtensionException"],
+			"file":"libraries/cache/memcache/MemcacheExtensionException.php"
+		},
+		{
+			"classes":["cache\\memcache\\ServerException"],
+			"file":"libraries/cache/memcache/ServerException.php"
 		}
 	]
 }
