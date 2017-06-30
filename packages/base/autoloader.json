@@ -247,6 +247,14 @@
 		{
 			"classes":["cache\\NotFoundHandlerException"],
 			"file":"libraries/cache/NotFoundHandlerException.php"
+		},
+		{
+			"classes":["cache\\file"],
+			"file":"libraries/cache/file.php"
+		},
+		{
+			"classes":["cache\\file\\LockTimeoutException"],
+			"file":"libraries/cache/file/LockTimeoutException.php"
 		}
 	]
 }
