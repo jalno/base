@@ -2,7 +2,7 @@
 namespace packages\base\IO;
 class buffer{
     private $buffer;
-    public function __construct(resource $buffer = null){
+    public function __construct($buffer = null){
         $this->buffer = $buffer;
     }
     public function __destruct(){
@@ -10,7 +10,7 @@ class buffer{
             $this->close();
         }
     }
-    public function close(): void{
+    public function close(){
         fclose($this->buffer);
         $this->buffer = null;
     }
