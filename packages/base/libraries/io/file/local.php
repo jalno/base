@@ -7,6 +7,7 @@ use \packages\base\IO\NotFoundException;
 class local extends file{
     const readOnly = 'r';
     const writeOnly = 'w';
+    const append = 'a';
     public function touch() {
         touch($this->getPath());
     }
