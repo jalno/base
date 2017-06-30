@@ -2,7 +2,7 @@
 namespace packages\base\IO;
 class Exception extends \Exception{
     protected $targetFile;
-    public function __construct(file $file, $message = ''){
+    public function __construct($file, $message = ''){
         $this->targetFile = $file;
         $this->message = $message;
     }
@@ -11,8 +11,8 @@ class Exception extends \Exception{
     }
 }
 class NotFoundException extends Exception{
-    public function __construct(file $file){
-        parent::__construct($file, "cannot find the file");
+    public function __construct($file){
+        parent::__construct($file, "cannot find the IO resource");
     }
 }
 class ReadException extends Exception{
