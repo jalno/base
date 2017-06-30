@@ -13,6 +13,9 @@ class local extends file{
     public function open(string $mode):buffer {
         return new buffer(fopen($this->getPath(), $mode));
     }
+    public function append(string $data):bool{
+        return file_put_contents($this->getPath(), $data, FILE_APPEND);
+    }
     public function write(string $data):bool{
         return file_put_contents($this->getPath(), $data);
     }
