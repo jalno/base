@@ -17,6 +17,12 @@ class buffer{
     public function read(int $length): string{
         return fread($this->buffer, $length);
     }
+    public function readLine(int $length = 0){
+        if($length == 0){
+            return fgets($this->buffer);
+        }
+        return fgets($this->buffer, $length);
+    }
     public function write(string $data): int{
         return fwrite($this->buffer, $data);
     }
