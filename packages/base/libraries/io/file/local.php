@@ -37,7 +37,7 @@ class local extends file{
         unlink($this->getPath());
     }
     public function md5(): string{
-        return md5_file($this->getFile());
+        return md5_file($this->getPath());
     }
     public function copyTo(file $dest): bool{
         if($dest instanceof self){
