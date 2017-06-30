@@ -193,10 +193,6 @@
 			"file":"libraries/io/directory/sftp.php"
 		},
 		{
-			"classes":["processes\\frontend"],
-			"file":"processes/frontend.php"
-		},
-		{
 			"classes":["image"],
 			"file":"libraries/image/image.php"
 		},
@@ -239,6 +235,18 @@
 		{
 			"classes":["events\\PackagesLoaded"],
 			"file":"libraries/events/PackagesLoaded.php"
+		},
+		{
+			"classes":["cache"],
+			"file":"libraries/cache/cache.php"
+		},
+		{
+			"classes":["cache\\Ihandler"],
+			"file":"libraries/cache/Ihandler.php"
+		},
+		{
+			"classes":["cache\\NotFoundHandlerException"],
+			"file":"libraries/cache/NotFoundHandlerException.php"
 		}
 	]
 }
