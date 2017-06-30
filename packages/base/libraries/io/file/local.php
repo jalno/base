@@ -39,6 +39,9 @@ class local extends file{
     public function md5(): string{
         return md5_file($this->getPath());
     }
+    public function sha1(): string{
+        return sha1_file($this->getPath());
+    }
     public function copyTo(file $dest): bool{
         if($dest instanceof self){
             return copy($this->getPath(), $dest->getPath());
