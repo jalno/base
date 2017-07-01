@@ -127,19 +127,20 @@ class view{
 		$this->source = $source;
 		theme::setPrimarySource($this->source);
 		$sources = theme::byName($this->source->getName());
-		$assets = frontend::checkAssetsForWebpack($sources);
-		foreach($assets as $asset){
-			if($asset['type'] == 'css'){
-				if(isset($asset['file'])){
-					$this->addCSSFile($asset['file'], isset($asset['name']) ? $asset['name'] : '');
-				}elseif(isset($asset['inline'])){
-					$this->addCSS($asset['inline'], isset($asset['name']) ? $asset['name'] : '');
-				}
-			}elseif($asset['type'] == 'js'){
-				if(isset($asset['file'])){
-					$this->addJSFile($asset['file'], isset($asset['name']) ? $asset['name'] : '');
-				}elseif(isset($asset['inline'])){
-					$this->addJS($asset['inline'], isset($asset['name']) ? $asset['name'] : '');
+		foreach($sources as $source){
+			foreach($source->getAssets(['css', 'js']) as $asset){
+				if($asset['type'] == 'css'){
+					if(isset($asset['file'])){
+						$this->addCSSFile($asset['file'], isset($asset['name']) ? $asset['name'] : '');
+					}elseif(isset($asset['inline'])){
+						$this->addCSS($asset['inline'], isset($asset['name']) ? $asset['name'] : '');
+					}
+				}elseif($asset['type'] == 'js'){
+					if(isset($asset['file'])){
+						$this->addJSFile($asset['file'], isset($asset['name']) ? $asset['name'] : '');
+					}elseif(isset($asset['inline'])){
+						$this->addJS($asset['inline'], isset($asset['name']) ? $asset['name'] : '');
+					}
 				}
 			}
 		}
