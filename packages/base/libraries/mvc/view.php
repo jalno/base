@@ -116,6 +116,19 @@ class view{
 		}
 	}
 
+	public function clearAssets(){
+		$this->js = [];
+		$this->css = [];
+	}
+	public function clearJSAssets(){
+		$this->js = [];
+	}
+	public function clearCSSAssets(){
+		$this->js = [];
+	}
+	public function getSource(){
+		return $this->source;
+	}
 	public function dynamicData(){
 		if(!$this->dynamicData){
 			$this->dynamicData = new throwDynamicData();
