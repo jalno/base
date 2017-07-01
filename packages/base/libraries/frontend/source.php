@@ -122,9 +122,6 @@ class source{
 		$this->assets[] = $assetData;
 	}
 	private function addNodePackageAsset(array $asset){
-		$assetData = array(
-			'type' => 'package'
-		);
 		if(!isset($asset['name'])){
 			throw new SourceAssetException("No node package name",$this->path);
 		}
@@ -133,12 +130,7 @@ class source{
 				throw new SourceAssetException("invalid node package version",$this->path);
 			}
 		}
-
-		$assetData['name'] = $asset['name'];
-		if(isset($asset['version'])){
-			$assetData['version'] = $asset['version'];
-		}
-		$this->assets[] = $assetData;
+		$this->assets[] = $asset;
 	}
 	
 	public function getAssets($type = null){
