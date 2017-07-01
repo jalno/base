@@ -14,7 +14,6 @@ require_once('packages/base/libraries/db/dbObject.php');
 require_once('packages/base/libraries/db/exceptions.php');
 require_once('packages/base/libraries/config/options.php');
 require_once('packages/base/libraries/frontend/exceptions.php');
-require_once('packages/base/libraries/frontend/frontend.php');
 require_once('packages/base/libraries/frontend/theme.php');
 require_once('packages/base/libraries/http/http.php');
 require_once('packages/base/libraries/session/session.php');
