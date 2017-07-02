@@ -126,7 +126,7 @@ class source{
 			throw new SourceAssetException("No node package name",$this->path);
 		}
 		if(isset($asset['version'])){
-			if(!preg_match("/^[\\d\\w\\.\\-]+$/", $asset['version'])){
+			if(!preg_match("/^[\^\>\=\~\<\*]*[\\d\\w\\.\\-]+$/", $asset['version'])){
 				throw new SourceAssetException("invalid node package version",$this->path);
 			}
 		}
