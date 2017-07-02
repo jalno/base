@@ -198,10 +198,13 @@ class http{
         header('Cache-Control: no-store, no-cache, must-revalidate, pre-check=0, post-check=0, max-age=0');
 		self::setMimeType('application/json', $charset);
     }
-	static function is_safe_referer(){
-		if(isset(self::$request['referer']) and self::$request['referer']){
-			if(preg_match("/\w+:\\/\\/.*/", self::$request['referer'])){
-				$url = parse_url(self::$request['referer']);
+	static function is_safe_referer(string $referer = ''){
+		if(!$referer){
+			$referer = isset(self::$request['referer']) ? self::$request['referer'] : '';
+		}
+		if($referer){
+			if(preg_match("/\w+:\\/\\/.*/", $referer)){
+				$url = parse_url($referer);
 				$hostname = $url['host'];
 				if(isset($url['port'])){
 					$hostname .=":".$url['port'];
@@ -211,7 +214,7 @@ class http{
 				}elseif($safe_referers = options::get('packages.base.safe_referers') and in_array($hostname, $safe_referers)){
 					return true;
 				}
-			}elseif(substr(self::$request['referer'], 0, 1) == '/'){
+			}elseif(substr($referer, 0, 1) == '/'){
 				return true;
 			}
 		}
