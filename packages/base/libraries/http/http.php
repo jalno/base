@@ -62,6 +62,9 @@ class http{
 		}
 		self::$data = array_merge($_POST,$_GET);
 	}
+	static function getURL():string{
+		return self::$request['scheme'] . '://' . self::$server['hostname'] . $_SERVER['REQUEST_URI'];
+	}
 	static function getData($name){
 		if(isset(self::$request['post'][$name])){
 			return(self::$request['post'][$name]);
