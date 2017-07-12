@@ -328,10 +328,6 @@ class dbObject implements \Serializable{
 		$this->db->where ($this->db->prefix . $this->dbTable . '.' . $this->primaryKey, $id);
 		return $this->getOne ($fields);
 	}
-	protected function getValue ($field) {
-		$this->processHasOneWith ();
-		return $this->db->ArrayBuilder()->getValue ($this->dbTable, $field);
-	}
 	/**
 	 * Convinient function to fetch one object. Mostly will be togeather with where()
 	 *
@@ -642,8 +638,12 @@ class dbObject implements \Serializable{
 		}
 		if (isset ($this->serializeFields) and is_array ($this->serializeFields)) {
 			foreach ($this->serializeFields as $key){
-				if(is_string($data[$key]) and preg_match('/^(?:(?:a|i|s|C|O|b|d)\:\d+|N;)/', $data[$key])){
-					$data[$key] = unserialize ($data[$key]);
+                if(isset($data[$key])){
+				    if(is_string($data[$key]) and preg_match('/^(?:(?:a|i|s|C|O|b|d)\:\d+|N;)/', $data[$key])){
+					    $data[$key] = unserialize ($data[$key]);
+				    }
+				}else{
+				    $data[$key] = null;
 				}
 			}
 		}
