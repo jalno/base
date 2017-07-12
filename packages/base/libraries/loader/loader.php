@@ -217,7 +217,7 @@ class loader{
 			$routing = json\decode($routing);
 			if(is_array($routing)){
 				foreach($routing as $route){
-					if(isset($route['path'])){
+					if(isset($route['path']) or isset($route['regex'])){
 						if(isset($route['controller'])){
 							if(!preg_match('/^\\\\packages\\\\([a-zA-Z0-9-\\_]+)((\\\\[a-zA-Z0-9\\_]+)+)@.*$/', $route['controller'])){
 								$route['controller'] = "\\packages\\{$package}\\".$route['controller'];

@@ -38,7 +38,8 @@ class ruleMiddlewareException extends \Exception {
 }
 class routerRule extends \Exception {
 	private $rule;
-	public function __construct($rule){
+	public function __construct($rule, $message = ""){
+		parent::__construct($message);
 		$this->rule = $rule;
 	}
 	public function getRule(){
@@ -72,6 +73,16 @@ class schemeException extends routerRule{
 
 }
 class DomainException extends routerRule{}
+class InvalidRegexException extends routerRule{
+	protected $regex;
+	public function __construct(string $regex, rule $rule){
+		parent::__construct($rule, "regex is invalid");
+		$this->regex = $regex;
+	}
+	public function getRegex():string{
+		return $this->regex;
+	}
+}
 class permissionException extends \Exception{
 	private $permission;
 	public function __construct($permission){

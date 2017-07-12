@@ -14,7 +14,8 @@ class rule{
 	const api = 'api';
 	const ajax = 'ajax';
 	private $methods = array();
-	private $paths = array();
+	private $path;
+	private $regex;
 	private $domains = array();
 	private $permissions = array(
 		self::ajax => true
@@ -39,27 +40,30 @@ class rule{
 		}
 		if(isset($data['path'])){
 			$rule->setPath($data['path']);
-		}
-		if(isset($data['domain'])){
-			if(is_array($data['domain'])){
-				foreach($data['domain'] as $domain){
-					$rule->addDomain($domain);
-				}
-			}else{
-				$rule->addDomain($data['domain']);
+
+			if(isset($data['absolute'])){
+				$rule->setAbsolute($data['absolute']);
 			}
-		}
-		if(isset($data['scheme'])){
-			if(is_array($data['scheme'])){
-				foreach($data['scheme'] as $scheme){
-					$rule->addScheme($scheme);
+			if(isset($data['domain'])){
+				if(is_array($data['domain'])){
+					foreach($data['domain'] as $domain){
+						$rule->addDomain($domain);
+					}
+				}else{
+					$rule->addDomain($data['domain']);
 				}
-			}else{
-				$rule->addScheme($data['scheme']);
 			}
-		}
-		if(isset($data['absolute'])){
-			$rule->setAbsolute($data['absolute']);
+			if(isset($data['scheme'])){
+				if(is_array($data['scheme'])){
+					foreach($data['scheme'] as $scheme){
+						$rule->addScheme($scheme);
+					}
+				}else{
+					$rule->addScheme($data['scheme']);
+				}
+			}
+		}elseif(isset($data['regex'])){
+			$rule->setRegex($data['regex']);
 		}
 		if(isset($data['controller'])){
 			$data['controller'] = explode('@', $data['controller'], 2);
@@ -140,6 +144,12 @@ class rule{
 			}
 		}
 	}
+	public function setRegex(string $regex){
+		if(@preg_match($regex, null) === false){
+			throw new InvalidRegexException($regex, $this);
+		}
+		$this->regex = $regex;
+	}
 	public function setController($class, $method){
 		$log = log::getInstance();
 		$log->debug("looking for", $class.'@'.$method);
@@ -161,6 +171,9 @@ class rule{
 	}
 	public function isAbsolute(){
 		return $this->absolute;
+	}
+	public function isRegex():bool{
+		return !empty($this->regex);
 	}
 	public function addScheme($scheme){
 		$log = log::getInstance();
@@ -300,63 +313,62 @@ class rule{
 	public function parts(){
 		return count($this->path);
 	}
-	public function check($method, $scheme,$domain,$url, $data){
+	public function check($method, $scheme, $domain, $url, $data){
 		$log = log::getInstance();
 		$log->debug("checking method");
 		$method = strtolower($method);
 		if(empty($this->methods) or in_array($method, $this->methods)){
 			$log->reply("pass");
-			$log->debug("checking scheme");
-			$scheme = strtolower($scheme);
-			if(empty($this->schemes) or in_array($scheme, $this->schemes)){
-				$log->reply("pass");
-				$log->debug("checking domain");
-				$domain = strtolower($domain);
-				if(substr($domain, 0, 4) == 'www.'){
-					$domain = substr($domain, 4);
-				}
-				$foundomain = false;
-				if(empty($this->domains) and in_array($domain, router::getDefaultDomains())){
-					$foundomain = true;
-				}else{
-					foreach($this->domains as $d){
-						if($d == '*'){
-							$foundomain = true;
-						}elseif(substr($d, 0, 1) == '/' or substr($d,-1) == '/'){
-							if(@preg_match($domain, $d)){
+			$pass = false;
+			if(empty($this->regex)){
+				$log->debug("checking scheme");
+				$scheme = strtolower($scheme);
+				if(empty($this->schemes) or in_array($scheme, $this->schemes)){
+					$log->reply("pass");
+					$log->debug("checking domain");
+					$domain = strtolower($domain);
+					if(substr($domain, 0, 4) == 'www.'){
+						$domain = substr($domain, 4);
+					}
+					$foundomain = false;
+					if(empty($this->domains) and in_array($domain, router::getDefaultDomains())){
+						$foundomain = true;
+					}else{
+						foreach($this->domains as $d){
+							if($d == '*'){
+								$foundomain = true;
+							}elseif(substr($d, 0, 1) == '/' or substr($d,-1) == '/'){
+								if(@preg_match($domain, $d)){
+									$foundomain = true;
+								}
+							}elseif($d == $domain){
 								$foundomain = true;
 							}
-						}elseif($d == $domain){
-							$foundomain = true;
 						}
 					}
-				}
-				if($foundomain){
-					$log->reply("pass");
-					$url = array_slice(explode('/', urldecode($url)), 1);
-					$changelang = options::get('packages.base.translator.changelang');
-					if(!$this->absolute){
-						if($changelang == 'uri'){
-							if(!empty($url[0]) ){
-								$this->lang = router::CheckShortLang($url[0]);
-								if($this->lang){
+					if($foundomain){
+						$log->reply("pass");
+						$url = array_slice(explode('/', urldecode($url)), 1);
+						$changelang = options::get('packages.base.translator.changelang');
+						if(!$this->absolute){
+							if($changelang == 'uri'){
+								if(!empty($url[0]) ){
+									$this->lang = router::CheckShortLang($url[0]);
+									if($this->lang){
+										$url = array_slice($url, 1);
+									}
+								}else{
 									$url = array_slice($url, 1);
 								}
-							}else{
-								$url = array_slice($url, 1);
 							}
 						}
-					}
-					if(count($url) == 0){
-						$url[0] = "";
-					}
+						if(count($url) == 0){
+							$url[0] = "";
+						}
 
-					if($checkPath = $this->checkPath($url, $this->path)){
-						$log->reply("pass");
-						$log->debug("check permissions");
-						if($this->checkPermissions($data)){
+						if($checkPath = $this->checkPath($url, $this->path)){
 							$log->reply("pass");
-							return $checkPath;
+							$pass = $checkPath;
 						}else{
 							$log->reply("failed");
 						}
@@ -367,7 +379,23 @@ class rule{
 					$log->reply("failed");
 				}
 			}else{
-				$log->reply("failed");
+				$log->debug("check for regex (", $this->regex, ")");
+				$url = $scheme."://".$domain.$url;
+				if(preg_match($this->regex, $url, $matches)){
+					$log->reply("pass");
+					$pass = count($matches) > 1 ? $matches : true;
+				}else{
+					$log->reply("failed");
+				}
+			}
+			if($pass){
+				$log->debug("check permissions");
+				if($this->checkPermissions($data)){
+					$log->reply("pass");
+					return $pass;
+				}else{
+					$log->reply("failed");
+				}
 			}
 		}else{
 			$log->reply("failed");

@@ -97,7 +97,7 @@ class router{
 				}
 			}else{
 				$log->reply()->debug("invalid");
-				throw new NotFound;
+				throw new InvalidLangCode;
 			}
 		}
 		return $lang;
@@ -334,7 +334,7 @@ class router{
 					translator::setLang($lang);
 				}
 				list($controller, $method) = $rule->getController();
-				if(preg_match('/^\\\\packages\\\\([a-zA-Z0-9|_]+).*$/', $controller, $matches)){
+				if(preg_match('/^(?:\\\\)?packages\\\\([a-zA-Z0-9|_]+).*$/', $controller, $matches)){
 					$log->info("focus on",$matches[1],"package");
 					if($package = packages::package($matches[1])){
 						$log->debug("run middlewares");
@@ -379,17 +379,20 @@ class router{
 					return false;
 				}
 			}
-			$log->debug("separate absolute rules");
+			$log->debug("separate absolute and regex rules");
 			$absoluteRules = array();
+			$regexRules = array();
 			$normalRules = array();
 			foreach(self::$rules as $rule){
 				if($rule->isAbsolute()){
 					$absoluteRules[] = $rule;
+				}elseif($rule->isRegex()){
+					$regexRules[] = $rule;
 				}else{
 					$normalRules[] = $rule;
 				}
 			}
-			$log->reply(count($absoluteRules),"absolute rules,",count($normalRules),"normal rule");
+			$log->reply(count($absoluteRules),"absolute rules,",count($normalRules),"normal rule", count($regexRules),"regex rules");
 			try{
 				$log->debug("check in absolute rules");
 				$found = self::checkRules($absoluteRules);
@@ -403,19 +406,31 @@ class router{
 						$uri = substr($uri, 0, strlen($uri) - 1);
 					}
 					$log->debug("sort normal rules");
-					self::sortRules($normalRules);
-					$log->reply("Success");
-					$log->debug("check in normal rules");
-					$found = self::checkRules($normalRules,$uri);
-					if($found){
-						$log->reply("Found");
-					}else{
-						$log->reply("Notfound");
-						throw new NotFound;
+					
+					try{
+						self::sortRules($normalRules);
+						$log->reply("Success");
+						$log->debug("check in normal rules");
+						$found = self::checkRules($normalRules,$uri);
+						if($found){
+							$log->reply("Found");
+						}else{
+							$log->reply("Notfound");
+						}
+					}catch(InvalidLangCode $e){
+
+					}
+					if(!$found){
+						$log->debug("check in regex rules");
+						$found = self::checkRules($regexRules);
+						if($found){
+							$log->reply('Found');
+						}else{
+							$log->reply("Notfound");
+							throw new NotFound;
+						}
 					}
 				}
-			}catch(InvalidLangCode $e){
-				self::routingExceptions(new NotFound);
 			}catch(\Exception $e){
 				self::routingExceptions($e);
 			}
