@@ -107,7 +107,7 @@ class controller{
 					}
 				}elseif($formdata[$field]){
 					if(isset($options['values'])){
-						if(in_array($options['values'], array($options['values']))){
+						if(in_array($formdata[$field], $options['values'])){
 							$return[$field] = $formdata[$field];
 						}else{
 							throw new inputValidation($field);
