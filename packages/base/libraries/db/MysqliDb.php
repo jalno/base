@@ -342,6 +342,7 @@ class MysqliDb
 		$this->_where = array();
 		$this->_having = array();
 		$this->_join = array();
+		$this->_joinAnd = array();
 		$this->_orderBy = array();
 		$this->_groupBy = array();
 		$this->_bindParams = array(''); // Create the empty 0 index
