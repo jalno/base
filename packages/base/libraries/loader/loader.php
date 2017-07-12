@@ -116,6 +116,8 @@ class loader{
 					$log->debug("Register translations in", $getDefaultLang);
 					$package->register_translates($getDefaultLang);
 					$log->reply("Success");
+					$log->debug("bootup package");
+					$package->bootup();
 					$log->debug("Register package");
 					packages::register($package);
 					$log->reply("Success");

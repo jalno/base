@@ -280,7 +280,6 @@ class router{
 					list($controller, $method) = explode('@', $rule['handler'], 2);
 					if(preg_match('/^\\\\packages\\\\([a-zA-Z0-9|_]+).*$/', $controller, $matches)){
 						if($package = packages::package($matches[1])){
-							$package->bootup();
 							if(class_exists($controller) and method_exists($controller, $method)){
 								$controllerClass = new $controller();
 								$controllerClass->response($controllerClass->$method($e, $data));
@@ -338,8 +337,6 @@ class router{
 				if(preg_match('/^\\\\packages\\\\([a-zA-Z0-9|_]+).*$/', $controller, $matches)){
 					$log->info("focus on",$matches[1],"package");
 					if($package = packages::package($matches[1])){
-						$log->info("bootup");
-						$package->bootup();
 						$log->debug("run middlewares");
 						$rule->runMiddlewares($data);
 						$log->info("call",$controller.'@'.$method);
