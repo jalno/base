@@ -85,6 +85,9 @@ class instance{
 			}
 			$type = gettype($arg);
 			if(in_array($type, array('array','object','boolean','NULL'))){
+			    if($type == 'object'){
+			        $arg = (array)$arg;
+			    }
 				$message .= json\encode($arg);
 			}else{
 				$message .= $arg;
