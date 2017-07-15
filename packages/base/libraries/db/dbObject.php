@@ -328,6 +328,11 @@ class dbObject implements \Serializable{
 		$this->db->where ($this->db->prefix . $this->dbTable . '.' . $this->primaryKey, $id);
 		return $this->getOne ($fields);
 	}
+
+	protected function getValue ($field) {
+		$this->processHasOneWith ();
+		return $this->db->ArrayBuilder()->getValue ($this->dbTable, $field);
+	}
 	/**
 	 * Convinient function to fetch one object. Mostly will be togeather with where()
 	 *
