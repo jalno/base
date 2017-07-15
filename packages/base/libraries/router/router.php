@@ -452,21 +452,27 @@ class router{
 					if($process->status != process::running){
 						list($controller, $method) = explode('@', $process->name, 2);
 						if(class_exists($controller) and method_exists($controller, $method)){
-							$process = new $controller($process);
-							$process->start = time();
-							$process->end = null;
-							$process->status = process::running;
-							$process->setPID();
-							$return = $process->$method($process->parameters);
-							if($return instanceof response){
-								$process->status = $return->getStatus() ? process::stopped : process::error;
-								$process->response = $return;
-								if($return->getStatus()){
-									$process->progress = 100;
-								}
-							}
-							$process->end = time();
-							$process->save();
+					    
+						    $process = new $controller($process);
+						    $process->start = time();
+						    $process->end = null;
+						    $process->status = process::running;
+						    $process->setPID();
+						    try{
+						        $return = $process->$method($process->parameters);
+						        if($return instanceof response){
+							        $process->status = $return->getStatus() ? process::stopped : process::error;
+							        $process->response = $return;
+							        if($return->getStatus()){
+								        $process->progress = 100;
+							        }
+						        }
+						    }catch(\Exception $e){
+						        $process->status = process::error;
+					            $process->response = $e;
+						    }
+					        $process->end = time();
+					        $process->save();
 						}else{
 							throw new proccessClass($process->name);
 						}

@@ -195,6 +195,11 @@ class process extends dbObject{
 		while($this->isRunning() and ($timeout == 0 or time() - $ftime < $timeout)){
 			usleep(250000);
 		}
+		$this->where("id", $this->id);
+		$this->getOne();
+		if($this->response instanceof \Exception){
+	        throw $this->response;
+	    }
 		return !$this->isRunning();
 	}
 }
