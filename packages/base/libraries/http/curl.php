@@ -47,14 +47,22 @@ class curl implements handler{
 		if(isset($options['save_as'])){
 			$fh = fopen($options['save_as']->getPath(), 'w');
 			$waitForHeader = true;
-			curl_setopt($ch, CURLOPT_WRITEFUNCTION, function($ch, $data) use(&$waitForHeader, &$body, &$header, $fh){
+			curl_setopt($ch, CURLOPT_WRITEFUNCTION, function($ch, $data) use(&$waitForHeader, &$body, &$header, $fh, $options){
 				if($waitForHeader){
 					$body .= $data;
-					if(strpos($body, "\r\n\r\n") !== false){
-						list($header, $body) = explode("\r\n\r\n", $body, 2);
+					if(!isset($options['proxy']) and !isset($options['allow_redirects'])){
+						if(strpos($body, "\r\n\r\n") !== false){
+							$parts = $this->getParts($body);
+							$header.= $parts[0];
+							$body = $parts[1];
+							$waitForHeader = false;
+						}
+					}
+					if(strlen($body) > 10240){
 						$waitForHeader = false;
-					}elseif(strlen($body) > 10240){
-						$waitForHeader = false;
+						$parts = $this->getParts($body);
+						$header.= $parts[0];
+						$body = $parts[1];
 					}
 					if(!$waitForHeader and $body){
 						fwrite($fh, $body);
@@ -71,17 +79,19 @@ class curl implements handler{
 		curl_close($ch);
 		if($fh){
 			if(isset($options['save_as']) and $body){
+				if($waitForHeader){
+					$parts = $this->getParts($body);
+					$header .= $parts[0];
+					$body = $parts[1];
+					unset($parts);
+				}
 				fwrite($fh, $body);
 				$body = '';
 			}
 			fclose($fh);
 		}
 		if(!isset($options['save_as'])){
-			if(strpos($result, "\r\n\r\n") !== false){
-				list($header, $body) = explode("\r\n\r\n", $result, 2);
-			}else{
-				$body = $result;
-			}
+			list($header, $body) = $this->getParts($result);
 		}
 		$header = $this->decodeHeader($header);
 		$response = new response($info['http_code'], $header);
@@ -91,6 +101,17 @@ class curl implements handler{
 			$response->setBody($body);
 		}
 		return $response;
+	}
+	private function getParts(string $result):array{
+		if(strpos($result, "\r\n\r\n") === false and !preg_match("/^HTTP\/\d+\.\d+ \d+ .*/i", $result)){
+			return ['', $result];
+		}
+		$parts = explode("\r\n\r\n", $result, 2);
+		$bodyParts = $this->getParts($parts[1]);
+		if($bodyParts[0]){
+			$parts = $bodyParts;
+		}
+		return $parts;
 	}
 	private function decodeHeader(string $header):array{
 		$result = array();
