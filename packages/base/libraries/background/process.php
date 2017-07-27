@@ -68,24 +68,28 @@ class process extends dbObject{
      *
      */
 	public function background_run(){
-		if($this->checkOS()){
-			if(function_exists('shell_exec')){
-				if($this->id){
-					$command = "php ".realpath(options::get('root_directory').'/index.php').' --process='.$this->id;
-					$pid = (int)shell_exec("$command > /dev/null  2>&1 & echo $!");
-					if($pid > 0){
-						$this->pid = $pid;
-						$this->save();
-						return true;
-					}else{
-						throw new cannotStartProcess();
-					}
-				}else{
-					throw new notSavedProcess();
-				}
-			}else{
-				throw new notShellAccess();
-			}
+		if(!$this->checkOS()){
+			throw new notShellAccess();
+		}
+		if(!function_exists('shell_exec')){
+			throw new notShellAccess();
+		}
+		if(!$this->id){
+			throw new notSavedProcess();
+		}
+		$root_directory = options::get('root_directory');
+		$php = options::get('packages.base.process.php-bin');
+		if(!$php){
+			$php = 'php';
+		}
+		$command = $php." ".realpath($root_directory.'/index.php').' --process='.$this->id;
+		$pid = (int)shell_exec("$command > /dev/null  2>&1 & echo $!");
+		if($pid > 0){
+			$this->pid = $pid;
+			$this->save();
+			return true;
+		}else{
+			throw new cannotStartProcess();
 		}
 	}
 	public function setPID(){
