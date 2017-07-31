@@ -750,7 +750,7 @@ class dbObject implements \Serializable{
 		foreach ($this->data as $key => $value) {
 			if (!in_array ($key, array_keys ($this->dbFields)) and $this->primaryKey != $key)
 				continue;
-			if (is_object($value) and $value instanceof dbObject and $value->isNew == true) {
+			if (is_object($value) and $value instanceof dbObject and $value->isNew == true and isset($this->relations[$key])){
 				$id = $value->save();
 				if ($id){
 					$value = $id;
