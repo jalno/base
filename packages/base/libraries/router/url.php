@@ -20,6 +20,9 @@ function url($page = '',$parameters = array(), $absolute = false){
 		if(isset($parameters['hostname'])){
 			$hostname = $parameters['hostname'];
 			unset($parameters['hostname']);
+		}elseif(isset($parameters['@hostname'])){
+			$hostname = $parameters['@hostname'];
+			unset($parameters['@hostname']);
 		}else{
 			$hostname = router::gethostname();
 		}
@@ -36,6 +39,9 @@ function url($page = '',$parameters = array(), $absolute = false){
 		if(isset($parameters['lang'])){
 			$lang = $parameters['lang'];
 			unset($parameters['lang']);
+		}elseif(isset($parameters['@lang'])){
+			$lang = $parameters['@lang'];
+			unset($parameters['@lang']);
 		}else{
 			if($type == 'short'){
 				$lang = translator::getShortCodeLang();
@@ -55,11 +61,11 @@ function url($page = '',$parameters = array(), $absolute = false){
 			$url .= '/'.$lang;
 		}
 	}elseif($changelang == 'parameter'){
-		if(!isset($parameters['lang'])){
+		if(!isset($parameters['@lang'])){
 			if($type == 'short'){
-				$parameters['lang'] = translator::getShortCodeLang();
+				$parameters['@lang'] = translator::getShortCodeLang();
 			}elseif($type == 'complete'){
-				$parameters['lang'] = translator::getCodeLang();
+				$parameters['@lang'] = translator::getCodeLang();
 			}
 		}
 	}
