@@ -70,6 +70,8 @@ function url($page = '',$parameters = array(), $absolute = false){
 				$parameters['@lang'] = translator::getCodeLang();
 			}
 		}
+	}else{
+		unset($parameters['@lang'], $parameters['lang']);
 	}
 	if($page){
 		$url .= '/'.$page;
