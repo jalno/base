@@ -18,6 +18,7 @@ function url($page = '',$parameters = array(), $absolute = false){
 	if($absolute){
 		$hostname = '';
 		if(isset($parameters['hostname'])){
+			trigger_error("'hostname' parameter is deprecated, use '@hostname' instead", E_USER_DEPRECATED);
 			$hostname = $parameters['hostname'];
 			unset($parameters['hostname']);
 		}elseif(isset($parameters['@hostname'])){
@@ -37,6 +38,7 @@ function url($page = '',$parameters = array(), $absolute = false){
 	if($changelang == 'uri'){
 		$lang = '';
 		if(isset($parameters['lang'])){
+			trigger_error("'lang' parameter is deprecated, use '@lang' instead", E_USER_DEPRECATED);
 			$lang = $parameters['lang'];
 			unset($parameters['lang']);
 		}elseif(isset($parameters['@lang'])){
