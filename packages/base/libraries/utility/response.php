@@ -78,6 +78,23 @@ class response implements \Serializable{
 				$log->reply("there is no error");
 			}
 		}
+		$log->debug("colleting errors");
+		$errors = $this->view->getErrors();
+		if($errors){
+			$dataerror = $this->getData('error');
+			foreach($errors as $error){
+				$dataerror[] = array(
+					'type' => $error->getType(),
+					'code' => $error->getCode(),
+					'data' => $error->getData(),
+					'message' => $error->getMessage(),
+				);
+			}
+			$this->setData($dataerror, 'error');
+			$log->reply("Success");
+		}else{
+			$log->reply("there is no error");
+		}
 	}
 	public function setFile(file $file){
 		$this->file = $file;

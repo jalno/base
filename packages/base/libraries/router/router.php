@@ -441,6 +441,9 @@ class router{
 				if(preg_match('/^packages\\\\([a-zA-Z0-9_]+\\\\)+([a-zA-Z0-9_]+)\@([a-zA-Z0-9_]+)$/', $processID)){
 					$parameters = cli::$request['parameters'];
 					unset($parameters['process']);
+					if(count($parameters) == 0){
+						$parameters = null;
+					}
 					$process = new process();
 					$process->name = '\\'.$processID;
 					$process->parameters = $parameters;
@@ -458,8 +461,12 @@ class router{
 						    $process->end = null;
 						    $process->status = process::running;
 						    $process->setPID();
+							$parameters = $process->parameters;
+							if($parameters === null){
+								$parameters = [];
+							}
 						    try{
-						        $return = $process->$method($process->parameters);
+						        $return = $process->$method($parameters);
 						        if($return instanceof response){
 							        $process->status = $return->getStatus() ? process::stopped : process::error;
 							        $process->response = $return;

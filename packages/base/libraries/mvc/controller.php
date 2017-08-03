@@ -98,10 +98,9 @@ class controller{
 						if(!isset($options['empty']) or !$options['empty']){
 							throw new inputValidation($field);
 						}
-					}if(!isset($options['optional']) and isset($options['values'])){
-						if(in_array($options['values'], array($options['values']))){
-							$return[$field] = $formdata[$field];
-						}else{
+					}
+					if(!isset($options['optional']) and isset($options['values'])){
+						if(!in_array($formdata[$field], $options['values'])){
 							throw new inputValidation($field);
 						}
 					}
