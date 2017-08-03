@@ -379,6 +379,9 @@ class router{
 					return false;
 				}
 			}
+			if(!self::checkLastSlash()){
+				return false;
+			}
 			$log->debug("separate absolute and regex rules");
 			$absoluteRules = array();
 			$regexRules = array();
@@ -400,7 +403,7 @@ class router{
 					$log->reply("Found");
 				}else{
 					$log->reply("Notfound");
-					self::checkLastSlash();
+					
 					$uri = http::$request['uri'];
 					while(substr($uri, -1) == '/'){
 						$uri = substr($uri, 0, strlen($uri) - 1);
