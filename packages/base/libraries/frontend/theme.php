@@ -11,7 +11,10 @@ class theme{
 	const BOTTOM = -1;
 	private static $sources = array();
 	private static $primarySource;
-	static function locate($viewName){
+	static function locate(string $viewName){
+		if(substr($viewName, 0, 1) == "\\"){
+			$viewName = substr($viewName, 1);
+		}
 		foreach(self::$sources as $source){
 			if($view = $source->getView($viewName)){
 				$location = new location();

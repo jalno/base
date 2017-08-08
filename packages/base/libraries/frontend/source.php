@@ -159,11 +159,19 @@ class source{
 	public function addView($view){
 		if(isset($view['name'])){
 			if(!isset($view['file']) or is_file("{$this->path}/{$view['file']}")){
+				if(substr($view['name'], 0, 1) == "\\"){
+					$view['name'] = substr($view['name'], 1);
+				}
 				$newview = array(
 					'name' => $view['name']
 				);
-				if(isset($view['parent']))
+				if(isset($view['parent'])){
+					if(substr($view['parent'], 0, 1) == "\\"){
+						$view['parent'] = substr($view['parent'], 1);
+					}
 					$newview['parent'] = $view['parent'];
+
+				}
 				if(isset($view['file']))
 					$newview['file'] = $view['file'];
 				$this->views[] = $newview;
