@@ -2126,6 +2126,9 @@ class parenthesis{
 		}
 		$this->_where[] = array($cond, $whereProp, $operator, $whereValue);
 	}
+	public function orWhere($whereProp, $whereValue = 'DBNULL', $operator = '='){
+		$this->where($whereProp, $whereValue, $operator, 'OR');
+	}
 	public function getWheres(){
 		return $this->_where;
 	}
