@@ -152,7 +152,12 @@
 				"IO\\Exception",
 				"IO\\ReadException",
 				"IO\\WriteException",
-				"IO\\NotFoundException"
+				"IO\\NotFoundException",
+				"IO\\SocketException",
+				"IO\\CreateSocketException",
+				"IO\\BindSocketException",
+				"IO\\ListenSocketException",
+				"IO\\RawListenSocketException"
 			],
 			"file":"libraries/io/exceptions.php"
 		},
@@ -271,6 +276,10 @@
 		{
 			"classes":["cache\\database"],
 			"file":"libraries/cache/database.php"
+		},
+		{
+			"classes":["IO\\Socket"],
+			"file":"libraries/io/Socket.php"
 		}
 	]
 }
