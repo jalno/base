@@ -199,32 +199,19 @@ class router{
 		}
 		return true;
 	}
-	static function sortExceptions(){
-		usort(self::$exceptions, function($a, $b){
-			$acount = count($a['path']);
-			$bcount = count($b['path']);
-			if($acount > $bcount){
-				return -1;
-			}elseif($acount < $bcount){
-				return 1;
-			}else{
-				for($x=0;$x!=$acount;$x++){
-					if($a['path'][$x]['type'] == $b['path'][$x]['type']){
-						if($a['path'][$x]['type'] == 'static'){
-							if($a['path'][$x]['name'] > $b['path'][$x]['name']){
-								return -1;
-							}elseif($a['path'][$x]['name'] < $b['path'][$x]['name']){
-								return 1;
-							}
-						}
-					}elseif($a['path'][$x]['type'] == 'static'){
-						return -1;
-					}else{
-						return 1;
-					}
-				}
-				return 0;
+	static private function sortRules(&$rules){
+		usort($rules, function($a, $b){
+			$a_wildcards = $a->wildcardParts();
+			$b_wildcards = $b->wildcardParts();
+			if($a_wildcards != $b_wildcards){
+				return $a_wildcards - $b_wildcards;
 			}
+			$a_dynamics = $a->dynamicParts();
+			$b_dynamics = $b->dynamicParts();
+			if($a_dynamics != $b_dynamics){
+				return $a_dynamics - $b_dynamics;
+			}
+			return $b->parts() - $a->parts();
 		});
 	}
 	static function routingExceptions(\Exception $e){
@@ -455,7 +442,7 @@ class router{
 					throw new NotFound();
 				}
 				if($process){
-					if($process->status != process::running){
+					if(true or $process->status != process::running){
 						list($controller, $method) = explode('@', $process->name, 2);
 						if(class_exists($controller) and method_exists($controller, $method)){
 					    
@@ -480,6 +467,7 @@ class router{
 						    }catch(\Exception $e){
 						        $process->status = process::error;
 					            $process->response = $e;
+								print_r($e);
 						    }
 					        $process->end = time();
 					        $process->save();
