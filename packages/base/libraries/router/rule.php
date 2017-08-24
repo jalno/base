@@ -196,6 +196,10 @@ class rule{
 			if(!@preg_match($domain, null)){
 				throw new DomainException();
 			}
+		}else{
+		    if(substr($domain, 0, 4) == 'www.'){
+				$domain = substr($domain, 4);
+			}
 		}
 		$this->domains[] = $domain;
 	}

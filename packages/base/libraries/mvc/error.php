@@ -1,6 +1,7 @@
 <?php
 namespace packages\base\view;
 class error{
+	const SUCCESS = 'success';
 	const WARNING = 'warning';
 	const FATAL = 'fatal';
 	const NOTICE = 'notice';
@@ -29,7 +30,7 @@ class error{
 		}
 	}
 	public function setType($type){
-		if(in_array($type, array(self::WARNING,self::FATAL,self::NOTICE))){
+		if(in_array($type, array(self::SUCCESS, self::WARNING,self::FATAL,self::NOTICE))){
 			$this->type = $type;
 		}else{
 			throw new Exception("type");
