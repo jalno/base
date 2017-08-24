@@ -1,6 +1,7 @@
 <?php
 namespace packages\base\frontend;
 use \packages\base\options;
+use \packages\base\router;
 class location{
 	public $file;
 	public $source;
@@ -28,19 +29,23 @@ class theme{
 		}
 		return false;
 	}
-	static function url($file){
+	static function url($file, $absolute = false){
+		$url = '';
+		if($absolute){
+			$url .= router::getscheme().'://'.router::gethostname();
+		}
 		if(self::$primarySource){
 			if(self::$primarySource->hasFileAsset($file)){
-				return "/".self::$primarySource->getPath()."/".$file;
+				return $url .=  "/".self::$primarySource->getPath()."/".$file;
 			}else{
 				$sources = self::byName(self::$primarySource->getName());
 				foreach($sources as $source){
 					if($source->hasFileAsset($file)){
-						return "/".$source->getPath()."/".$file;
+						return $url .= "/".$source->getPath()."/".$file;
 					}
 				}
 			}
-			return "/".self::$primarySource->getPath()."/".$file;
+			return $url .= "/".self::$primarySource->getPath()."/".$file;
 		}
 		return false;
 	}
