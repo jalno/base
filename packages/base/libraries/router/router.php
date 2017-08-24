@@ -397,6 +397,9 @@ class router{
 			}
 			$log->reply(count($absoluteRules),"absolute rules,",count($normalRules),"normal rule", count($regexRules),"regex rules");
 			try{
+				$log->debug("sort absolute rules");
+				self::sortRules($absoluteRules);
+				$log->reply("Success");
 				$log->debug("check in absolute rules");
 				$found = self::checkRules($absoluteRules);
 				if($found){
