@@ -14,6 +14,10 @@ function url($page = '',$parameters = array(), $absolute = false){
 			$page = substr($page, 0, strlen($page) - 1);
 		}
 	}
+	$encode = isset($parameters['@encode']) and $parameters['@encode'];
+	if($encode){
+		unset($parameters['@encode']);
+	}
 	$url = '';
 	if($absolute){
 		$hostname = '';
@@ -74,6 +78,9 @@ function url($page = '',$parameters = array(), $absolute = false){
 		unset($parameters['@lang'], $parameters['lang']);
 	}
 	if($page){
+		if($encode){
+			$page = str_replace('%2F', '/', urlencode($page));
+		}
 		$url .= '/'.$page;
 	}
 	if(!$url){
