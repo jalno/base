@@ -51,7 +51,7 @@ class ftp extends file{
 		return $this->getDriver()->rename($this->getPath(), $this->directory.'/'.$newName);
 	}
 	public function delete(){
-		$this->getDriver()->delete($this->getPath());
+		return $this->getDriver()->delete($this->getPath());
 	}
 	public function copyTo(file $dest): bool{
 		$driver = $this->getDriver();
