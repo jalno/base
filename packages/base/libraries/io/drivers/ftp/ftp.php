@@ -127,7 +127,7 @@ class ftp{
 		return ftp_size($this->connection, $path);
 	}
 	public function is_file(string $filename):bool{
-		return $this->size($filename);
+		return $this->size($filename) != -1;
 	}
 	public function listOfFiles(string $dir, bool $dirs = true, bool $subdirs = false):array{
 		$items = [];
