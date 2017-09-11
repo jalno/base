@@ -37,6 +37,9 @@ class ftp{
 			}
 		}
 	}
+	function __destruct(){
+		$this->close();
+	}
 	private function connect(){
 		$function = $this->options['ssl'] ? 'ftp_ssl_connect' : 'ftp_connect';
 		if($this->connection = $function($this->options['host'], $this->options['port'], $this->options['timeout'])){
@@ -50,6 +53,12 @@ class ftp{
 			return true;
 		}else{
 			throw new AuthException;
+		}
+	}
+	public function close(){
+		if($this->connection){
+			ftp_close($this->connection);
+			$this->connection = null;
 		}
 	}
 	public function chdir(string $dir){
