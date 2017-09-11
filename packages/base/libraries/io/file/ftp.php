@@ -64,6 +64,9 @@ class ftp extends file{
 			}
 		}
 	}
+    public function exists():bool{
+        return $this->getDriver()->is_file($this->getPath());
+    }
 	public function getDirectory():directory\ftp{
 		$directory = new directory\ftp($this->directory);
 		$directory->setDriver($this->getDriver());
