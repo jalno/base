@@ -25,14 +25,12 @@ class router{
 					$option = array($option);
 				}
 				self::$defaultDomains = $option;
-			}else{
-				$log->reply("notfound");
-			}
-			if(isset(http::$server['hostname'])){
+			}elseif(isset(http::$server['hostname'])){
 				$log->reply("use server hostname:",http::$server['hostname']);
 				self::$defaultDomains = array(http::$server['hostname']);
+			}else{
+				$log->reply()->warn("notfound");
 			}
-			$log->warn("faild");
 		}
 		return self::$defaultDomains;
 	}
