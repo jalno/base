@@ -38,13 +38,18 @@ class jdate implements date_interface{
                 case "A":
 					$result1=date("a",$need);
 					if($result1=="pm"){
-						$result.= "&#1576;&#1593;&#1583;&#1575;&#1586;&#1592;&#1607;&#1585;";
+						$result.= "بعد ازظهر";
 					}else{
-						$result.="&#1602;&#1576;&#1604;&#8207;&#1575;&#1586;&#1592;&#1607;&#1585;";
+						$result.="قبل ازظهر";
 					}
 					break;
                 case "a":
-					$result.= date("a",$need);
+					$result1 = date("a",$need);
+					if($result1=="pm"){
+						$result.= "ب.ظ";
+					}else{
+						$result.="ق.ظ";
+					}
 					break;
     			case "d":
 					if($jday<10){
