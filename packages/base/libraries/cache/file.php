@@ -67,8 +67,8 @@ class file implements Ihandler{
 				if($item->exists()){
 					$item->delete();
 				}
+				unset($items[$x]);
 			}
-			unset($items[$x]);
 		}
 		$this->writeIndex($items);
 	}
