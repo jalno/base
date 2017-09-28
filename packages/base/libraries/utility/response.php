@@ -181,7 +181,9 @@ class response implements \Serializable{
 		if($this->file){
 			http::setMimeType($this->file->getMimeType());
 			http::setLength($this->file->getSize());
-
+			if($name = $this->file->getName()){
+				http::setHeader('content-disposition', "inline; filename=\"{$name}\"");
+			}
 			$this->file->output();
 		}elseif($this->json){
 			echo $this->json();
