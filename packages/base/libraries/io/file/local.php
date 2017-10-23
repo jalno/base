@@ -35,7 +35,11 @@ class local extends file{
         }
     }
     public function rename(string $newName): bool{
-        return rename($this->getPath(), $dest->directory.'/'.$newName);
+        if(rename($this->getPath(), $this->directory.'/'.$newName)){
+            $this->basename = $newName;
+            return true;
+        }
+        return false;
     }
     public function delete(){
         unlink($this->getPath());
