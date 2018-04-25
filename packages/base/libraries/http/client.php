@@ -47,7 +47,7 @@ class client{
 			}
 		}
 		if($thisOptions['json']){
-			$thisOptions['headers']['content-type'] = 'application/javascript; charset=UTF-8';
+			$thisOptions['headers']['content-type'] = 'application/json; charset=UTF-8';
 			if(!$thisOptions['body']){
 				$thisOptions['body'] = json\encode($thisOptions['json']);
 			}
