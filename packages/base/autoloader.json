@@ -5,7 +5,10 @@
 			"file":"libraries/frontend/source.php"
 		},
 		{
-			"classes":["controller"],
+			"classes":[
+				"controller",
+				"inputValidation"
+			],
 			"file":"libraries/mvc/controller.php"
 		},
 		{
