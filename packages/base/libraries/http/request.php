@@ -93,10 +93,10 @@ class request{
 	public function getHeaders():array{
 		return $this->headers;
 	}
-	public function setBody(string $body){
+	public function setBody($body){
 		$this->body = $body;
 	}
-	public function getBody():string{
+	public function getBody(){
 		return $this->body;
 	}
 	public function setProxy(array $proxy){

@@ -1,19 +1,22 @@
 <?php
 namespace packages\base\http;
+use \CURLFile;
 use \packages\base\http\handler;
 use \packages\base\http\serverException;
 use \packages\base\http\clientException;
+use \packages\base\IO;
+use \packages\base\IO\file;
 class curl implements handler{
 	public function fire(request $request, array $options):response{
 		$ch = curl_init( $request->getURL());
 		$fh = null;
 		$header = '';
 		$body = '';
-
+		
 		curl_setopt($ch, CURLOPT_HEADER, 1);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $request->getMethod());
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $request->getBody());
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $this->replaceFiles($request->getBody()));
 		if(isset($options['timeout']) and $options['timeout'] > 0){
 			curl_setopt($ch, CURLOPT_TIMEOUT_MS, $options['timeout'] * 1000000);
 		}
@@ -101,6 +104,23 @@ class curl implements handler{
 			$response->setBody($body);
 		}
 		return $response;
+	}
+	protected function replaceFiles($request) {
+		if (is_array($request)) {
+			foreach($request as $key => $value) {
+				if (is_array($value)) {
+					$request[$key] = $this->replaceFiles($value);
+				} elseif ($value instanceof file) {
+					if (!$value instanceof file\local) {
+						$tmp = new file\tmp();
+						$value->copyTo($tmp);
+						$value = $tmp;
+					}
+					$request[$key] = new CURLFile($value->getPath(),IO\mime_type($value->getPath()));
+				}
+			}
+		}
+		return $request;
 	}
 	private function getParts(string $result):array{
 		if(strpos($result, "\r\n\r\n") === false and !preg_match("/^HTTP\/\d+\.\d+ \d+ .*/i", $result)){
