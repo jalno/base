@@ -300,7 +300,7 @@ class source{
 			'listener' => "\\themes\\{$this->name}\\".$listener
 		);
 	}
-	public function trigger(event $e){
+	public function trigger(EventInterface $e){
 		foreach($this->events as $event){
 			if($event['name'] == '\\'.get_class($e)){
 				list($listener, $method) = explode('@', $event['listener'], 2);

@@ -3,7 +3,7 @@ namespace packages\base;
 use \packages\base\frontend\theme;
 use \packages\base\frontend\source;
 use \packages\base\translator\language;
-use \packages\base\event;
+use \packages\base\EventInterface;
 use \packages\base\events\listener;
 class packages{
 	static private $actives = array();
@@ -309,7 +309,7 @@ class package{
 		$log->debug("listen",$event['listener'],"on", $event['name']);
 		$this->events[] = $event;
 	}
-	public function trigger(event $e){
+	public function trigger(EventInterface $e){
 		$log = log::getInstance();
 		foreach($this->events as $event){
 			if($event['name'] == '\\'.get_class($e)){
