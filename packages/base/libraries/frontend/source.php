@@ -2,6 +2,7 @@
 namespace packages\base\frontend;
 use \packages\base\json;
 use \packages\base\event;
+use \packages\base\EventInterface;
 use \packages\base\autoloader;
 use \packages\base\translator;
 use \packages\base\translator\InvalidLangCode;
