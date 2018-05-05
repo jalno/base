@@ -78,9 +78,10 @@ class response{
 		return $this->statusCode;
 	}
 	public function setHeader(string $name, string $value){
-		$this->headers[$name] = $value;
+		$this->headers[strtolower($name)] = $value;
 	}
 	public function getHeader(string $name):string{
+		$name = strtolower($name);
 		return isset($this->headers[$name]) ? $this->headers[$name] : null;
 	}
 	public function setHeaders(array $headers){

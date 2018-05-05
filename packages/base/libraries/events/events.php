@@ -2,7 +2,7 @@
 namespace packages\base;
 use \packages\base\frontend\theme;
 class events{
-	static public function trigger(event $event){
+	static public function trigger(EventInterface $event){
 		$log = log::getInstance();
 		$log->debug("trigger", get_class($event));
 		foreach(packages::get() as $package){

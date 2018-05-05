@@ -44,6 +44,7 @@ require_once('packages/base/libraries/router/exceptions.php');
 require_once("packages/base/libraries/logging/log.php");
 require_once("packages/base/libraries/logging/instance.php");
 /* Events */
+require_once("packages/base/libraries/events/EventInterface.php");
 require_once("packages/base/libraries/events/event.php");
 require_once("packages/base/libraries/events/events.php");
 require_once("packages/base/libraries/events/exceptions.php");
