@@ -8,7 +8,7 @@ abstract class image{
 	public function __construct($param = null, int $height = null, color $bg = null){
 		if($param instanceof file){
 			if(!$param->exists()){
-				throw new NotFoundException($file);
+				throw new NotFoundException($param);
 			}
 			$this->file = $param;
 			$this->fromFile();
