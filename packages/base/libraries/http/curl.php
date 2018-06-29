@@ -15,8 +15,10 @@ class curl implements handler{
 		
 		curl_setopt($ch, CURLOPT_HEADER, 1);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $request->getMethod());
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $this->replaceFiles($request->getBody()));
+		if ($request->getMethod() != "GET") {
+			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $request->getMethod());
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $this->replaceFiles($request->getBody()));
+		}
 		if(isset($options['timeout']) and $options['timeout'] > 0){
 			curl_setopt($ch, CURLOPT_TIMEOUT_MS, $options['timeout'] * 1000000);
 		}
