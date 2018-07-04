@@ -61,5 +61,34 @@ class password{
         }
         return $ret === 0;
     }
+    static function generate(int $length = 10, bool $number = true, bool $az = true, bool $AZ = true, bool $special = false): string {
+        $azChar = "abcdefghijklmnopqrstuvwxyz";
+        $AZChar = strtoupper($azChar);
+        $numberChar = "0123456789";
+        $specialChar = ".-+=_,!@$#*%<>[]{}";
+        $uses = array(
+            $numberChar => $number,
+            $azChar => $az,
+            $AZChar => $AZ,
+            $specialChar => $special,
+        );
+        $password = "";
+        $parts = 0;
+        if($number) $parts++;
+        if($az) $parts++;
+        if($AZ) $parts++;
+        if($special) $parts++;
+        for ($i = 0; $i != ceil($length / $parts); $i++) {
+            foreach ($uses as $chars => $flag) {
+                if (strlen($password) == $length) {
+                    break;
+                }
+                if ($flag) {
+                    $password .= substr($chars, rand(0, strlen($chars) -1), 1);
+                }
+            }
+        }
+        return $password;
+    }
 }
 ?>
