@@ -113,12 +113,13 @@ class curl implements handler{
 				if (is_array($value)) {
 					$request[$key] = $this->replaceFiles($value);
 				} elseif ($value instanceof file) {
+					$basename = $value->basename;
 					if (!$value instanceof file\local) {
 						$tmp = new file\tmp();
 						$value->copyTo($tmp);
 						$value = $tmp;
 					}
-					$request[$key] = new CURLFile($value->getPath(),IO\mime_type($value->getPath()));
+					$request[$key] = new CURLFile($value->getPath(),IO\mime_type($value->getPath()), $basename);
 				}
 			}
 		}
