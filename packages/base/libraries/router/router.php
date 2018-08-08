@@ -1,12 +1,6 @@
 <?php
 namespace packages\base;
-use \packages\base\http;
-use \packages\base\process;
-use \packages\base\options;
-use \packages\base\log;
-use \packages\base\translator\InvalidLangCode;
-use \packages\base\router\rule;
-use \packages\base\router\ruleControllerException;
+use packages\base\{translator\InvalidLangCode, router\rule, router\ruleControllerException};
 class router{
 	static private $rules = array();
 	static private $exceptions = array();
@@ -339,10 +333,50 @@ class router{
 						$rule->runMiddlewares($data);
 						$log->info("call",$controller.'@'.$method);
 						$controllerClass = new $controller();
-						$response = $controllerClass->$method($data);
+						try {
+							$response = $controllerClass->$method($data);
+						} catch(inputValidation $e) {
+							$response = $controllerClass->getResponse();
+							if ($response) {
+								$response->setStatus(false);
+								$view = $response->getView();
+								if ($view instanceof views\form) {
+									$error = views\FormError::fromException($e);
+									$view->setFormError($error);
+									$view->setDataForm(http::$request['post']);
+								} else {
+									$response->setData(array(
+										'error' => [array(
+											'type' => view\error::FATAL,
+											'error' => views\FormError::DATA_VALIDATION,
+											'input' => $e->getInput()
+										)]
+									));
+								}
+							}
+						} catch(db\duplicateRecord $e) {
+							$response = $controllerClass->getResponse();
+							if ($response) {
+								$response->setStatus(false);
+								$view = $response->getView();
+								if ($view instanceof views\form) {
+									$error = views\FormError::fromException($e);
+									$view->setFormError($error);
+									$view->setDataForm(http::$request['post']);
+								} else {
+									$response->setData(array(
+										'error' => [array(
+											'type' => view\error::FATAL,
+											'error' => views\FormError::DATA_DUPLICATE,
+											'input' => $e->getInput()
+										)]
+									));
+								}
+							}
+						}
 						$log->reply("Success");
 						$log->info("send response");
-						$controllerClass->response($response);
+						$response->send();
 						$log->reply("Success");
 					}
 				}

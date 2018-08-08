@@ -42,34 +42,55 @@ class response implements \Serializable{
 		return $this->api;
 	}
 	public function setView(view $view){
-		$log = log::getInstance();
 		$this->view = $view;
-		if(method_exists($this->view, 'export')){
-			$target = '';
-			if($this->api){
-				$target = 'api';
-			}elseif($this->ajax){
-				$target = 'ajax';
-			}
-			$log->debug("call export method for colleting data");
-			$export = $this->view->export($target);
-			$log->reply("Success");
-			if(isset($export['data'])){
-				foreach($export['data'] as $key => $val){
-					$this->data[$key] = $val;
+	}
+	protected function prepareView() {
+		$log = log::getInstance();
+		if ($this->view) {
+			if(method_exists($this->view, 'export')){
+				$target = '';
+				if($this->api){
+					$target = 'api';
+				}elseif($this->ajax){
+					$target = 'ajax';
+				}
+				$log->debug("call export method for colleting data");
+				$export = $this->view->export($target);
+				$log->reply("Success");
+				if(isset($export['data'])){
+					foreach($export['data'] as $key => $val){
+						$this->data[$key] = $val;
+					}
 				}
 			}
-		}
-		if($this->view instanceof form){
-			$log->debug("view is a form, colleting form errors");
-			$errors = $this->view->getFormErrors();
+			if($this->view instanceof form){
+				$log->debug("view is a form, colleting form errors");
+				$errors = $this->view->getFormErrors();
+				if($errors){
+					$dataerror = array();
+					foreach($errors as $error){
+						$dataerror[] = array(
+							'type' => $error->getType(),
+							'error' => $error->getCode(),
+							'input' => $error->getInput()
+						);
+					}
+					$this->setData($dataerror, 'error');
+					$log->reply("Success");
+				}else{
+					$log->reply("there is no error");
+				}
+			}
+			$log->debug("colleting errors");
+			$errors = $this->view->getErrors();
 			if($errors){
-				$dataerror = array();
+				$dataerror = $this->getData('error');
 				foreach($errors as $error){
 					$dataerror[] = array(
 						'type' => $error->getType(),
-						'error' => $error->getCode(),
-						'input' => $error->getInput()
+						'code' => $error->getCode(),
+						'data' => $error->getData(),
+						'message' => $error->getMessage(),
 					);
 				}
 				$this->setData($dataerror, 'error');
@@ -78,23 +99,9 @@ class response implements \Serializable{
 				$log->reply("there is no error");
 			}
 		}
-		$log->debug("colleting errors");
-		$errors = $this->view->getErrors();
-		if($errors){
-			$dataerror = $this->getData('error');
-			foreach($errors as $error){
-				$dataerror[] = array(
-					'type' => $error->getType(),
-					'code' => $error->getCode(),
-					'data' => $error->getData(),
-					'message' => $error->getMessage(),
-				);
-			}
-			$this->setData($dataerror, 'error');
-			$log->reply("Success");
-		}else{
-			$log->reply("there is no error");
-		}
+	}
+	public function getView() {
+		return $this->view;
 	}
 	public function setFile(file $file){
 		$this->file = $file;
@@ -186,10 +193,12 @@ class response implements \Serializable{
 			}
 			$this->file->output();
 		}elseif($this->json){
+			$this->prepareView();
 			echo $this->json();
 		}elseif($this->raw){
 			echo $this->output;
 		}elseif($this->view){
+			$this->prepareView();
 			$this->view->setData($this->getStatus(), 'status');
 			$this->view->output();
 		}
