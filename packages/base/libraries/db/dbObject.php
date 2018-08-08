@@ -472,7 +472,7 @@ class dbObject implements \Serializable{
 		$this->processHasOneWith ();
 		$results = $this->db->ArrayBuilder()->paginate($this->dbTable, $page, $fields);
 		if ($this->db->count == 0)
-			return null;
+			return array();
 		self::$totalPages = $this->db->totalPages;
 		foreach ($results as &$r) {
 			$this->processArrays ($r);
