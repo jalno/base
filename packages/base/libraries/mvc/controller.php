@@ -4,11 +4,13 @@ use packages\base\response;
 use packages\base\utility\safe;
 use packages\base\http;
 class controller{
+	protected $response;
 	protected $data;
 	protected $form;
 	public function __construct(/*$data*/){
 		//$this->data = $data;
 		//$formdata = http::$data;
+		$this->response = new response(false);
 	}
 	protected function checkinputs($fields){
 		$return = array();
@@ -202,6 +204,9 @@ class controller{
 	}
 	public function response(response $response){
 		$response->send();
+	}
+	public function getResponse() {
+		return $this->response;
 	}
 }
 class inputType extends \Exception {
