@@ -603,4 +603,7 @@ class router{
 		}
 		return false;
 	}
+	public static function getRules(): array {
+		return self::$rules;
+	}
 }
