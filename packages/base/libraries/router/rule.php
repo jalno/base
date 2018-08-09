@@ -532,4 +532,7 @@ class rule{
 		}
 		return true;
 	}
+	public function getPath() {
+		return $this->path;
+	}
 }
