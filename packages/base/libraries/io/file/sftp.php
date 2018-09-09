@@ -56,6 +56,10 @@ class sftp extends file{
 	public function chmod(int $mode): bool{
 		return $this->getDriver()->chmod($this->getPath(), $mode);
 	}
+    public function exists():bool{
+		$stat = $this->getDriver()->stat($this->getPath());
+        return $stat != false;
+    }
 	public function copyTo(file $dest): bool{
 		$driver = $this->getDriver();
 		if($dest instanceof local){
