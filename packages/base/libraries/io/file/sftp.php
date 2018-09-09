@@ -53,6 +53,9 @@ class sftp extends file{
 	public function delete(){
 		$this->getDriver()->unlink($this->getPath());
 	}
+	public function chmod(int $mode): bool{
+		return $this->getDriver()->chmod($this->getPath(), $mode);
+	}
 	public function copyTo(file $dest): bool{
 		$driver = $this->getDriver();
 		if($dest instanceof local){

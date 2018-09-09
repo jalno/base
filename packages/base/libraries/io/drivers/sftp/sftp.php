@@ -140,4 +140,7 @@ class sftp{
 	public function rename(string $from, string $to):bool{
 		return @ssh2_sftp_rename($this->connection, $from, $to);
 	}
+	public function chmod(string $filename, int $mode):bool{
+		return @ssh2_sftp_chmod($this->connection, $filename, $mode);
+	}
 }
