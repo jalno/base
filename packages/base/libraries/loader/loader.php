@@ -323,4 +323,10 @@ class loader{
 			return self::cgi;
 		}
 	}
+	public static function autoStartSession() {
+		$session = options::get('packages.base.session', false);
+		if ($session and isset($session['autostart']) and $session['autostart']) {
+			session::start();
+		}
+	}
 }
