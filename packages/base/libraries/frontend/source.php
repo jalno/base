@@ -194,16 +194,7 @@ class source{
 	public function getView($viewName){
 		foreach($this->views as $view){
 			if((!isset($view['disabled']) or !$view['disabled']) and ($view['name'] == $viewName or (isset($view['parent']) and $view['parent'] == $viewName) )){
-				if(class_exists($view['name'])){
-					if(!isset($view['parent']) or class_exists($view['parent'])){
-						return $view;
-					}else{
-						throw new SourceViewParentException($view['parent'], $this->path);
-					}
-				}else{
-					throw new SourceViewException($view['name'], $this->path);
-				}
-				
+				return $view;
 			}
 		}
 		return false;
