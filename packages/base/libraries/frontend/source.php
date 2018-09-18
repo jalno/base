@@ -203,7 +203,7 @@ class source{
 				}else{
 					throw new SourceViewException($view['name'], $this->path);
 				}
-
+				
 			}
 		}
 		return false;
@@ -212,6 +212,14 @@ class source{
 		$len = count($this->views);
 		for($x=0;$x!=$len;$x++){
 			$this->views[$x]['disabled'] = true;
+		}
+	}
+	public function disableView(string $viewName) {
+		foreach($this->views as $key => $view){
+			if ($view['name'] == $viewName or (isset($view['parent']) and $view['parent'] == $viewName)) {
+				$this->views[$key]["disabled"] = true;
+				break;
+			}
 		}
 	}
 	public function setAutoload($autoload){
