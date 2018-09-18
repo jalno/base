@@ -1,18 +1,12 @@
 <?php
 namespace packages\base\frontend;
-use \packages\base\json;
-use \packages\base\event;
-use \packages\base\EventInterface;
-use \packages\base\autoloader;
-use \packages\base\translator;
-use \packages\base\translator\InvalidLangCode;
-use \packages\base\translator\LangAlreadyExists;
-use \packages\base\translator\language;
+use packages\base\{json, event, log, EventInterface, autoloader, translator, translator\InvalidLangCode, translator\LangAlreadyExists, translator\language};
 class source{
 	private $path;
 	private $name;
 	private $parent;
 	private $autoload;
+	private $bootstrap;
 	private $assets = array();
 	private $views = array();
 	private $langs = array();
@@ -47,6 +41,10 @@ class source{
 				if(isset($theme['autoload'])){
 					$this->setAutoload($theme['autoload']);
 					$this->register_autoload();
+				}
+				if(isset($theme['bootstrap'])){
+					$this->bootstrap = $this->path."/".$theme['bootstrap'];
+					$this->bootup();
 				}
 				if(isset($theme['views'])){
 					foreach($theme['views'] as $view){
@@ -312,5 +310,16 @@ class source{
 				}
 			}
 		}
+	}
+	public function bootup() {
+		$log = log::getInstance();
+		if($this->bootstrap){
+			$log->debug("fire bootstrap file:", $this->bootstrap);
+			require_once($this->bootstrap);
+			return true;
+		}else{
+			$log->debug("there is no bootstrap file");
+		}
+		return false;
 	}
 }
