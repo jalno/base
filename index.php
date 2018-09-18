@@ -30,6 +30,7 @@ if(is_file("packages/base/libraries/config/config.php") and is_readable("package
 		log::debug("set 'root_directory' option to ", __DIR__);
 		options::set('root_directory', __DIR__);
 		//base\frontend\theme::selectTheme();
+		loader::autoStartSession();
 		log::info("loading packages");
 		loader::packages();
 		log::reply("Success");
