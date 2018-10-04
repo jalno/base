@@ -34,7 +34,7 @@ class translator{
 		}
 	}
 	public static function getDefaultLang(){
-		$defaultlang = options::load('packages.base.translator.defaultlang');
+		$defaultlang = options::get('packages.base.translator.defaultlang');
 		return $defaultlang;
 	}
 	public static function getDefaultShortLang(){
