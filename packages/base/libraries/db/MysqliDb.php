@@ -268,11 +268,13 @@ class MysqliDb
 			throw new \Exception('MySQL host is not set');
 		}
 		$log->info('connect to '.$this->username.'@'.$this->host.':'.$this->port.'/'.$this->db);
-		$this->_mysqli = new \mysqli($this->host, $this->username, $this->password, $this->db, $this->port);
+		$this->_mysqli = @new \mysqli($this->host, $this->username, $this->password, $this->db, $this->port);
 
 		if ($this->_mysqli->connect_error) {
-			$log->reply()->fatal($this->_mysqli->connect_errno . ': ' . $this->_mysqli->connect_error);
-			throw new \Exception('Connect Error ' . $this->_mysqli->connect_errno . ': ' . $this->_mysqli->connect_error);
+			$mysqli = $this->_mysqli;
+			$this->_mysqli = null;
+			$log->reply()->fatal($mysqli->connect_errno . ': ' . $mysqli->connect_error);
+			throw new \Exception('Connect Error ' . $mysqli->connect_errno . ': ' . $mysqli->connect_error);
 		}
 		$log->reply("Success");
 		if ($this->charset) {
