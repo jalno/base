@@ -1,10 +1,11 @@
 <?php
 namespace packages\base;
-use \packages\base\db;
-use \packages\base\json;
 class options{
 	private static $options = array();
 	static function load($option, $reload = false){
+		if (!loader::canConnectDB()) {
+			return false;
+		}
 		if($reload or !isset(self::$options[$option])){
 			loader::requiredb();
 			db::where("name", $option);
@@ -22,6 +23,9 @@ class options{
 		return false;
 	}
 	static function save($name,$value, $autoload = false){
+		if (!loader::canConnectDB()) {
+			return;
+		}
 		self::$options[$name] = $value;
 		loader::requiredb();
 		db::where("name", $name);

@@ -279,7 +279,7 @@ class loader{
 		return true;
 	}
 	public static function connectdb(){
-		if(($db = options::get('packages.base.loader.db', false)) !== false){
+		if(($db = options::get('packages.base.loader.db', false)) != false){
 			if(isset($db['type'])){
 				if($db['type'] == 'mysql'){
 					if(isset($db['host'], $db['user'], $db['pass'],$db['dbname'])){
@@ -301,6 +301,9 @@ class loader{
 		if(!db::has_connection()){
 			self::connectdb();
 		}
+	}
+	public static function canConnectDB() {
+		return options::get('packages.base.loader.db', false) != false;
 	}
 	public static function options(){
 		global $options;
