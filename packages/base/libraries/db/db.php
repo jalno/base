@@ -202,9 +202,22 @@ class db{
 	 *
 	 * @return bool Boolean indicating whether the insert query was completed succesfully.
 	 */
-	static function insert($tableName, $insertData){
+	static function insert(string $tableName, array $insertData){
 		if(self::has_connection()){
 			return self::connection()->insert($tableName, $insertData);
+		}
+	}
+	/**
+	 * Insert method to add new row
+	 *
+	 * @param string $tableName The name of the table.
+     * @param array $multiInsertData Two-dimensinal Data-array containing information for inserting into the DB.
+	 *
+	 * @return bool Boolean indicating the insertion failed (false), else return last id inserted id
+	 */
+	static function insertMulti(string $tableName, array $multiInsertData){
+		if(self::has_connection()){
+			return self::connection()->insertMulti($tableName, $multiInsertData);
 		}
 	}
 
