@@ -156,7 +156,40 @@ class process extends dbObject{
 				throw new notStartedProcess();
 			}
 		}
-    }
+	}
+	/**
+	 * Returns if the process interrupted by anthor process.
+	 * 
+	 * @return bool
+	 */
+	protected function isInterrupted(): bool {
+		if (!$this->pid) {
+			throw new notStartedProcess();
+		}
+		return cache::get("packages.base.process.".$this->pid.".interrupt") == 1;
+	}
+	/**
+	 * throws exceptions if the process interrupted by anthor process.
+	 * 
+	 * @throws packages\base\InterruptedException
+	 * @return void
+	 */
+	protected function checkInterruption() {
+		if ($this->isInterrupted()) {
+			throw new InterruptedException();
+		}
+	}
+	/**
+	 * Interrupt anthor process to stop or pause it.
+	 * 
+	 * @return void
+	 */
+	public function interrupt() {
+		if (!$this->pid) {
+			throw new notStartedProcess();
+		}
+		cache::set("packages.base.process.".$this->pid.".interrupt", 1);
+	}
 	/**
      * Stops the process.
      *
