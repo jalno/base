@@ -542,7 +542,12 @@ class dbObject implements \Serializable{
 						$data[$key][$key2] = $val2->toArray($recursive);
 					}
 				}
-			}elseif(is_object($d) and $d instanceof dbObject){
+			} else if (!is_object($d) and isset($this->relations[$key]) and strtolower($this->relations[$key][0]) == "hasone" and $d != null) {
+				$model = new $this->relations[$key][1]();
+				$model->where($model->primaryKey, $d);
+				$this->data[$key] = $d = $model->getOne() ?? $d;
+			}
+			if(is_object($d) and $d instanceof dbObject){
 				if($recursive){
 					$data[$key] = $d->toArray($recursive);
 				}else{
@@ -783,9 +788,9 @@ class dbObject implements \Serializable{
 		$return = array();
 		if(is_array($array)){
 			foreach($array as $key => $val){
-				if(is_object($val) and $val instanceof dbObject){
+				if (is_object($val) and $val instanceof dbObject) {
 					$return[$key] = $val->toArray($recursive);
-				}else{
+				} else {
 					$return[$key] = $val;
 				}
 			}
