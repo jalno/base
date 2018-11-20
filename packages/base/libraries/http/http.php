@@ -194,6 +194,10 @@ class http{
 	static function setLength($length){
 		self::setHeader('Content-Length', $length);
 	}
+	static function getHeader(string $name) {
+		$name = strtoupper(str_replace("-", "_", $name));
+		return isset($_SERVER['HTTP_'.$name]) ? $_SERVER["HTTP_".$name] : null;
+	}
 	static function tojson($charset="utf-8"){
         header('Cache-Control: no-store, no-cache, must-revalidate, pre-check=0, post-check=0, max-age=0');
 		self::setMimeType('application/json', $charset);
@@ -222,10 +226,4 @@ class http{
 	}
 
 }
-
-/*
-const CLIENT = array(
-	'ip' => $_SERVER['REMOTE_ADDR'],
-	'
-);*/
 ?>
