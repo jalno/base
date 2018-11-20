@@ -676,41 +676,12 @@ class MysqliDb
      *
      * @param string $tableName The name of the table.
      * @param array $multiInsertData Two-dimensinal Data-array containing information for inserting into the DB.
-     * @param array $dataKeys Optinal Table Key names, if not set in insertDataSet.
      *
-     * @return bool|array Boolean indicating the insertion failed (false), else return id-array ([int])
+     * @return bool|array Boolean indicating the insertion failed (false), else return last id inserted id
      */
-    public function insertMulti($tableName, array $multiInsertData, array $dataKeys = null)
+    public function insertMulti($tableName, array $multiInsertData)
     {
-        // only auto-commit our inserts, if no transaction is currently running
-        $autoCommit = (isset($this->_transaction_in_progress) ? !$this->_transaction_in_progress : true);
-        $ids = array();
-
-        if($autoCommit) {
-            $this->startTransaction();
-        }
-
-        foreach ($multiInsertData as $insertData) {
-            if($dataKeys !== null) {
-                // apply column-names if given, else assume they're already given in the data
-                $insertData = array_combine($dataKeys, $insertData);
-            }
-
-            $id = $this->insert($tableName, $insertData);
-            if(!$id) {
-                if($autoCommit) {
-                    $this->rollback();
-                }
-                return false;
-            }
-            $ids[] = $id;
-        }
-
-        if($autoCommit) {
-            $this->commit();
-        }
-
-        return $ids;
+        return $this->_buildInsert($tableName, $multiInsertData, 'INSERT');
     }
 	/**
 	 * Replace method to add new row
@@ -1530,21 +1501,35 @@ class MysqliDb
 		if (!is_array($tableData)) {
 			return;
 		}
-
+		$length = count($tableData);
 		$isInsert = preg_match('/^[INSERT|REPLACE]/', $this->_query);
-		$dataColumns = array_keys($tableData);
+		$isSingle = array_keys($tableData) !== range(0, $length - 1);
+		
+		$dataColumns = array_keys($isSingle ? $tableData : $tableData[0]);
 		if ($isInsert) {
 			if (isset ($dataColumns[0]))
 				$this->_query .= ' (`' . implode($dataColumns, '`, `') . '`) ';
-			$this->_query .= ' VALUES (';
+			$this->_query .= ' VALUES ';
 		} else {
 			$this->_query .= " SET ";
 		}
-
-		$this->_buildDataPairs($tableData, $dataColumns, $isInsert);
-
-		if ($isInsert) {
-			$this->_query .= ')';
+		if ($isSingle) {
+			if ($isInsert) {
+				$this->_query .= '(';
+			}
+			$this->_buildDataPairs($tableData, $dataColumns, $isInsert);
+			if ($isInsert) {
+				$this->_query .= ')';
+			}
+		} else if ($isInsert){
+			for ($x = 0; $x < $length; $x++) {
+				$this->_query .= '(';
+				$this->_buildDataPairs($tableData[$x], $dataColumns, $isInsert);
+				$this->_query .= ')';
+				if ($x != $length -1) {
+					$this->_query .= ",";
+				}
+			}
 		}
 	}
 

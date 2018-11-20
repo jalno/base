@@ -77,6 +77,10 @@
 			"file":"libraries/background/cli.php"
 		},
 		{
+			"classes": ["InterruptedException"],
+			"file": "libraries/background/InterruptedException.php"
+		},
+		{
 			"classes":["response\\file"],
 			"file":"libraries/utility/response_file.php"
 		},
