@@ -109,6 +109,9 @@ class client{
 		$request->setMethod($method);
 		if(isset($url_parse['query']) and $url_parse['query']){
 			parse_str($url_parse['query'], $query);
+			if (!is_array($thisOptions['query'])) {
+				$thisOptions['query'] = [];
+			}
 			$thisOptions['query'] = array_replace_recursive($query, $thisOptions['query']);
 		}
 		if($thisOptions['query']){
