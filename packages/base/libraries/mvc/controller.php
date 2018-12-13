@@ -42,16 +42,22 @@ class controller{
 							$valid = safe::is_email($rawdata);
 							if($valid){
 								$data = $rawdata;
+							} else if (!trim($rawdata)) {
+								$data = '';
 							}
 						}elseif($type == 'ip4'){
 							$valid = safe::is_ip4($rawdata);
 							if($valid){
 								$data = $rawdata;
+							} else if (!trim($rawdata)) {
+								$data = '';
 							}
 						}elseif($type == 'cellphone'){
 							$valid = safe::is_cellphone_ir($rawdata);
 							if($valid){
 								$data = safe::cellphone_ir($rawdata);
+							} else if (!trim($rawdata)) {
+								$data = '';
 							}
 						}elseif($type == 'date'){
 							if(($date = safe::is_date($rawdata)) !== false){

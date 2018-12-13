@@ -2041,6 +2041,15 @@ class MysqliDb
 	}
 
 	/**
+	 * Method to get list of tables
+	 * @return array 
+	 */
+	public function tables() {
+		$this->where('table_schema', $this->db);
+		return array_column($this->get('information_schema.tables',null, array('TABLE_NAME')), 'TABLE_NAME');
+	}
+
+	/**
 	 * Method to check if needed table is created
 	 *
 	 * @param array $tables Table name or an Array of table names to check
