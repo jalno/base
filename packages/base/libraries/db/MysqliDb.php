@@ -1359,7 +1359,15 @@ class MysqliDb
             if (!empty($this->_joinAnd) && isset($this->_joinAnd[$joinStr])) {
                 foreach($this->_joinAnd[$joinStr] as $join_and_cond) {
                     list ($concat, $varName, $operator, $val) = $join_and_cond;
-                    $this->_query .= " " . $concat ." " . $varName;
+					$this->_query .= " " . $concat ." ";
+					if(is_object($varName) and $varName instanceof parenthesis){
+						$this->_query .= " (";
+						$condis = $varName->getWheres();
+						$this->_buildCondition(null, $condis);
+						$this->_query .= ")";
+						continue;
+					}
+					$this->_query .= $varName;
                     $this->conditionToSql($operator, $val);
                 }
             }
