@@ -430,11 +430,14 @@ class MysqliDb
 			call_user_func_array(array($stmt, 'bind_param'), $this->refValues($params));
 		}
 
+		$this->_lastQuery = $this->replacePlaceHolders($this->_query, $params);
+		$log = log::getInstance();
+		$log->debug("SQL Query:",$this->_lastQuery);
+
 		$stmt->execute();
 		$this->count = $stmt->affected_rows;
 		$this->_stmtError = $stmt->error;
 		$this->_stmtErrno = $stmt->errno;
-		$this->_lastQuery = $this->replacePlaceHolders($this->_query, $params);
 		$res = $this->_dynamicBindResults($stmt);
 		$this->reset();
 
