@@ -41,6 +41,9 @@ class router{
 	static public function addRule(rule $rule){
 		self::$rules[] = $rule;
 	}
+	static public function resetRules() {
+		self::$rules = [];
+	}
 	static public function addException($rule, $exception, $controller){
 		if(is_string($rule)){
 			$rule = explode('/', $rule);
