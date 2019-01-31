@@ -89,6 +89,7 @@ class source{
 			case('js'):
 			case('css'):
 			case('less'):
+			case("scss"):
 			case('sass'):
 			case('ts'):
 				$this->addCodeAsset($asset);
