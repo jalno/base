@@ -10,17 +10,28 @@ class packageNotConfiged extends \Exception {
 		return $this->package;
 	}
 }
-class packageConfig extends \Exception {
+class PackageConfigException extends Exception {
+	/** @var string */
 	protected $package;
-	public function __construct($package, $message = ""){
+	/**
+	 * @param string package name
+	 * @param string $message The Exception message to throw.
+	 */
+	public function __construct(string $package, string $message = ""){
 		$this->package = $package;
 		parent::__construct($message);
 	}
-	public function getPackage(){
+
+	/**
+	 * Getter for package name.
+	 * 
+	 * @return string
+	 */
+	public function getPackage(): stirng {
 		return $this->package;
 	}
 }
-class packagePermission extends packageConfig{
+class packagePermission extends PackageConfigException{
 	private $permission;
 	public function __construct($package, $permission, $message = ""){
 		$this->package = $package;
@@ -31,7 +42,7 @@ class packagePermission extends packageConfig{
 		return $this->permission;
 	}
 }
-class packageAutoloaderFileException extends packageConfig{
+class packageAutoloaderFileException extends PackageConfigException{
 	private $autoloaderfile;
 	public function __construct($package, $file){
 		$this->package = $package;

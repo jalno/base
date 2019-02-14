@@ -1,7 +1,28 @@
 {
 	"permissions": "*",
 	"routing": "routing.json",
-	"autoload": "autoloader.json",
+	"autoload": {
+		"directories": ["libraries"],
+		"files": [
+			{
+				"file": "libraries/json/encode.php",
+				"function": true
+			},
+			{
+				"file": "libraries/json/decode.php",
+				"function": true
+			},
+			{
+				"file": "libraries/router/url.php",
+				"function": true
+			},
+			{
+				"file": "libraries/translator/t.php",
+				"function": true
+			}
+		]
+	},
+	"dependencies": ["PhpParser"],
 	"languages":{
 		"fa_IR": "langs/fa_IR.json"
 	}
