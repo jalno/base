@@ -44,36 +44,7 @@ class router{
 	static public function resetRules() {
 		self::$rules = [];
 	}
-	static public function addException($rule, $exception, $controller){
-		if(is_string($rule)){
-			$rule = explode('/', $rule);
-		}
-		if(is_array($rule)){
-			$len = count($rule);
-			$parts = array();
-			for($x = 0;$x!=$len;$x++){
-				$part = $rule[$x];
-				if($part){
-					$parts[] = rule::validPart($part);
-				}
-			}
-			if(!$parts){
-				$parts[] = array(
-					"type" => "static",
-					"name" => ""
-				);
-			}
-			self::$exceptions[] = array(
-				'path' => $parts,
-				'handler' => $controller,
-				'exception' => $exception
-			);
-			return true;
-		}else{
-			throw new routerRule($rule);
-		}
-	}
-	public static function CheckShortLang($lang){
+	public static function CheckShortLang($lang, bool $throwError = true){
 		$log = log::getInstance();
 		$log->debug("looking for packages.base.translator.changelang.type option");
 		$type = options::get('packages.base.translator.changelang.type');
@@ -92,7 +63,9 @@ class router{
 				}
 			}else{
 				$log->reply()->debug("invalid");
-				throw new InvalidLangCode;
+				if ($throwError) {
+					throw new InvalidLangCode;
+				}
 			}
 		}
 		return $lang;
@@ -194,105 +167,6 @@ class router{
 		}
 		return true;
 	}
-	static function sortExceptions(){
-		usort(self::$exceptions, function($a, $b){
-			$acount = count($a['path']);
-			$bcount = count($b['path']);
-			if($acount > $bcount){
-				return -1;
-			}elseif($acount < $bcount){
-				return 1;
-			}else{
-				for($x=0;$x!=$acount;$x++){
-					if($a['path'][$x]['type'] == $b['path'][$x]['type']){
-						if($a['path'][$x]['type'] == 'static'){
-							if($a['path'][$x]['name'] > $b['path'][$x]['name']){
-								return -1;
-							}elseif($a['path'][$x]['name'] < $b['path'][$x]['name']){
-								return 1;
-							}
-						}
-					}elseif($a['path'][$x]['type'] == 'static'){
-						return -1;
-					}else{
-						return 1;
-					}
-				}
-				return 0;
-			}
-		});
-	}
-	static function routingExceptions(\Exception $e){
-		self::sortExceptions();
-		$api = loader::sapi();
-		if($api == loader::cgi){
-			$found = false;
-			$path = http::$request['uri'];
-			$absolute = explode('/', $path);
-			array_splice($absolute, 0, 1);
-			$uri = $absolute;
-			$lang = null;
-			$changelang = options::get('packages.base.translator.changelang');
-			if($changelang == 'uri'){
-				if($uri[0]){
-					$lang = $uri[0];
-					array_splice($uri, 0, 1);
-				}
-			}elseif($changelang == 'parameter'){
-				if($lang = http::getURIData('lang')){
-
-					try{
-						$lang = self::CheckShortLang($lang);
-						translator::setLang($lang);
-					}catch(InvalidLangCode $e){
-					}catch(NotFound $e){
-					}
-				}
-			}
-
-			$newuri = array();
-			foreach($uri as $p){
-				if($p !== ''){
-					$newuri[] = $p;
-				}
-			}
-			$uri = $newuri;
-			if(empty($uri)){
-				$uri = array('index');
-			}
-			foreach(self::$exceptions as $rule){
-				$rule['absolute'] = false;
-				if(($data = self::checkRuleException($rule, ($rule['absolute'] ? $absolute : $uri), $e)) !== false){
-					if(!$rule['absolute'] and $changelang == 'uri' and $lang){
-
-						try{
-							$lang = self::CheckShortLang($lang);
-							translator::setLang($lang);
-						}catch(InvalidLangCode $e){
-						}catch(NotFound $e){
-						}
-					}
-					list($controller, $method) = explode('@', $rule['handler'], 2);
-					if(preg_match('/^\\\\packages\\\\([a-zA-Z0-9|_]+).*$/', $controller, $matches)){
-						if($package = packages::package($matches[1])){
-							if(class_exists($controller) and method_exists($controller, $method)){
-								$controllerClass = new $controller();
-								$controllerClass->response($controllerClass->$method($e, $data));
-							}else{
-								throw new ruleControllerException($rule['handler']);
-							}
-						}
-					}
-					$found = true;
-					break;
-				}
-			}
-			if(!$found){
-				throw $e;
-			}
-		}
-
-	}
 	static private function sortRules(&$rules){
 		usort($rules, function($a, $b){
 			$a_wildcards = $a->wildcardParts();
@@ -324,9 +198,9 @@ class router{
 			if($data !== false){
 				$log->reply("matched");
 				$log->debug("URL data:", $data);
-				if($lang = $rule->getLang()){
-					$log->info("translator language changed to", $lang);
-					translator::setLang($lang);
+				if(isset($data['@lang'])){
+					$log->info("translator language changed to", $data['@lang']);
+					translator::setLang($data['@lang']);
 				}
 				list($controller, $method) = $rule->getController();
 				if(preg_match('/^(?:\\\\)?packages\\\\([a-zA-Z0-9|_]+).*$/', $controller, $matches)){
@@ -421,7 +295,10 @@ class router{
 			$absoluteRules = array();
 			$regexRules = array();
 			$normalRules = array();
-			foreach(self::$rules as $rule){
+			foreach(self::$rules as $rule) {
+				if ($rule->getExceptions()) {
+					continue;
+				}
 				if($rule->isAbsolute()){
 					$absoluteRules[] = $rule;
 				}elseif($rule->isRegex()){
@@ -442,10 +319,7 @@ class router{
 				}else{
 					$log->reply("Notfound");
 					
-					$uri = http::$request['uri'];
-					while(substr($uri, -1) == '/'){
-						$uri = substr($uri, 0, strlen($uri) - 1);
-					}
+					$uri = rtrim(http::$request['uri'], "/");
 					$log->debug("sort normal rules");
 					
 					try{
@@ -496,11 +370,10 @@ class router{
 					if($process->status != process::running){
 						list($controller, $method) = explode('@', $process->name, 2);
 						if(class_exists($controller) and method_exists($controller, $method)){
-					    
 						    $process = new $controller($process);
 						    $process->start = time();
 						    $process->end = null;
-						    $process->status = process::running;
+							$process->status = process::running;
 						    $process->setPID();
 							$parameters = $process->parameters;
 							if($parameters === null){
@@ -538,75 +411,52 @@ class router{
 		}
 		return $found;
 	}
-	private static function checkRule($rule, $uri){
-		if($rule['method'] == '' or $rule['method'] == strtolower(http::$request['method'])){
-			if(count($rule['path']) == count($uri)){
-				$wrong = false;
-				$data = array();
-				$len = count($rule['path']);
-				for($x=0;$x!=$len;$x++){
-					$part = $rule['path'][$x];
-					if($part['type'] == 'static'){
-						if($part['name'] != $uri[$x]){
-							$wrong = true;
-						}
-					}elseif($part['type'] == 'dynamic'){
-						if(isset($part['regex'])){
-							if(!preg_match($part['regex'], $uri[$x])){
-								$wrong = true;
-							}
-						}
-						if(!$wrong){
-							$data[$part['name']] = $uri[$x];
-						}
-					}
-					if($wrong){
-						break;
-					}
-				}
-				if(!$wrong){
-					return $data;
-				}
-			}
-		}
-		return false;
+	public static function getRules(): array {
+		return self::$rules;
 	}
-	static private function checkRuleException($rule, $uri, \Exception $e){
-		if(count($rule['path']) <= count($uri)){
-			$wrong = false;
-			$data = array();
-			$len = count($rule['path']);
-			for($x=0;$x!=$len;$x++){
-				$part = $rule['path'][$x];
-				if($part['type'] == 'static'){
-					if($part['name'] != $uri[$x]){
-						if($len != 1 or $part['name'] != ''){
-							$wrong = true;
-						}
-					}
-				}elseif($part['type'] == 'dynamic'){
-					if(isset($part['regex'])){
-						if(!preg_match($part['regex'], $uri[$x])){
-							$wrong = true;
-						}
-					}
-					if(!$wrong){
-						$data[$part['name']] = $uri[$x];
-					}
-				}
-				if($wrong){
+	private static function routingExceptions(\Exception $e){
+		$api = loader::sapi();
+		if($api != loader::cgi){
+			return;
+		}
+		$absoluteRules = array();
+		$regexRules = array();
+		$normalRules = array();
+		$eClass = get_class($e);
+		foreach(self::$rules as $rule) {
+			$found = false;
+			foreach ($rule->getExceptions() as $exception) {
+				if (is_a($e, $exception)) {
+					$found = true;
 					break;
 				}
 			}
-			if(!$wrong){
-				if(is_a($e, $rule['exception'])){
-					return $data;
-				}
+			if (!$found) {
+				continue;
+			}
+			if($rule->isAbsolute()){
+				$absoluteRules[] = $rule;
+			}elseif($rule->isRegex()){
+				$regexRules[] = $rule;
+			}else{
+				$normalRules[] = $rule;
 			}
 		}
-		return false;
-	}
-	public static function getRules(): array {
-		return self::$rules;
+		self::sortRules($absoluteRules);
+		$found = self::checkRules($absoluteRules);
+		if(!$found){
+			$uri = rtrim(http::$request['uri'], "/");
+			try{
+				self::sortRules($normalRules);
+				$found = self::checkRules($normalRules,$uri);
+			}catch(InvalidLangCode $ee){}
+
+		}
+		if(!$found){
+			$found = self::checkRules($regexRules);
+		}
+		if(!$found){
+			throw $e;
+		}
 	}
 }

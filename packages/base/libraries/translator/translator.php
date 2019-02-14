@@ -1,8 +1,8 @@
 <?php
 namespace packages\base;
-use \packages\base\options;
-use \packages\base\translator\language;
-use \packages\base\translator\InvalidLangCode;
+
+use packages\base\translator\{language, InvalidLangCode};
+
 class translator{
 	static public $allowlangs = array(
 		'en', 'aa', 'ab', 'af', 'am', 'ar', 'as', 'ay', 'az', 'ba', 'be', 'bg', 'bh', 'bi', 'bn', 'bo', 'br', 'ca', 'co', 'cs', 'cy', 'da', 'de', 'dz', 'el',

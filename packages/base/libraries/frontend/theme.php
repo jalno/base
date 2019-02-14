@@ -1,101 +1,114 @@
 <?php
 namespace packages\base\frontend;
-use \packages\base\options;
-use \packages\base\router;
-class location{
-	public $file;
-	public $source;
-	public $view;
-}
-class theme{
-	const TOP = 1;
-	const BOTTOM = -1;
-	private static $sources = array();
+use packages\base\{options, router, view, IO, Autoloader};
+
+class theme {
+
+	/** @var packages\base\frontend\Source[] */
+	private static $sources = [];
+
+	/** @var packages\base\frontend\Source|null */
 	private static $primarySource;
-	static function locate(string $viewName){
-		if(substr($viewName, 0, 1) == "\\"){
-			$viewName = substr($viewName, 1);
-		}
-		foreach(self::$sources as $source){
-			if($view = $source->getView($viewName)){
-				$location = new location();
-				$location->source = $source;
-				if(isset($view['file']))
-					$location->file = $view['file'];
-				if(isset($view['name']))
-						$location->view = $view['name'];
-				return($location);
-			}
-		}
-		return false;
-	}
-	static function url($file, $absolute = false){
-		$url = '';
-		if($absolute){
-			$url .= router::getscheme().'://'.router::gethostname();
-		}
-		if(self::$primarySource){
-			if(self::$primarySource->hasFileAsset($file)){
-				return $url .=  "/".self::$primarySource->getPath()."/".$file;
-			}else{
-				$sources = self::byName(self::$primarySource->getName());
-				foreach($sources as $source){
-					if($source->hasFileAsset($file)){
-						return $url .= "/".$source->getPath()."/".$file;
-					}
-				}
-			}
-			return $url .= "/".self::$primarySource->getPath()."/".$file;
-		}
-		return false;
-	}
-	static function setPrimarySource(source $source){
-		self::$primarySource = $source;
 
-	}
-	static function selectTheme(){
-		if(($theme = options::load('packages.base.frontend.theme')) !== false and !self::hasSource("themes/{$theme}")){
-			$source = new source();
-			$source->setPath("themes/{$theme}");
-			$source->loadConfigFile();
-			self::addSource($source, self::TOP);
-			return true;
-		}
-		return false;
-	}
-
-	static function addSource(source $source, $position = self::BOTTOM){
-		if(is_dir($source->getPath())){
-			if(!self::hasSource($source->getPath())){
-				$appendIndex = count(self::$sources);
-				array_splice(self::$sources, $appendIndex, 0, array($source));
-				/*
-				usort(self::$sources, function($a, $b){
-					if($a->getParent() and !$b->getParent()){
-						return 1;
-					}
-					return 0;
-				});*/
-				return true;
+	/**
+	 * Find the view by [parent] class name in sources.
+	 * 
+	 * @param string $viewName [parent] class name
+	 * @return array|null array will contain "name"(string), "source"(packages\base\frontend\Source)
+	 */
+	public static function locate(string $viewName): ?array {
+		$viewName = ltrim($viewName, "\\");
+		$parentList = self::findViewParentList();
+		$class = null;
+		while (true) {
+			if (!isset($parentList[$viewName])) {
+				return null;
 			}
-		}
-		return false;
-	}
-	static function hasSource($sourcePath){
-		$found = false;
-		foreach(self::$sources as $key => $source){
-			if($source->getPath() == $sourcePath){
-				$found = true;
+			$class = $parentList[$viewName];
+			if (!isset($class['children']) or !$class['children']) {
 				break;
 			}
+			$viewName = $class['children'][0];
 		}
 
-		return $found;
+		if (substr($viewName, 0, 7) != "themes\\") {
+			return null;
+		}
+		
+		foreach (self::$sources as $source) {
+			$path = $source->getHome()->getPath();
+			if (substr($class['file'], 0, strlen($path)) != $path) {
+				continue;
+			}
+			return array(
+				'name' => $viewName,
+				'source' => $source,
+			);
+		}
+		return null;
 	}
-	static function removeSource($sourcePath){
+
+	/**
+	 * Generate an  URL to file.
+	 * 
+	 * @param string $file path to file.
+	 * @param bool $absolute make URL absolute by adding scheme and hostname.
+	 * @return string|null
+	 */
+	public static function url(string $file, bool $absolute = false): ?string {
+		$url = "";
+		if ($absolute) {
+			$url .= router::getscheme() . "://" . router::gethostname();
+		}
+		if (!self::$primarySource) {
+			return null;
+		}
+		if (self::$primarySource->hasFileAsset($file)) {
+			return $url . self::$primarySource->url($file);
+		}
+
+		$sources = self::byName(self::$primarySource->getName());
+		foreach ($sources as $source) {
+			if ($source->hasFileAsset($file)) {
+				return $url . $source->url($file);
+			}
+		}
+		return $url . self::$primarySource->url($file);
+	}
+
+	/**
+	 * Set primary source.
+	 * 
+	 * @param packages\base\frontend\Source $source
+	 * @return void
+	 */
+	public static function setPrimarySource(Source $source): void {
+		self::$primarySource = $source;
+	}
+
+	/**
+	 * Append a frontend source.
+	 * 
+	 * @param packages\base\frontend\Source $source
+	 * @return void
+	 */
+	public static function addSource(Source $source): void {
+		if (self::byPath($source->getHome()->getPath())) {
+			return;
+		}
+		self::$sources[] = $source;
+	}
+
+	/**
+	 * Find frontend souce by home directory and remove it from inventory.
+	 * 
+	 * @param string $path
+	 * @return bool Wheter it can found it or not.
+	 */
+	public static function removeSource(string $path): bool {
 		$found = false;
 		foreach(self::$sources as $key => $source){
-			if($source->getPath() == $sourcePath){
+			if($source->getHome()->getPath() == $path){
 				$found = $key;
 				break;
 			}
@@ -106,37 +119,84 @@ class theme{
 		}
 		return false;
 	}
-	static function byPath($sourcePath){
-		foreach(self::$sources as $key => $source){
-			if($source->getPath() == $sourcePath){
+
+	/**
+	 * Find frontend source by home directory path
+	 * 
+	 * @param string $path
+	 * @return packages\base\frontend\Source|null
+	 */
+	public static function byPath(string $path): ?source {
+		foreach (self::$sources as $key => $source) {
+			if ($source->getHome()->getPath() == $path) {
 				return $source;
 			}
 		}
 		return null;
 	}
-	static function byName($name){
-		$sources = array();
-		foreach(self::$sources as $source){
-			if($source->getName() == $name){
+
+	/**
+	 * Find frontend sources by given name
+	 * 
+	 * @param string $name
+	 * @return packages\base\frontend\Source[]
+	 */
+	public static function byName(string $name): array {
+		$sources = [];
+		foreach (self::$sources as $source) {
+			if ($source->getName() == $name) {
 				$sources[] = $source;
 			}
 		}
 		return $sources;
 	}
-	static function getParent($name){
-		foreach(self::$sources as $source){
-			if($source->getParent() == null and $source->getName() == $name){
-				return $source;
+
+	/**
+	 * Getter for all sources.
+	 * 
+	 * @return packages\base\frontend\Source[]
+	 */
+	public static function get(): array {
+		return self::$sources;
+	}
+
+	/**
+	 * Call onSourceLoad() method of all views.
+	 * 
+	 * @return void
+	 */
+	public static function loadViews(): void {
+		foreach (array_keys(self::findViewParentList()) as $class) {
+			if (substr($class, 0, 7) == "themes\\" and method_exists($class, "onSourceLoad")) {
+				$class::onSourceLoad();
 			}
 		}
-		return null;
 	}
-	static function loadViews(){
-		foreach(self::$sources as $source){
-			$source->loadViews();
+	/**
+	 * Find tree of parent list of defined classes which is extends packages\base\view.
+	 * 
+	 * @return array
+	 */
+	private static function findViewParentList(): array {
+		static $tree;
+		if (isset($tree) and $tree) {
+			return $tree;
 		}
-	}
-	static function get(){
-		return self::$sources;
+		$useCache = options::get("packages.base.env") == "production";
+		$parentList = Autoloader::getParentList($useCache);
+
+		$views = [view::class];
+		$tree = [];
+		for ($x = 0, $l = count($views); $x < $l; $x++) {
+			if (!isset($parentList[$views[$x]])) {
+				throw new Exception("cannot find " . view::class . " in parent list");
+			}
+			$tree[$views[$x]] = $parentList[$views[$x]];
+			if (isset($parentList[$views[$x]]['children'])) {
+				$l += count($parentList[$views[$x]]['children']);
+				$views = array_merge($views, $parentList[$views[$x]]['children']);
+			}
+		}
+		return $tree;
 	}
 }

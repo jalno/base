@@ -2,44 +2,25 @@
 namespace packages\base\json;
 const PRETTY = JSON_PRETTY_PRINT;
 const FORCE_OBJECT = JSON_FORCE_OBJECT;
-function encode($value, $options = 0, $depth = 512){
-	if($options == 0 and defined('JSON_UNESCAPED_UNICODE'))$options =  JSON_UNESCAPED_UNICODE;
-	if(phpversion() >= '5.4.0'){
-			return \json_encode($value, $options);
-	}else{
-		switch ($type = \gettype($value)) {
-	        case 'NULL':
-	            return 'null';
-	        case 'boolean':
-	            return ($value ? 'true' : 'false');
-	        case 'integer':
-	        case 'double':
-	        case 'float':
-	            return $value;
-	        case 'string':
-	            return '"' . \addslashes($value) . '"';
-	        case 'object':
-	            $value = \get_object_vars($value);
-	        case 'array':
-	            $output_index_count = 0;
-	            $output_indexed = array();
-	            $output_associative = array();
-	            foreach ($value as $key => $value) {
-	                $output_indexed[] = encode($value);
-	                $output_associative[] = \json_encode($key) . ':' . encode($value);
-	                if ($output_index_count !== NULL && $output_index_count++ !== $key) {
-	                    $output_index_count = NULL;
-	                }
-	            }
-	            if ($output_index_count !== NULL) {
-	                return '[' . \implode(',', $output_indexed) . ']';
-	            } else {
-	                return '{' . \implode(',', $output_associative) . '}';
-	            }
-	        default:
-	            return ''; // Not supported
-	    }
-	
+
+/**
+ * Returns the JSON representation of a value
+ * 
+ * The encoding is affected by the supplied options and additionally the encoding of float values depends on the value of serialize_precision. 
+ * 
+ * @param mixed $value The value being encoded. Can be any type except a resource.
+ * 						All string data must be UTF-8 encoded. 
+ * @param int $options Bitmask consisting of JSON_HEX_QUOT, JSON_HEX_TAG, JSON_HEX_AMP, JSON_HEX_APOS, JSON_NUMERIC_CHECK, JSON_PRETTY_PRINT, JSON_UNESCAPED_SLASHES, JSON_FORCE_OBJECT, JSON_PRESERVE_ZERO_FRACTION, JSON_UNESCAPED_UNICODE, JSON_PARTIAL_OUTPUT_ON_ERROR, JSON_UNESCAPED_LINE_TERMINATORS, JSON_THROW_ON_ERROR.
+ * @param int $depth Set the maximum depth. Must be greater than zero. 
+ * @return string Returns a JSON encoded string on success. 
+ */
+function encode($value, int $options = 0, int $depth = 512): string{
+	if ($options == 0) {
+		$options =  JSON_UNESCAPED_UNICODE;
 	}
+	$json = \json_encode($value, $options, $depth);
+	if ($json === false and json_last_error()) {
+		throw new JsonException();
+	}
+	return $json;
 }
-?>

@@ -1,10 +1,8 @@
 <?php
 namespace packages\base\router;
-use \packages\base\router;
-use \packages\base\options;
-use \packages\base\log;
+use packages\base\{router, options};
 
-class rule{
+class rule implements \Serializable {
 	const post = 'post';
 	const get = 'get';
 	const put = 'put';
@@ -13,436 +11,675 @@ class rule{
 	const https = 'https';
 	const api = 'api';
 	const ajax = 'ajax';
-	private $methods = array();
-	private $path;
-	private $regex;
-	private $domains = array();
-	private $permissions = array(
-		self::ajax => true
-	);
-	private $middlewares = array();
-	private $absolute = false;
-	private $controller;
-	private $schemes = array();
-	private $lang = null;
-	private $wildcards = 0;
-	private $dynamics = 0;
-	static function import($data){
+
+	/**
+	 * Construct a new rule from array
+	 * 
+	 * @param array $data required indexes:
+	 * 						controller(string|string[])
+	 * 					  indexes are optional:
+	 * 						name(string)
+	 * 						method(string|string[])
+	 * 						path(string|string[]|array)
+	 * 						absolute(bool)
+	 * 						domain(string|string[])
+	 * 						scheme(string|string[])
+	 * 						regex(string)
+	 * 						middleware(string[][])
+	 * 						exceptions(string[]) FQCNs of exceptions
+	 * 
+	 * @throws packages\base\router\MethodException {@see rule::addMethod()}
+	 * @throws packages\base\router\PathException {@see rule::setPath()}
+	 * @throws packages\base\router\RulePartNameException {@see rule::validPart()}
+	 * @throws packages\base\router\RouterRulePart {@see rule::validPart()}
+	 * @throws packages\base\router\RulePartValue  {@see rule::validPart()}
+	 * @throws packages\base\router\DomainException {@see rule::addDomain()}
+	 * @throws packages\base\router\SchemeException {@see rule::addScheme()}
+	 * @throws packages\base\router\InvalidRegexException {@see rule::setRegex()}
+	 * @throws packages\base\router\ControllerException {@see rule::setController()}
+	 * @throws packages\base\router\PermissionException {@see rule::allow()}
+	 * @throws packages\base\router\PermissionException {@see rule::deny()}
+	 * @throws packages\base\router\PermissionException {@see rule::addPermissonController()}
+	 * @throws packages\base\router\ControllerException {@see rule::addPermissonController()}
+	 * @return packages\base\router\rule
+	 */
+	public static function import(array $data): rule {
 		$rule = new rule();
-		if(isset($data['method'])){
-			if(is_array($data['method'])){
-				foreach($data['method'] as $method){
+		if (isset($data['name'])) {
+			$rule->setName($data['name']);
+		}
+		if (isset($data['method'])) {
+			if (is_array($data['method'])) {
+				foreach ($data['method'] as $method) {
 					$rule->addMethod($method);
 				}
-			}elseif(is_string($data['method'])){
+			} elseif (is_string($data['method'])) {
 				$rule->addMethod($data['method']);
 			}
 		}
-		if(isset($data['path'])){
+		if (isset($data['path'])) {
 			$rule->setPath($data['path']);
 
-			if(isset($data['absolute'])){
+			if (isset($data['absolute'])) {
 				$rule->setAbsolute($data['absolute']);
 			}
-			if(isset($data['domain'])){
-				if(is_array($data['domain'])){
-					foreach($data['domain'] as $domain){
+			if (isset($data['domain'])) {
+				if (is_array($data['domain'])) {
+					foreach ($data['domain'] as $domain) {
 						$rule->addDomain($domain);
 					}
-				}else{
+				} else {
 					$rule->addDomain($data['domain']);
 				}
 			}
-			if(isset($data['scheme'])){
-				if(is_array($data['scheme'])){
-					foreach($data['scheme'] as $scheme){
+			if (isset($data['scheme'])) {
+				if (is_array($data['scheme'])) {
+					foreach ($data['scheme'] as $scheme) {
 						$rule->addScheme($scheme);
 					}
-				}else{
+				} else {
 					$rule->addScheme($data['scheme']);
 				}
 			}
-		}elseif(isset($data['regex'])){
+		} elseif (isset($data['regex'])) {
 			$rule->setRegex($data['regex']);
 		}
-		if(isset($data['controller'])){
+		if (is_string($data['controller'])) {
 			$data['controller'] = explode('@', $data['controller'], 2);
-			$rule->setController($data['controller'][0], $data['controller'][1]);
 		}
-		if(isset($data['middleware'])){
-			if(is_array($data['middleware'])){
-				foreach($data['middleware'] as $middleware){
+		$rule->setController($data['controller'][0], $data['controller'][1]);
+
+		if (isset($data['middleware'])) {
+			if (!is_array($data['middleware'])) {
+				$data['middleware'] = array($data['middleware']);
+			}
+			foreach ($data['middleware'] as $middleware) {
+				if (is_string($middleware)) {
 					$middleware = explode('@', $middleware, 2);
-					$rule->addMiddleware($middleware[0], $middleware[1]);
 				}
-			}else{
-				$data['middleware'] = explode('@', $data['middleware'], 2);
-				$rule->addMiddleware($data['middleware'][0], $data['middleware'][1]);
+				$rule->addMiddleware($middleware[0], $middleware[1]);
 			}
 		}
-		if(isset($data['permissions'])){
-			foreach($data['permissions'] as $permission => $controller){
-				if($controller === true){
+		if (isset($data['permissions'])) {
+			foreach ($data['permissions'] as $permission => $controller) {
+				if ($controller === true) {
 					$rule->allow($permission);
-				}elseif($controller === false){
+				} elseif($controller === false) {
 					$rule->deny($permission);
-				}else{
+				} else {
 					$controller = explode('@', $controller, 2);
 					$rule->addPermissonController($permission, $controller[0], $controller[1]);
 				}
 			}
 		}
+		if (isset($data['exceptions'])) {
+			foreach ($data['exceptions'] as $exception) {
+				$rule->addException($exception);
+			}
+		}
 		return $rule;
 	}
-	public function addMethod($method){
-		$log = log::getInstance();
-		$log->debug("add method", $method);
-		$method = strtolower($method);
-		if(!in_array($method, $this->methods)){
-			if(in_array($method, array(
-				self::post,
-				self::get,
-				self::put,
-				self::delete
-			))){
-				$log->reply("Success");
-				$this->methods[] = $method;
-			}else{
-				$log->reply()->fatal("Failed");
-				throw new methodException($method);
+
+	/**
+	 * Construct a rule from string or array
+	 * 
+	 * @param array|string $part
+	 * @throws packages\base\router\RouterRulePart if part was not string or array
+	 * @throws packages\base\router\RulePartNameException if array part hasn't "name" index.
+	 * @throws packages\base\router\RouterRulePart if array part hasn't "type" index or was invalid.
+	 * @throws packages\base\router\RouterRulePart if array part has invalid "regex" index.
+	 * @throws packages\base\router\RulePartValue if array part has empty "values" index or miss-filled.
+	 * @return array
+	 */
+	private static function validPart($part){
+		if(is_numeric($part)){
+			return array(
+				'type' => 'static',
+				'name' => $part,
+			);
+		}
+		if (is_string($part)) {
+			if (!preg_match("/^:([a-zA-Z0-9_]+)(\\.\\.\\.)?$/", $part, $matches)) {
+				return array(
+					'type' => 'static',
+					'name' => $part,
+				);
 			}
-		}else{
-			$log->debug("already added");
+			return array(
+				'type' => $matches[2] ? "wildcard" : "dynamic",
+				'name' => $matches[1],
+			);
 		}
+		if(!is_array($part)){
+			throw new RouterRulePart($part);
+		}
+		if (!isset($part['name'])) {
+			throw new RulePartNameException($part);
+		}
+		if(!isset($part['type']) and (isset($part['regex']) or isset($part['values']))){
+			$part['type'] = 'dynamic';
+		}
+		if (!isset($part['type'])) {
+			throw new RouterRulePart($part, "type is assigned");
+		}
+		if (!in_array($part['type'], array('static', 'dynamic', 'wildcard'))) {
+			throw new RouterRulePart($part, "type is not static or dynamic or wildcard");
+		}
+		if ($part['type'] == 'dynamic') {
+			if (isset($part['regex'])) {
+				if (@preg_match($part['regex'], null) === false) {
+					throw new RouterRulePart($part, "regex is invalid");
+				}
+			} elseif (isset($part['values'])) {
+				if (is_array($part['values']) and !empty($part['values'])) {
+					foreach ($part['values'] as $value) {
+						if (!is_string($value) and !is_number($value)) {
+							throw new RulePartValue($part);
+						}
+					}
+				} else {
+					throw new RulePartValue($part);
+				}
+			}
+		}
+		$valid = array(
+			'type' => $part['type'],
+			'name' => $part['name'],
+		);
+		if ($part['type'] == 'dynamic') {
+			if (isset($part['regex'])) {
+				$valid['regex'] = $part['regex'];
+			} elseif (isset($part['values'])) {
+				$valid['values'] = $part['values'];
+			}
+		}
+		return $valid;
 	}
-	public function setPath($path){
-		$log = log::getInstance();
-		$log->debug("add path", $path);
-		if(is_string($path)){
-			$log->debug("explode to array");
-			$path = explode("/", $path);
-			return $this->setPath($path);
+
+
+	/** @var string|null */
+	private $name;
+
+	/** @var string[] */
+	private $methods = [];
+
+	/** @var array|null */
+	private $path;
+
+	/** @var string|null */
+	private $regex;
+
+	/** @var string[] */
+	private $domains = [];
+
+	/** @var array */
+	private $permissions = array(
+		self::ajax => true
+	);
+
+	/** @var array */
+	private $middlewares = [];
+
+	/** @var bool */
+	private $absolute = false;
+
+	/** @var string[] */
+	private $controller;
+
+	/** @var string[] */
+	private $schemes = [];
+
+	/** @var string[] */
+	private $exceptions = [];
+
+	/** @var int */
+	private $wildcards = 0;
+
+	/** @var int */
+	private $dynamics = 0;
+
+	/**
+	 * Allow a http method.
+	 * 
+	 * @param string $method http method which should be "post", "get", "put", "delete"
+	 * @throws packages\base\router\MethodException if method was invalid
+	 * @return void
+	 */
+	public function addMethod(string $method): void {
+		$method = strtolower($method);
+		if (in_array($method, $this->methods)) {
+			return;
 		}
-		if(!is_array($path)){
-			$log->reply()->reply("not array");
-			throw new pathException($path);
+		if (!in_array($method, [self::post, self::get, self::put, self::delete])) {
+			throw new MethodException($method);
+		}
+		$this->methods[] = $method;
+	}
+
+	/**
+	 * Setter for path
+	 * 
+	 * @param string|array $path
+	 * @throws packages\base\router\PathException if path wasn't array nor string.
+	 * @throws packages\base\router\RulePartNameException {@see rule::validPart()}
+	 * @throws packages\base\router\RouterRulePart {@see rule::validPart()}
+	 * @throws packages\base\router\RulePartValue  {@see rule::validPart()}
+	 * @return void
+	 */
+	public function setPath($path): void {
+		if (is_string($path)){
+			$path = explode("/", $path);
+		} elseif (!is_array($path)) {
+			throw new PathException($path);
 		}
 		$this->path = array();
 		$this->wildcards = 0;
 		$this->dynamics = 0;
-		foreach($path as $x => $part){
+		foreach ($path as $x => $part) {
 			if($x == 0 or $part !== ''){
-				$log->debug("valid part", $part);
 				$valid = self::validPart($part);
-				if($valid['type'] == 'wildcard'){
+				if ($valid['type'] == 'wildcard') {
 					$this->wildcards++;
 					$this->dynamics++;
-				}elseif($valid['type'] == 'dynamic'){
+				} elseif ($valid['type'] == 'dynamic') {
 					$this->dynamics++;
 				}
 				$this->path[] = $valid;
 			}
 		}
 	}
-	public function setRegex(string $regex){
-		if(@preg_match($regex, null) === false){
+
+	/**
+	 * Setter for regex.
+	 * 
+	 * @param string $regex
+	 * @throws packages\base\router\InvalidRegexException if regex was invalid.
+	 * @return void
+	 */
+	public function setRegex(string $regex): void {
+		if (@preg_match($regex, null) === false){
 			throw new InvalidRegexException($regex, $this);
 		}
 		$this->regex = $regex;
 	}
-	public function setController($class, $method){
-		$log = log::getInstance();
-		$log->debug("looking for", $class.'@'.$method);
-		if(class_exists($class) and method_exists($class, $method)){
-			$log->reply("Success");
-			$this->controller = array($class, $method);
-		}else{
-			$log->reply()->fatal("Notfound");
-			throw new ruleControllerException("{$class}@{$method}");
+
+	/**
+	 * Setter for controller
+	 * 
+	 * @param string $class Full qualified class name.
+	 * @param string $method name of method in the class.
+	 * @throws packages\base\router\ControllerException if class or method doesn't exists.
+	 * @return void
+	 */
+	public function setController(string $class, string $method): void {
+		if (!method_exists($class, $method)) {
+			throw new ControllerException($class . "@" . $method);
 		}
+		$this->controller = array($class, $method);
 	}
-	public function getController(){
+
+	/**
+	 * Getter for controller
+	 * 
+	 * @return string[]|null first index is FQCN and second is method name.
+	 */
+	public function getController(): ?array {
 		return $this->controller;
 	}
-	public function setAbsolute($absolute){
-		$log = log::getInstance();
-		$log->debug("absolute =", $absolute);
+
+	/**
+	 * Setter for absolute
+	 * 
+	 * @param bool $absolute
+	 * @return void
+	 */
+	public function setAbsolute(bool $absolute): void {
 		$this->absolute = $absolute;
 	}
-	public function isAbsolute(){
+
+	/**
+	 * Getter for absolute
+	 * 
+	 * @return bool
+	 */
+	public function isAbsolute(): bool {
 		return $this->absolute;
 	}
-	public function isRegex():bool{
+
+	/**
+	 * Return true when regex is set
+	 * 
+	 * @return bool
+	 */
+	public function isRegex(): bool {
 		return !empty($this->regex);
 	}
-	public function addScheme($scheme){
-		$log = log::getInstance();
-		$log->debug("add scheme", $scheme);
+
+	/**
+	 * Allow an scheme.
+	 * 
+	 * @param string $scheme should be "http" or "https"
+	 * @throws packages\base\router\SchemeException if scheme was invalid.
+	 * @return void
+	 */
+	public function addScheme(string $scheme): void {
 		$scheme = strtolower($scheme);
-		if(!in_array($scheme, $this->schemes)){
-			if(in_array($scheme, array(self::http, self::https))){
-				$this->schemes[] = $scheme;
-				$log->reply("Success");
-			}else{
-				$log->reply()->fatal("unknown scheme");
-				throw new schemeException();
-			}
-		}else{
-			$log->reply("Already added");
+		if(in_array($scheme, $this->schemes)){
+			return;
 		}
+		if (!in_array($scheme, array(self::http, self::https))) {
+			throw new SchemeException();
+		}
+		$this->schemes[] = $scheme;
 	}
-	public function addDomain($domain){
-		if(substr($domain, 1) == '/' and substr($domain, -1) == '/'){
-			if(!@preg_match($domain, null)){
+
+	/**
+	 * Accept a domain
+	 * 
+	 * @param string $domain should be domain name, It could be a regex too.
+	 * @throws packages\base\router\DomainException if regex-domain was invalid.
+	 * @return void
+	 */
+	public function addDomain(string $domain): void {
+		if (substr($domain, 1) == "/" and substr($domain, -1) == "/") {
+			if (@preg_match($domain, null) === false) {
 				throw new DomainException();
 			}
-		}else{
-		    if(substr($domain, 0, 4) == 'www.'){
-				$domain = substr($domain, 4);
-			}
+		} elseif(substr($domain, 0, 4) == 'www.'){
+			$domain = substr($domain, 4);
 		}
 		$this->domains[] = $domain;
 	}
-	public function allow($permission){
-		$log = log::getInstance();
-		$log->debug("allow", $permission);
-		if(!in_array($permission, array(self::api, self::ajax))){
-			$log->reply()->fatal('unknown');
-			throw new permissionException($permission);
+
+	/**
+	 * Allow a permission.
+	 * 
+	 * @param string $permission should be "api" or "ajax"
+	 * @throws packages\base\router\PermissionException if permission was invalid
+	 * @return void
+	 */
+	public function allow(string $permission): void {
+		if (!in_array($permission, [self::api, self::ajax])) {
+			throw new PermissionException($permission);
 		}
 		$this->permissions[$permission] = true;
 	}
-	public function deny($permission){
-		$log = log::getInstance();
-		$log->debug("deny", $permission);
-		if(!in_array($permission, array(self::api, self::ajax))){
-			$log->reply()->fatal('unknown');
-			throw new permissionException($permission);
+
+	/**
+	 * Deny a permission.
+	 * 
+	 * @param string $permission should be "api" or "ajax"
+	 * @throws packages\base\router\PermissionException if permission was invalid
+	 * @return void
+	 */
+	public function deny(string $permission): void {
+		if (!in_array($permission, [self::api, self::ajax])) {
+			throw new PermissionException($permission);
 		}
 		$this->permissions[$permission] = false;
 	}
-	public function addPermissonController($permission, $class, $method){
-		$log = log::getInstance();
-		$log->debug("add",$class.'@'.$method,"as permission controller for", $permission);
-		if(!in_array($permission, array(self::api, self::ajax))){
-			$log->reply()->fatal('unknown permission');
-			throw new permissionException($permission);
-		}
-		if(!class_exists($class) or !method_exists($class, $method)){
-			$log->reply()->fatal('notfound controller');
-			throw new ruleControllerException("{$class}@{$method}");
-		}
 
+	/**
+	 * Set a controller for a permission.
+	 * 
+	 * @param string $permission should be "api" or "ajax".
+	 * @param string $class Full qualified class name.
+	 * @param string $method name of method in the class.
+	 * @throws packages\base\router\PermissionException if permission was invalid.
+	 * @throws packages\base\router\ControllerException if class or method not exists.
+	 * @return void
+	 */
+	public function addPermissonController(string $permission, string $class, string $method): void {
+		if (!in_array($permission, [self::api, self::ajax])) {
+			throw new PermissionException($permission);
+		}
+		if (!method_exists($class, $method)) {
+			throw new ControllerException("{$class}@{$method}");
+		}
 		$this->permissions[$permission] = array($class,$method);
 	}
-	public function addMiddleware($class, $method){
-		$log = log::getInstance();
-		$log->debug("add middleware",$class.'@'.$method);
-		if(!class_exists($class) or !method_exists($class, $method)){
-			$log->reply()->fatal('notfound');
+
+	/**
+	 * Add a middleware.
+	 * 
+	 * @param string $class Full qualified class name.
+	 * @param string $method name of method in the class.
+	 * @return void
+	 */
+	public function addMiddleware(string $class, string $method): void {
+		if (!method_exists($class, $method)) {
 			throw new ruleMiddlewareException("{$class}@{$method}");
 		}
 		$this->middlewares[] = array($class, $method);
 	}
-	static public function validPart($part){
-		$log = log::getInstance();
-		if(is_string($part) or is_numeric($part)){
-			$log->debug("static");
-			return array(
-				'type' => 'static',
-				'name' => $part,
-			);
-		}
-		if(is_array($part)){
-			if(isset($part['name'])){
-				$log->debug("name:", $part['name']);
-				if(!isset($part['type'])){
-					$log->warn("no type");
-					if(isset($part['regex']) or isset($part['values'])){
-						$part['type'] = 'dynamic';
-						$log->reply("known as dynamic");
-					}
-				}
-				if(isset($part['type']) and in_array($part['type'], array('static', 'dynamic', 'wildcard'), true)){
-					$log->debug("type:", $part['type']);
-					if($part['type'] == 'dynamic'){
-						if(isset($part['regex'])){
-							$log->debug("parse {$part['regex']}");
-							if(@preg_match($part['regex'], null) === false){
-								$log->reply()->fatal("invalid");
-								throw new routerRulePart($part, "regex is invalid");
-							}
-						}elseif(isset($part['values'])){
-							if(is_array($part['values']) and !empty($part['values'])){
-								foreach($part['values'] as $value){
-									$log->debug("add $value as possible value");
-									if(!is_string($value) and !is_number($value)){
-										$log->reply()->fatal("not stringa and not number");
-										throw new RulePartValue($part);
-									}
-								}
-							}else{
-								$log->fatal("invalid values", $part['values']);
-								throw new RulePartValue($part);
-							}
-						}
-					}
-					$valid = array(
-						'type' => $part['type'],
-						'name' => $part['name'],
-					);
-					if($part['type'] == 'dynamic'){
-						if(isset($part['regex'])){
-							$valid['regex'] = $part['regex'];
-						}elseif(isset($part['values'])){
-							$valid['values'] = $part['values'];
-						}
-					}
-					return $valid;
-				}else{
-					$log->fatal("unknown type");
-					throw new routerRulePart($part, "type is not static or dynamic");
-				}
-			}else{
-				throw new RulePartNameException($part);
-			}
-		}
-	}
-	public function wildcardParts(){
+
+	/**
+	 * Return count of wildcard parts.
+	 * 
+	 * @return int
+	 */
+	public function wildcardParts(): int {
 		return $this->wildcards;
 	}
-	public function dynamicParts(){
+
+	/**
+	 * Return count of dynamic parts.
+	 * 
+	 * @return int
+	 */
+	public function dynamicParts(): int {
 		return $this->dynamics;
 	}
-	public function parts(){
+
+	/**
+	 * Return count of all parts.
+	 * 
+	 * @return int
+	 */
+	public function parts(): int {
 		return count($this->path);
 	}
-	public function check($method, $scheme, $domain, $url, $data){
-		$log = log::getInstance();
-		$log->debug("checking method");
-		$method = strtolower($method);
-		if(empty($this->methods) or in_array($method, $this->methods)){
-			$log->reply("pass");
-			$pass = false;
-			if(empty($this->regex)){
-				$log->debug("checking scheme");
-				$scheme = strtolower($scheme);
-				if(empty($this->schemes) or in_array($scheme, $this->schemes)){
-					$log->reply("pass");
-					$log->debug("checking domain");
-					$domain = strtolower($domain);
-					if(substr($domain, 0, 4) == 'www.'){
-						$domain = substr($domain, 4);
-					}
-					$foundomain = false;
-					if(empty($this->domains) and in_array($domain, router::getDefaultDomains())){
-						$foundomain = true;
-					}else{
-						foreach($this->domains as $d){
-							if($d == '*'){
-								$foundomain = true;
-							}elseif(substr($d, 0, 1) == '/' or substr($d,-1) == '/'){
-								if(@preg_match($domain, $d)){
-									$foundomain = true;
-								}
-							}elseif($d == $domain){
-								$foundomain = true;
-							}
-						}
-					}
-					if($foundomain){
-						$log->reply("pass");
-						$url = array_slice(explode('/', urldecode($url)), 1);
-						$changelang = options::get('packages.base.translator.changelang');
-						if(!$this->absolute){
-							if($changelang == 'uri'){
-								if(!empty($url[0]) ){
-									$this->lang = router::CheckShortLang($url[0]);
-									if($this->lang){
-										$url = array_slice($url, 1);
-									}
-								}else{
-									$url = array_slice($url, 1);
-								}
-							}
-						}
-						if(count($url) == 0){
-							$url[0] = "";
-						}
 
-						if($checkPath = $this->checkPath($url, $this->path)){
-							$log->reply("pass");
-							$pass = $checkPath;
-						}else{
-							$log->reply("failed");
-						}
-					}else{
-						$log->reply("failed");
-					}
-				}else{
-					$log->reply("failed");
-				}
-			}else{
-				$log->debug("check for regex (", $this->regex, ")");
-				$url = $scheme."://".$domain.$url;
-				if(preg_match($this->regex, $url, $matches)){
-					$log->reply("pass");
-					$pass = count($matches) > 1 ? $matches : true;
-				}else{
-					$log->reply("failed");
-				}
+	/**
+	 * Run middlewares.
+	 * If one of them return false, it will not run others.
+	 * 
+	 * @param array|null $data will pass to middleware method.
+	 * @return void
+	 */
+	public function runMiddlewares(?array $data): void {
+		foreach($this->middlewares as $middleware){
+			$class = new $middleware[0]();
+			$method = $middleware[1];
+			if($class->$method($data) === false){
+				return;
 			}
-			if($pass){
-				$log->debug("check permissions");
-				if($this->checkPermissions($data)){
-					$log->reply("pass");
-					return $pass;
-				}else{
-					$log->reply("failed");
-				}
-			}
-		}else{
-			$log->reply("failed");
 		}
-		return false;
 	}
-	public function getLang(){
-		return $this->lang;
+
+	/**
+	 * Check this rules agianst the given paramters.
+	 * If match, it will return true or a non-empty array
+	 * 
+	 * @param string $method
+	 * @param string $scheme
+	 * @param string $domain
+	 * @param string $url
+	 * @param array|null $data
+	 * @return bool|array
+	 */
+	public function check(string $method, string $scheme, string $domain, string $url, ?array $data) {
+		if(!empty($this->methods) and !in_array(strtolower($method), $this->methods)) {
+			return false;
+		}
+		if(!empty($this->regex)){
+			if (!preg_match($this->regex, $scheme."://".$domain.$url, $matches)) {
+				return false;
+			}
+			if (!$this->checkPermissions($data)) {
+				return false;
+			}
+			return count($matches) > 1 ? $matches : true;
+		}
+		if(!empty($this->schemes) and !in_array(strtolower($scheme), $this->schemes)){
+			return false;
+		}
+		if (empty($this->domains)) {
+			$this->domains = router::getDefaultDomains();
+		}
+		if (!empty($this->domains) and !in_array("*", $this->domains)) {
+			$domain = strtolower($domain);
+			if(substr($domain, 0, 4) == 'www.'){
+				$domain = substr($domain, 4);
+			}
+			if (!in_array($domain, $this->domains)) {
+				$foundomain = false;
+				foreach ($this->domains as $item) {
+					if(substr($item, 0, 1) == '/' and substr($item, -1) == '/'){
+						if(@preg_match($domain, $item)){
+							$foundomain = true;
+						}
+					}
+				}
+				if (!$foundomain) {
+					return false;
+				}
+			}
+		}
+		$url = array_slice(explode('/', urldecode($url)), 1);
+		$lang = null;
+		if (!$this->absolute) {
+			$changelang = options::get('packages.base.translator.changelang');
+			if ($changelang == 'uri') {
+				if (!empty($url[0])) {
+					$lang = router::CheckShortLang($url[0], empty($this->exceptions));
+					if ($lang) {
+						$url = array_slice($url, 1);
+					}
+				} else {
+					$url = array_slice($url, 1);
+				}
+			}
+		}
+		if (empty($url)) {
+			$url[0] = "";
+		}
+		$checkPath = $this->checkPath($url);
+		if (!$checkPath) {
+			return false;
+		}
+		if (!$this->checkPermissions($data)) {
+			return false;
+		}
+		if ($lang) {
+			if ($checkPath === true) {
+				$checkPath = [];
+			}
+			$checkPath['@lang'] = $lang;
+		}
+		return $checkPath;
 	}
-	public function checkPath($url, $path){
-		$log = log::getInstance();
+
+	/**
+	 * Add exception to handle.
+	 * 
+	 * @param string $exception Full qQualified class name
+	 * @return void
+	 */
+	public function addException(string $exception): void {
+		if (!in_array($exception, $this->exceptions)) {
+			$this->exceptions[] = $exception;
+		}
+	}
+
+	/**
+	 * Getter for exceptions.
+	 * 
+	 * @return string[]
+	 */
+	public function getExceptions(): array {
+		return $this->exceptions;
+	}
+
+	/**
+	 * make serializable 
+	 * 
+	 * @return string
+	 */
+	public function serialize(): string {
+		$data = [];
+		foreach (['name', 'controller', 'methods', 'path', 'regex', 'domains', 'permissions', 'middlewares', 'absolute', 'schemes', 'exceptions', 'wildcards', 'dynamics'] as $key) {
+			$data[$key] = $this->{$key};
+		}
+        return serialize($data);
+	}
+	
+	/**
+	 * make unserializable
+	 * 
+	 * @param string $serialized The string representation of the object.
+	 * @return void
+	 */
+    public function unserialize($serialized) {
+		$data = unserialize($serialized);
+		foreach (['name', 'controller', 'methods', 'path', 'regex', 'domains', 'permissions', 'middlewares', 'absolute', 'schemes', 'exceptions', 'wildcards', 'dynamics'] as $key) {
+			$this->{$key} = $data[$key];
+		}
+	}
+
+	/**
+	 * Get the value of name
+	 */ 
+	public function getName(): ?string {
+		return $this->name;
+	}
+
+	/**
+	 * Set the value of name
+	 *
+	 * @param string $name
+	 * @return void
+	 */ 
+	public function setName(string $name): void {
+		$this->name = $name;
+	}
+
+	/**
+	 * Check given url against this rule path.
+	 * If match, it will return true or a non-empty array
+	 * 
+	 * @param string $url exploded url which not contain language code.
+	 * @return bool|array
+	 */
+	private function checkPath(array $url) {
 		$data = array();
 		$lastwildcard = null;
 		$urlx = 0;
 		$urlen = count($url);
-		foreach($path as $x => $part){
-			if($part['type'] == 'wildcard'){
-				if(isset($path[$x+1])){
+		foreach ($this->path as $x => $part) {
+			if ($part['type'] == 'wildcard') {
+				if (isset($this->path[$x + 1])) {
 					$firstUrlx = $urlx;
-					$nextPart = $path[$x+1];
+					$nextPart = $this->path[$x + 1];
 					$found = false;
-					for($ux = $urlx+1;$ux<$urlen;$ux++){
-						if($this->checkPartPath($nextPart, $url[$ux])){
+					for ($ux = $urlx+1; $ux < $urlen; $ux++) {
+						if ($this->checkPartPath($nextPart, $url[$ux])) {
 							$urlx = $ux-1;
 							$found = true;
 							break;
 						}
 					}
-					if($found){
-						$data[$part['name']] = implode('/', array_slice($url, $firstUrlx, $urlx - $firstUrlx+1));
-					}else{
+					if (!$found) {
 						return false;
 					}
-				}else{
+					$data[$part['name']] = implode('/', array_slice($url, $firstUrlx, $urlx - $firstUrlx+1));
+				} else {
 					$data[$part['name']] = implode('/', array_slice($url, $urlx));
 					$urlx = $urlen-1;
 				}
-			}else{
-				$log->debug("check part");
-				if(isset($url[$urlx]) and $check = $this->checkPartPath($part, $url[$urlx])){
-					$log->reply("pass");
+			} else {
+				if (isset($url[$urlx]) and $check = $this->checkPartPath($part, $url[$urlx])) {
 					if(is_array($check)){
-						$log->debug("add to path data:", $check);
 						$data = array_replace($data, $check);
 					}
 				}else{
@@ -451,88 +688,83 @@ class rule{
 			}
 			$urlx++;
 		}
-		if($urlen != $urlx)return false;
-		return($data ? $data : true);
-	}
-	private function checkPartPath($part, $url){
-		$log = log::getInstance();
-		$log->debug("part type:", $part['type']);
-		$data = array();
-		if($part['type'] == 'static'){
-			$log->debug("check", $part['name'],"vs",$url);
-			if($part['name'] != $url){
-				$log->reply("failed");
-				return false;
-			}
-			$log->reply("pass");
-		}elseif($part['type'] = 'dynamic'){
-			if(isset($part['regex'])){
-				$log->debug("check regex", $part['regex'],"vs",$url);
-				if(!preg_match($part['regex'], $url)){
-					$log->reply("failed");
-					return false;
-				}
-				$log->reply("pass");
-			}elseif(isset($part['values'])){
-				$log->debug("check possible values", $part['values'],"vs",$url);
-				if(!in_array($url, $part['values'])){
-					$log->reply("failed");
-					return false;
-				}
-				$log->reply("pass");
-			}else{
-				$log->reply("pass dynamic part without any condition");
-			}
-			$data[$part['name']] = $url;
-		}else{
+		if (empty($this->exceptions) and $urlen != $urlx) {
 			return false;
 		}
 		return($data ? $data : true);
 	}
-	private function askPermission($permission){
-		if(isset($this->permissions[$permission])){
-			if($this->permissions[$permission] === true){
-				return true;
-			}elseif(is_array($this->permissions[$permission])){
-				$class = new $this->permissions[$permission][0]();
-				$method = $this->permissions[$permission][1];
-				if($class->$method()){
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-	private function checkPermissions($data){
-		return($this->checkAPIPermission($data) and $this->checkAjaxPermission($data));
-	}
-	private function checkAPIPermission($data){
-		if(isset($data['api'])){
-			return $this->askPermission(self::api);
-		}
-		return true;
-	}
-	private function checkAjaxPermission($data){
-		if(isset($data['ajax'])){
-			return $this->askPermission(self::ajax);
-		}
-		return true;
-	}
-	public function runMiddlewares($data){
-		$log = log::getInstance();
-		foreach($this->middlewares as $middleware){
-			$log->debug("call",$middleware[0].'@'.$middleware[1]);
-			$class = new $middleware[0]();
-			$method = $middleware[1];
-			if(!$class->$method($data)){
-				$log->reply("returns false");
-				$log->debug("stop");
+
+	/**
+	 * 
+	 * @param array $part
+	 * @param string $url
+	 * @return bool|array
+	 */
+	private function checkPartPath(array $part, string $url){
+		$data = array();
+		if($part['type'] == 'static'){
+			if($part['name'] != $url){
 				return false;
 			}
+		} elseif ($part['type'] = 'dynamic') {
+			if (isset($part['regex'])) {
+				if (!preg_match($part['regex'], $url)) {
+					return false;
+				}
+			} elseif (isset($part['values'])) {
+				if(!in_array($url, $part['values'])){
+					return false;
+				}
+			}
+			$data[$part['name']] = $url;
+		} else {
+			return false;
 		}
-		return true;
+		return($data ? $data : true);
 	}
-	public function getPath() {
-		return $this->path;
+
+	/**
+	 * Check a permission, and if permission has a controller, it will call.
+	 * 
+	 * @param string $permission
+	 * @return bool
+	 */
+	private function askPermission(string $permission): bool {
+		if (!isset($this->permissions[$permission])) {
+			return false;
+		}
+		if (is_array($this->permissions[$permission])) {
+			$class = new $this->permissions[$permission][0]();
+			return boolval(($class->{$this->permissions[$permission][1]}()));
+		}
+		return $this->permissions[$permission];
+	}
+
+	/**
+	 * Check permissions according to requested paramaters in data and permissions in rule.
+	 * 
+	 * @param array router given data
+	 * @return bool
+	 */
+	private function checkPermissions(array $data): bool {
+		return ($this->checkAPIPermission($data) and $this->checkAjaxPermission($data));
+	}
+
+	/**
+	 * Check api permission if requested in url
+	 * 
+	 * @return bool
+	 */
+	private function checkAPIPermission(array $data): bool {
+		return (!isset($data['api']) or $this->askPermission(self::api));
+	}
+
+	/**
+	 * Check ajax permission if requested in url
+	 * 
+	 * @return bool
+	 */
+	private function checkAjaxPermission($data){
+		return (!isset($data['ajax']) or $this->askPermission(self::ajax));
 	}
 }

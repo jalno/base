@@ -1,32 +1,7 @@
 <?php
 namespace packages\base\router;
-class methodException extends \Exception {
-	private $method;
-	public function __construct($method){
-		$this->method = $method;
-	}
-	public function getMethod(){
-		return $this->method;
-	}
-}
-class pathException extends \Exception {
-	private $path;
-	public function __construct($path){
-		$this->path = $path;
-	}
-	public function getPath(){
-		return $this->path;
-	}
-}
-class ruleControllerException extends \Exception {
-	private $controller;
-	public function __construct($controller){
-		$this->controller = $controller;
-	}
-	public function getController(){
-		return $this->controller;
-	}
-}
+use packages\base\Exception;
+
 class ruleMiddlewareException extends \Exception {
 	private $middleware;
 	public function __construct($middleware){
@@ -36,44 +11,85 @@ class ruleMiddlewareException extends \Exception {
 		return $this->middleware;
 	}
 }
-class routerRule extends \Exception {
+
+class RouterRuleException extends Exception {
+	/** @var packages\base\router\rule */
 	private $rule;
-	public function __construct($rule, $message = ""){
+
+	/**
+	 * @param packages\base\router\rule $rule
+	 * @param string $message
+	 */
+	public function __construct(rule $rule, string $message = ""){
 		parent::__construct($message);
 		$this->rule = $rule;
 	}
-	public function getRule(){
+
+	/**
+	 * Getter for rule
+	 * 
+	 * @return packages\base\router\rule 
+	 */
+	public function getRule(): rule {
 		return $this->rule;
 	}
 }
-class routerRulePart extends \Exception {
+
+class ControllerException extends RouterRuleException {
+	/** @var string */
+	private $controller;
+
+	/**
+	 * @param string $controller
+	 */
+	public function __construct(string $controller){
+		$this->controller = $controller;
+	}
+
+	/**
+	 * Getter for controller
+	 * 
+	 * @return string
+	 */
+	public function getController(): string {
+		return $this->controller;
+	}
+}
+class RouterRulePart extends Exception {
+	/** @var mixed $part */
 	private $part;
-	public function __construct($part, $message = ""){
+
+	/**
+	 * @param mixed $part
+	 * @param string $message
+	 */
+	public function __construct($part, string $message = ""){
 		$this->part = $part;
 		parent::__construct($message);
 	}
+
+	/**
+	 * Getter for wrong part
+	 * 
+	 * @return mixed
+	 */
 	public function getPart(){
 		return $this->part;
 	}
 }
-class RulePartNameException extends routerRulePart{
-	private $part;
+class RulePartNameException extends RouterRulePart {
 	public function __construct($part){
-		$this->part = $part;
-		parent::__construct("name is not assigned");
-	}
-	public function getPart(){
-		return $this->part;
+		parent::__construct($part, "name is not assigned");
 	}
 }
-class RulePartValue extends routerRulePart{
+class RulePartValue extends RouterRulePart{
 
 }
-class schemeException extends routerRule{
+class SchemeException extends RouterRuleException{
 
 }
-class DomainException extends routerRule{}
-class InvalidRegexException extends routerRule{
+class DomainException extends RouterRuleException{}
+class InvalidRegexException extends RouterRuleException{
 	protected $regex;
 	public function __construct(string $regex, rule $rule){
 		parent::__construct($rule, "regex is invalid");
@@ -83,9 +99,9 @@ class InvalidRegexException extends routerRule{
 		return $this->regex;
 	}
 }
-class permissionException extends \Exception{
+class PermissionException extends Exception{
 	private $permission;
-	public function __construct($permission){
+	public function __construct(string $permission){
 		$this->permission = $permission;
 		parent::__construct("permission is unknown");
 	}

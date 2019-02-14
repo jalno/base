@@ -1,10 +1,8 @@
 <?php
 namespace packages\base\cache;
-use \packages\base\packages;
-use \packages\base\IO;
-use \packages\base\date;
-use \packages\base\log;
-use \packages\base\cache\file\LockTimeoutException;
+
+use packages\base\{packages, IO, date, log, file\LockTimeoutException};
+
 class file implements Ihandler{
 	private $options;
 	private $storage;
@@ -16,7 +14,7 @@ class file implements Ihandler{
 			$this->options['prefix'] = '';
 		}
 		if(!isset($this->options['storage'])){
-			$this->options['storage'] = packages::package('base')->getFilePath('storage/private/cache');
+			$this->options['storage'] = realpath(__DIR__ . "/../../storage/private/cache");
 		}
 		$log->info("storage is ", $this->options['storage']);
 		$this->storage = is_string($this->options['storage']) ? new IO\directory\local($this->options['storage']) : $this->options['storage'];
@@ -62,7 +60,7 @@ class file implements Ihandler{
 	public function clear(){
 		$items = $this->readIndex();
 		foreach($items as $x => $index){
-			if($index[2] < date::time()){
+			if($index[2] and $index[2] < date::time()){
 				$item = $this->storage->file($index[0]);
 				if($item->exists()){
 					$item->delete();
