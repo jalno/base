@@ -24,12 +24,27 @@ class cli{
             if(substr($params[$x], 0, 2) == '--'){
                 $temp = explode('=', $params[$x], 2);
                 $temp[0] = substr($temp[0], 2);
-                $return[$temp[0]] = isset($temp[1]) ? trim($temp[1]) : true;
+                if (isset($return[$temp[0]])) {
+                    if (!is_array($return[$temp[0]])) {
+                        $return[$temp[0]] = [$return[$temp[0]]];
+                    }
+                    $return[$temp[0]][] = isset($temp[1]) ? trim($temp[1]) : true;
+                } else {
+                    $return[$temp[0]] = isset($temp[1]) ? trim($temp[1]) : true;
+                }
             }elseif(substr($params[$x], 0, 1) == '-'){
                 $temp[0] = substr($params[$x], 1,1);
                 $temp[1] = trim(substr($params[$x], 2));
                 if(!$temp[1]) $temp[1] = true;
                 $return[$temp[0]] = $temp[1];
+                if (isset($return[$temp[0]])) {
+                    if (!is_array($return[$temp[0]])) {
+                        $return[$temp[0]] = [$return[$temp[0]]];
+                    }
+                    $return[$temp[0]][] = $temp[1];
+                } else {
+                    $return[$temp[0]] = $temp[1];
+                }
             }
         }
         return($return);
