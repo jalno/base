@@ -198,7 +198,6 @@ class response implements \Serializable{
 		}elseif($this->raw){
 			echo $this->output;
 		}elseif($this->view){
-			$this->prepareView();
 			$this->view->setData($this->getStatus(), 'status');
 			$this->view->output();
 		}
