@@ -36,7 +36,7 @@ class theme {
 		}
 		
 		foreach (self::$sources as $source) {
-			$path = $source->getHome()->getPath();
+			$path = $source->getHome()->getPath() . "/";
 			if (substr($class['file'], 0, strlen($path)) != $path) {
 				continue;
 			}
