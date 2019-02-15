@@ -203,60 +203,55 @@ class router{
 					translator::setLang($data['@lang']);
 				}
 				list($controller, $method) = $rule->getController();
-				if(preg_match('/^(?:\\\\)?packages\\\\([a-zA-Z0-9|_]+).*$/', $controller, $matches)){
-					$log->info("focus on",$matches[1],"package");
-					if($package = packages::package($matches[1])){
-						$log->debug("run middlewares");
-						$rule->runMiddlewares($data);
-						$log->info("call",$controller.'@'.$method);
-						$controllerClass = new $controller();
-						try {
-							$response = $controllerClass->$method($data);
-						} catch(inputValidation $e) {
-							$response = $controllerClass->getResponse();
-							if ($response) {
-								$response->setStatus(false);
-								$view = $response->getView();
-								if ($view instanceof views\form) {
-									$error = views\FormError::fromException($e);
-									$view->setFormError($error);
-									$view->setDataForm(http::$request['post']);
-								} else {
-									$response->setData(array(
-										'error' => [array(
-											'type' => view\error::FATAL,
-											'error' => views\FormError::DATA_VALIDATION,
-											'input' => $e->getInput()
-										)]
-									));
-								}
-							}
-						} catch(db\duplicateRecord $e) {
-							$response = $controllerClass->getResponse();
-							if ($response) {
-								$response->setStatus(false);
-								$view = $response->getView();
-								if ($view instanceof views\form) {
-									$error = views\FormError::fromException($e);
-									$view->setFormError($error);
-									$view->setDataForm(http::$request['post']);
-								} else {
-									$response->setData(array(
-										'error' => [array(
-											'type' => view\error::FATAL,
-											'error' => views\FormError::DATA_DUPLICATE,
-											'input' => $e->getInput()
-										)]
-									));
-								}
-							}
+				$log->debug("run middlewares");
+				$rule->runMiddlewares(is_array($data) ? $data : array());
+				$log->info("call",$controller.'@'.$method);
+				$controllerClass = new $controller();
+				try {
+					$response = $controllerClass->$method($data);
+				} catch(inputValidation $e) {
+					$response = $controllerClass->getResponse();
+					if ($response) {
+						$response->setStatus(false);
+						$view = $response->getView();
+						if ($view instanceof views\form) {
+							$error = views\FormError::fromException($e);
+							$view->setFormError($error);
+							$view->setDataForm(http::$request['post']);
+						} else {
+							$response->setData(array(
+								'error' => [array(
+									'type' => view\error::FATAL,
+									'error' => views\FormError::DATA_VALIDATION,
+									'input' => $e->getInput()
+								)]
+							));
 						}
-						$log->reply("Success");
-						$log->info("send response");
-						$response->send();
-						$log->reply("Success");
+					}
+				} catch(db\duplicateRecord $e) {
+					$response = $controllerClass->getResponse();
+					if ($response) {
+						$response->setStatus(false);
+						$view = $response->getView();
+						if ($view instanceof views\form) {
+							$error = views\FormError::fromException($e);
+							$view->setFormError($error);
+							$view->setDataForm(http::$request['post']);
+						} else {
+							$response->setData(array(
+								'error' => [array(
+									'type' => view\error::FATAL,
+									'error' => views\FormError::DATA_DUPLICATE,
+									'input' => $e->getInput()
+								)]
+							));
+						}
 					}
 				}
+				$log->reply("Success");
+				$log->info("send response");
+				$response->send();
+				$log->reply("Success");
 				return true;
 			}else{
 				$log->reply("not matched");
@@ -347,6 +342,7 @@ class router{
 					}
 				}
 			}catch(\Exception $e){
+				print_r($e);
 				self::routingExceptions($e);
 			}
 		}else{
