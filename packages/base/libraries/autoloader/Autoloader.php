@@ -77,7 +77,7 @@ class Autoloader {
 	 * @return void
 	 */
 	public static function addClass(string $class, string $file): void {
-		$class = ltrim($class, "\\");
+		$class = ltrim(strtolower($class), "\\");
 		if (isset(self::$classes[$class])) {
 			return;
 		}
@@ -102,6 +102,7 @@ class Autoloader {
 	 * @return void
 	 */
 	public static function handler(string $class): void {
+		$class = strtolower($class);
 		if (isset(self::$classes[$class])) {
 			require_once(self::$classes[$class]);
 		}
@@ -127,9 +128,14 @@ class Autoloader {
 		$classes = get_declared_classes();
 		$items = [];
 		foreach ($classes as $class) {
-			if (!$isJalno($class) or !isset(self::$classes[$class])) {
+			if (!$isJalno($class)) {
 				continue;
 			}
+			$class = strtolower($class);
+			if (!isset(self::$classes[$class])) {
+				continue;
+			}
+
 			if (!isset($items[$class])) {
 				$items[$class] = array(
 					'file' => self::$classes[$class],
@@ -141,6 +147,7 @@ class Autoloader {
 				if (!$parent or !$isJalno($parent)) {
 					continue;
 				}
+				$parent = strtolower($parent);
 				if (isset($items[$parent])) {
 					if (!isset($items[$parent]['children'])) {
 						$items[$parent]['children'] = [];

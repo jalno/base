@@ -323,7 +323,7 @@ class Source {
 	 * @return packages\base\IO\file|null
 	 */
 	public function getHTMLFile(string $view) {
-		return $this->htmlFiles[$view] ?? null;
+		return $this->htmlFiles[strtolower($view)] ?? null;
 	}
 
 	/**
@@ -338,7 +338,7 @@ class Source {
 		if(!preg_match('/^(?:\\\\)?themes\\\\([a-zA-Z0-9-\\_]+)((\\\\[a-zA-Z0-9\\_]+)+)/', $namespace)){
 			$namespace = "themes\\{$this->name}\\".$namespace;
 		}
-		return $namespace;
+		return strtolower($namespace);
 	}
 
 	/**

@@ -274,7 +274,7 @@ class package implements \Serializable {
 		if(!preg_match('/^(?:\\\\)?packages\\\\([a-zA-Z0-9-\\_]+)((\\\\[a-zA-Z0-9\\_]+)+)/', $namespace)){
 			$namespace = "packages\\{$this->name}\\".$namespace;
 		}
-		return $namespace;
+		return strtolower($namespace);
 	}
 
 	/**

@@ -30,8 +30,9 @@ trait ListenerContainerTrait {
 	 * @return void
 	 */
 	public function trigger(EventInterface $e): void {
+		$eventName = strtolower(get_class($e));
 		foreach ($this->events as $event) {
-			if ($event['name'] == get_class($e)) {
+			if ($event['name'] == $eventName) {
 				list($listener, $method) = explode('@', $event['listener'], 2);
 				$listener = new $listener();
 				$listener->$method($e);

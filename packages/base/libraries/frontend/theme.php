@@ -13,11 +13,11 @@ class theme {
 	/**
 	 * Find the view by [parent] class name in sources.
 	 * 
-	 * @param string $viewName [parent] class name
+	 * @param string $viewName [parent] class name in lower case.
 	 * @return array|null array will contain "name"(string), "source"(packages\base\frontend\Source)
 	 */
 	public static function locate(string $viewName): ?array {
-		$viewName = ltrim($viewName, "\\");
+		$viewName = ltrim(strtolower($viewName), "\\");
 		$parentList = self::findViewParentList();
 		$class = null;
 		while (true) {
@@ -36,7 +36,7 @@ class theme {
 		}
 		
 		foreach (self::$sources as $source) {
-			$path = $source->getHome()->getPath();
+			$path = $source->getHome()->getPath() . "/";
 			if (substr($class['file'], 0, strlen($path)) != $path) {
 				continue;
 			}
