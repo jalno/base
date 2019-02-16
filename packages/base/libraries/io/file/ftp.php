@@ -15,7 +15,7 @@ class ftp extends file{
 	public function setDriver(driver $driver){
 		$this->driver = $driver;
 	}
-	protected function getDriver(): driver{
+	public function getDriver(): driver{
 		if($this->driver){
 			return $this->driver;
 		}
