@@ -1,21 +1,41 @@
 <?php
-namespace packages\base\IO\file;
+namespace packages\base\IO\directory;
 use \packages\base\IO\file;
 use \packages\base\IO\directory;
-use \packages\base\IO\file\local;
-use \packages\base\IO\file\tmp;
 use \packages\base\IO\drivers\ftp as driver;
-use \packages\base\IO\ReadException;
-class ftp extends file{
+use \packages\base\IO\NotFoundException;
+class ftp extends directory{
+	/** @var string|null */
 	public $hostname;
+
+	/** @var int|null */
 	public $port = 21;
+
+	/** @var string|null */
 	public $username;
+
+	/** @var string|null */
 	public $password;
+
+	/** @var packages\base\IO\drivers\ftp|null */
 	private $driver;
-	public function setDriver(driver $driver){
+
+	/**
+	 * Setter for FTP driver
+	 *
+	 * @param packages\base\IO\drivers\ftp $driver
+	 * @return void
+	 */
+	public function setDriver(driver $driver): void {
 		$this->driver = $driver;
 	}
-	protected function getDriver(): driver{
+
+	/**
+	 * Getter for FTP driver
+	 *
+	 * @return packages\base\IO\drivers\ftp
+	 */
+	public function getDriver(): driver {
 		if($this->driver){
 			return $this->driver;
 		}
@@ -27,52 +47,205 @@ class ftp extends file{
 		));
 		return $this->driver;
 	}
-	public function write(string $data):bool{
-		$tmp = new tmp();
-		$tmp->write($data);
-		return $this->copyFrom($tmp);
+
+	/**
+	 * Calcute sum of all files (including files in subdirectories).
+	 *
+	 * @return int
+	 */
+	public function size(): int {
+		$size = 0;
+        foreach ($this->files(true) as $file) {
+            $size += $file->size();
+        }
+        return $size;
 	}
-	public function read(int $length = 0):string {
-		$tmp = new tmp();
-		if(!$this->copyTo($tmp)){
-			throw new ReadException($this);
+
+	/**
+	 * Move a file to anthor directory.
+	 *
+	 * @param packages\base\IO\directory $dest destination path
+	 * @return bool
+	 */
+	public function move(directory $dest): bool {
+		if (!$dest->exists()) {
+            $dest->make(true);
+        }
+        if ($this->getDriver()->rename($this->getPath(), $dest->getPath().'/'.$this->basename)) {
+            $this->directory = $dest->getPath();
+            return true;
+        }
+        return false;
+	}
+
+	/**
+	 * Set new name for directory
+	 *
+	 * @param string $newName
+	 * @return bool
+	 */
+	public function rename(string $newName): bool {
+		if ($this->getDriver()->rename($this->getPath(), $this->directory.'/'.$newName)) {
+            $this->basename = $newName;
+            return true;
+        }
+        return false;
+	}
+
+	/**
+	 * Delete the directory and all of Its files from ftp server.
+	 *
+	 * @return void
+	 */
+	public function delete(): void {
+		foreach($this->items(false) as $item){
+			$item->delete();
 		}
-		return $tmp->read($length);
+		$this->getDriver()->rmdir($this->getPath());
 	}
-	public function size(): int{
-		return $this->getDriver()->size($this->getPath());
-	}
-	public function move(file $dest): bool{
-		if($dest instanceof self){
-			return $this->getDriver()->rename($this->getPath(), $dest->getPath());
-		}
-	}
-	public function rename(string $newName): bool{
-		return $this->getDriver()->rename($this->getPath(), $this->directory.'/'.$newName);
-	}
-	public function delete(){
-		return $this->getDriver()->delete($this->getPath());
-	}
-	public function copyTo(file $dest): bool{
+	/**
+	 * Make the directory on FTP server.
+	 *
+	 * @param bool $recursive default: false
+	 * @return bool
+	 */
+	public function make(bool $recursive = false): bool {
 		$driver = $this->getDriver();
-		if($dest instanceof local){
-			return $driver->get($this->getPath(), $dest->getPath());
-		}else{
-			$tmp = new tmp();
-			if($this->copyTo($tmp)){
-				return $tmp->copyTo($dest);
-			}
-		}
+		return $driver->mkdir($this->getPath());
 	}
-    public function exists():bool{
-        return $this->getDriver()->is_file($this->getPath());
-    }
-	public function getDirectory():directory\ftp{
-		$directory = new directory\ftp($this->directory);
+
+	/**
+	 * Return files in this directory.
+	 *
+	 * @param bool $recursively search subdirectories or not. default: false
+	 * @return packages\base\IO\file\ftp[]
+	 */
+	public function files(bool $recursively = false): array {
+		$driver = $this->getDriver();
+		$scanner = function($dir) use ($recursively, $driver, &$scanner) {
+			$items = [];
+			foreach ($driver->nlist($dir) as $item) {
+				$basename = basename($item);
+				if ($basename != '.' and $basename != '..') {
+					if (!$driver->is_dir($item)) {
+						$file = new file\ftp($item);
+						$file->setDriver($driver);
+						$items[] = $file;
+					} elseif($recursively) {
+						$items = array_merge($items, $scanner($item));
+					}
+				}
+			}
+			return $items;
+		};
+		return $scanner($this->getPath());
+	}
+
+	/**
+	 * Return subdirectories in this directory.
+	 *
+	 * @param bool $recursively search subdirectories or not. default: false
+	 * @return packages\base\IO\directory\ftp[]
+	 */
+	public function directories(bool $recursively = true): array {
+		$driver = $this->getDriver();
+		$scanner = function($dir) use ($recursively, $driver, &$scanner) {
+			$items = [];
+			foreach ($driver->nlist($dir) as $item) {
+				$basename = basename($item);
+				if ($basename != '.' and $basename != '..') {
+					if ($driver->is_dir($item)){
+						$directory = new directory\ftp($item);
+						$directory->setDriver($driver);
+						$items[] = $directory;
+						if ($recursively) {
+							$items = array_merge($items, $scanner($item));
+						}
+					}
+				}
+			}
+			return $items;
+		};
+		return $scanner($this->getPath());
+	}
+
+	/**
+	 * Return subdirectories and files in this directory.
+	 *
+	 * @param bool $recursively search subdirectories or not. default: false
+	 * @return array<packages\base\IO\file\ftp|packages\base\IO\directory\ftp>
+	 */
+	public function items(bool $recursively = true): array {
+		$driver = $this->getDriver();
+		$scanner = function($dir) use($recursively, $driver, &$scanner) {
+			$items = [];
+			foreach ($driver->nlist($dir) as $item) {
+				$basename = basename($item);
+				if ($basename != '.' and $basename != '..') {
+					if ($driver->is_dir($item)){
+						$directory = new directory\ftp($item);
+						$directory->setDriver($driver);
+						$items[] = $directory;
+						if($recursively){
+							$items = array_merge($items, $scanner($item));
+						}
+					} elseif ($driver->is_file($item)) {
+						$file = new file\ftp($item);
+						$file->setDriver($driver);
+						$items[] = $file;
+					}
+				}
+			}
+			return $items;
+		};
+		return $scanner($this->getPath());
+	}
+
+	/**
+	 * Check existance of the directory.
+	 *
+	 * @return bool
+	 */
+	public function exists():bool{
+		return $this->getDriver()->is_dir($this->getPath());
+	}
+
+	/**
+	 * Retrun file object.
+	 *
+	 * @param string $name
+	 * @return packages\base\IO\file\ftp
+	 */
+	public function file(string $name): file\ftp {
+		$file = new file\ftp($this->getPath().'/'.$name);
+		$file->setDriver($this->getDriver());
+		return $file;
+	}
+
+	/**
+	 * Retrun directory object.
+	 *
+	 * @param string $name
+	 * @return packages\base\IO\directory\ftp
+	 */
+	public function directory(string $name): directory\ftp{ 
+		$directory = new directory\ftp($this->getPath().'/'.$name);
 		$directory->setDriver($this->getDriver());
 		return $directory;
 	}
-    public function serialize(){
+
+	/**
+	 * Return parent directory
+	 *
+	 * @return packages\base\IO\directory\ftp
+	 */
+	public function getDirectory(): directory\ftp {
+		$directory = new directory\ftp($this->dirname);
+		$directory->setDriver($this->getDriver());
+		return $directory;
+	}
+	
+	public function serialize(){
 		if(!$this->hostname){
 			$this->hostname = $this->getDriver()->getHostname();
 		}
