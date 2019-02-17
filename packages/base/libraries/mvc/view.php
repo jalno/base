@@ -369,7 +369,7 @@ class view {
 		if (!$this->file and $this->source) {
 			$this->file = $this->source->getHTMLFile(get_class($this));
 		}
-		if ($this->file and $this->source) {
+		if (!$this->file and $this->source) {
 			$reflection = new \ReflectionClass(get_class($this));
 			$thisFile = $reflection->getFileName();
 			$sourceHome = $this->source->getHome()->getRealPath();
