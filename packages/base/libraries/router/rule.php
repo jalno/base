@@ -146,7 +146,7 @@ class rule implements \Serializable {
 				);
 			}
 			return array(
-				'type' => $matches[2] ? "wildcard" : "dynamic",
+				'type' => isset($matches[2]) ? "wildcard" : "dynamic",
 				'name' => $matches[1],
 			);
 		}
