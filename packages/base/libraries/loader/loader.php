@@ -315,24 +315,22 @@ class loader {
 			Autoloader::addClass($class, $path);
 		}
 	}
-	public static function connectdb(){
-		if(($db = options::get('packages.base.loader.db', false)) != false){
-			if(isset($db['type'])){
-				if($db['type'] == 'mysql'){
-					if(isset($db['host'], $db['user'], $db['pass'],$db['dbname'])){
-						db::connect('default', $db['host'], $db['user'], $db['dbname'],$db['pass']);
-						return true;
-					}else{
-						throw new mysqlConfig();
-					}
-				}else{
-					throw new dbType($db['type']);
-				}
-			}else{
-				throw new dbType();
-			}
+	public static function connectdb(): void{
+		$db = options::get('packages.base.loader.db', false);
+		if (!$db) {
+			return;
 		}
-		return false;
+		if (!isset($db['default'])) {
+			$db = array(
+				'default' => $db
+			);
+		}
+		foreach ($db as $name => $config) {
+			if (!isset($config['host'], $config['user'], $config['pass'],$config['dbname'])) {
+				throw new DatabaseConfigException("{$name} connection is invalid");
+			}
+			db::connect($name, $config['host'], $config['user'], $config['dbname'],$config['pass']);
+		}
 	}
 	public static function requiredb(){
 		if(!db::has_connection()){

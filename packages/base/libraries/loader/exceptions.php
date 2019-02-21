@@ -1,6 +1,6 @@
 <?php
 namespace packages\base;
-class packageNotConfiged extends \Exception {
+class packageNotConfiged extends Exception {
 	private $package;
 	public function __construct($package){
 		$this->package = $package;
@@ -49,24 +49,5 @@ class packageAutoloaderFileException extends PackageConfigException{
 		$this->autoloaderfile = $file;
 	}
 }
-class dbType extends \Exception {
-	private $type;
-	public function __construct($type,$message = ""){
-		$this->type = $type;
-		parent::__construct($message);
-	}
-	public function getType(){
-		return $this->type;
-	}
+class DatabaseConfigException extends Exception {
 }
-class mysqlConfig extends \Exception {
-	private $type;
-	public function __construct($type,$message = ""){
-		$this->type = $type;
-		parent::__construct($message);
-	}
-	public function getType(){
-		return $this->type;
-	}
-}
-?>
