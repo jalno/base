@@ -276,16 +276,15 @@ class rule implements \Serializable {
 		$this->wildcards = 0;
 		$this->dynamics = 0;
 		foreach ($path as $x => $part) {
-			if($x == 0 or $part !== ''){
-				$valid = self::validPart($part);
-				if ($valid['type'] == 'wildcard') {
-					$this->wildcards++;
-					$this->dynamics++;
-				} elseif ($valid['type'] == 'dynamic') {
-					$this->dynamics++;
-				}
-				$this->path[] = $valid;
+			if ($part == "") continue;
+			$valid = self::validPart($part);
+			if ($valid['type'] == 'wildcard') {
+				$this->wildcards++;
+				$this->dynamics++;
+			} elseif ($valid['type'] == 'dynamic') {
+				$this->dynamics++;
 			}
+			$this->path[] = $valid;
 		}
 	}
 
@@ -560,9 +559,6 @@ class rule implements \Serializable {
 					$url = array_slice($url, 1);
 				}
 			}
-		}
-		if (empty($url)) {
-			$url[0] = "";
 		}
 		$checkPath = $this->checkPath($url);
 		if (!$checkPath) {
