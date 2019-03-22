@@ -42,5 +42,6 @@ class CellphoneValidator implements IValidator {
 		} elseif (!safe::is_cellphone_ir($data)) {
 			throw new InputValidationException($input);
 		}
+		return safe::cellphone_ir($data);
 	}
 }
