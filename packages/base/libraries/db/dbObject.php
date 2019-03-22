@@ -1,8 +1,8 @@
 <?php
 namespace packages\base\db;
-use \packages\base\loader;
-use \packages\base\db;
-use \packages\base\json;
+
+use packages\base\{loader, db, json, Validator\IValidator, InputValidationException};
+
 /**
  * Mysqli Model wrapper
  *
@@ -40,7 +40,7 @@ use \packages\base\json;
  * @method string getLastError ()
  * @method string getLastQuery ()
  **/
-class dbObject implements \Serializable{
+class dbObject implements \Serializable, IValidator {
 	private $connection = 'default';
 	/**
 	 * Working instance of MysqliDb created earlier
@@ -254,8 +254,8 @@ class dbObject implements \Serializable{
 	public function insert () {
 		if (!empty ($this->timestamps) and in_array ("createdAt", $this->timestamps))
 			$this->createdAt = date("Y-m-d H:i:s");
-		$sqlData = $this->prepareData ();
-		if (!$this->validate ($sqlData))
+		$sqlData = $this->prepareData();
+		if (!$this->validateQueryData($sqlData))
 			return false;
 		$id = $this->db->insert ($this->dbTable, $sqlData);
 		if (!empty ($this->primaryKey) and empty ($this->data[$this->primaryKey]))
@@ -279,7 +279,7 @@ class dbObject implements \Serializable{
 		if (!empty ($this->timestamps) and in_array ("updatedAt", $this->timestamps))
 			$this->updatedAt = date("Y-m-d H:i:s");
 		$sqlData = $this->prepareData ();
-		if (!$this->validate ($sqlData))
+		if (!$this->validateQueryData($sqlData))
 			return false;
 
 		$newdata = $this->compareData($sqlData, $this->original_data);
@@ -681,7 +681,7 @@ class dbObject implements \Serializable{
 	/**
 	 * @param array $data
 	 */
-	private function validate ($data) {
+	private function validateQueryData ($data) {
 		if (!$this->dbFields)
 			return true;
 		$dbFields = $this->dbFields;
@@ -838,5 +838,38 @@ class dbObject implements \Serializable{
 		}
 		$this->data = $data;
 		$this->original_data = $data;
-    }
+	}
+
+	/**
+	 * Get alias types
+	 * 
+	 * @return string[]
+	 */
+	public function getTypes(): array {
+		return [];
+	}
+
+	/**
+	 * Validate data to be a boolean value.
+	 * 
+	 * @throws packages\base\InputValidationException
+	 * @param string $input
+	 * @param array $rule
+	 * @param mixed $data
+	 * @return packages\base\db\dbObject new value, if needed.
+	 */
+	public function validate(string $input, array $rule, $data) {
+		if (!is_string($data) and !is_numeric($data)) {
+			throw new InputValidationException($input);
+		}
+		$this->db->where($this->db->prefix . $this->dbTable . '.' . $this->primaryKey, $data);
+		if (isset($rule['query'])) {
+			$rule['query']($this);
+		}
+		$obj = $this->getOne($rule['fileds'] ?? null);
+		if (!$obj) {
+			throw new InputValidationException($input);
+		}
+		return $obj;
+	}
 }

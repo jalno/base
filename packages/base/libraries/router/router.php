@@ -209,7 +209,7 @@ class router{
 				$controllerClass = new $controller();
 				try {
 					$response = $controllerClass->$method($data);
-				} catch(inputValidation $e) {
+				} catch(InputValidationException $e) {
 					$response = $controllerClass->getResponse();
 					if ($response) {
 						$response->setStatus(false);

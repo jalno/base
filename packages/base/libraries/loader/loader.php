@@ -48,10 +48,15 @@ require_once('packages/base/libraries/io/file/tmp.php');
 require_once('packages/base/libraries/io/file/ftp.php');
 require_once('packages/base/libraries/io/file/sftp.php');
 
+// IValidator
+require_once('packages/base/libraries/validator/IValidator.php');
+
+// Database
 require_once('packages/base/libraries/db/db.php');
 require_once('packages/base/libraries/db/MysqliDb.php');
 require_once('packages/base/libraries/db/dbObject.php');
 require_once('packages/base/libraries/db/exceptions.php');
+
 require_once('packages/base/libraries/config/options.php');
 require_once('packages/base/libraries/frontend/exceptions.php');
 require_once('packages/base/libraries/frontend/theme.php');
