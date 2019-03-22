@@ -39,6 +39,10 @@ class StringValidator implements IValidator {
 			if (!in_array($data, $rule['values'])) {
 				throw new InputValidationException($input);
 			}
+		} elseif (isset($rule['regex'])) {
+			if (!preg_match($rule['regex'], $data)) {
+				throw new InputValidationException($input);
+			}
 		} else {
 			if (!isset($rule['htmlTags']) or !$rule['htmlTags']) {
 				$data = htmlentities($data, ENT_IGNORE|ENT_SUBSTITUTE|ENT_DISALLOWED, 'UTF-8');
