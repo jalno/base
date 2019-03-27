@@ -60,6 +60,7 @@ class Validator {
 			Validator\URLValidator::class,
 			Validator\FileValidator::class,
 			Validator\ImageValidator::class,
+			Validator\DateValidator::class,
 		];
 		foreach ($classes as $classname) {
 			$validator = new $classname();
