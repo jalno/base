@@ -1,7 +1,7 @@
 <?php
 namespace packages\base\frontend;
 
-use packages\base\{json, IO, EventInterface, AutoloadContainerTrait, LanguageContainerTrait, ListenerContainerTrait};
+use packages\base\{json, router, IO, EventInterface, AutoloadContainerTrait, LanguageContainerTrait, ListenerContainerTrait};
 
 class Source {
 
@@ -264,10 +264,19 @@ class Source {
 	 * Get URL of  a file for direct access by browser.
 	 * 
 	 * @param string $file
+	 * @param bool $absolute
 	 * @return string
 	 */
-	public function url(string $file): string {
-		return "/" . $this->home->file($file)->getPath();
+	public function url(string $file, bool $absolute = false): string {
+		$url = "";
+		if ($absolute) {
+			$hostname = router::gethostname();
+			if (!$hostname and $defaultHostnames = router::getDefaultDomains()) {
+				$hostname = $defaultHostnames[0];
+			}
+			$url .= router::getscheme().'://'.$hostname;
+		}
+		return $url . "/" . $this->home->file($file)->getPath();
 	}
 
 	/**3 */
