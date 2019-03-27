@@ -29,7 +29,7 @@ class InputValidation extends Exception {
 	 * @param string $input
 	 * @return string
 	 */
-	public function setInput(string $input): string {
+	public function setInput(string $input): void {
 		$this->input = $input;
 	}
 }
