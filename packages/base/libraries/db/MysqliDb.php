@@ -2137,4 +2137,7 @@ class parenthesis{
 	public function getWheres(){
 		return $this->_where;
 	}
+	public function isEmpty() {
+		return empty($this->_where);
+	}
 }
