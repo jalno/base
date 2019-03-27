@@ -87,7 +87,7 @@ class NumberValidator implements IValidator {
 				break;
 		}
 		$rule['float'] = $rule['float'] ?? false;
-		$rule['zero'] = $rule['zero'] ?? false;
+		$rule['zero'] = $rule['zero'] ?? $rule['empty'] ?? false;
 		if (!$data) {
 			if (!$rule['zero']) {
 				throw new InputValidationException($input, "empty-value");
