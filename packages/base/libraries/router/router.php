@@ -249,9 +249,11 @@ class router{
 					}
 				}
 				$log->reply("Success");
-				$log->info("send response");
-				$response->send();
-				$log->reply("Success");
+				if ($response) {
+					$log->info("send response");
+					$response->send();
+					$log->reply("Success");
+				}
 				return true;
 			}else{
 				$log->reply("not matched");
@@ -342,7 +344,6 @@ class router{
 					}
 				}
 			}catch(\Exception $e){
-				print_r($e);
 				self::routingExceptions($e);
 			}
 		}else{
