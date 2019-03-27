@@ -58,6 +58,7 @@ class Validator {
 			Validator\NumberValidator::class,
 			Validator\StringValidator::class,
 			Validator\URLValidator::class,
+			Validator\FileValidator::class,
 		];
 		foreach ($classes as $classname) {
 			$validator = new $classname();
@@ -151,7 +152,11 @@ class Validator {
 				$newData = $validator->validate($input, $rule, $this->data[$input]);
 			}
 		}
-		$this->newData[$input] = $newData ?? $this->data[$input];
+		if (is_object($newData) and $newData instanceof Validator\NullValue) {
+			$this->newData[$input] = null;
+		} else {
+			$this->newData[$input] = $newData ?? $this->data[$input];
+		}
 		return true;
 	}
 }
