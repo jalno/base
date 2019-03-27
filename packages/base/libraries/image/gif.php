@@ -8,5 +8,8 @@ class gif extends gd{
 	}
 	public function saveToFile(file $file, int $quality = 75){
 		imagegif($this->image, $file->getPath());
-	} 
+	}
+	public function getExtension(): string {
+		return 'gif';
+	}
 }

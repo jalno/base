@@ -8,5 +8,8 @@ class jpeg extends gd{
 	}
 	public function saveToFile(file $file, int $quality = 75){
 		imagejpeg($this->image, $file->getPath(), $quality);
-	} 
+	}
+	public function getExtension(): string {
+		return 'jpg';
+	}
 }

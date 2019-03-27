@@ -18,6 +18,9 @@ abstract class image{
 			$this->createBlank($param, $height, $bg);
 		}
 	}
+	public function getFile(): ?file {
+		return $this->file;
+	}
 	abstract protected function fromFile();
 	abstract protected function createBlank(int $width, int $height, color $bg);
 	abstract public function colorAt(int $x, int $y):color;
@@ -25,6 +28,7 @@ abstract class image{
 	abstract public function resize(int $width, int $height):image;
 	abstract public function getWidth():int;
 	abstract public function getHeight():int;
+	abstract public function getExtension(): string;
 	abstract public function saveToFile(file $file, int $quality = 75);
 	protected function fromImage(image $other){
 		$width = $other->getWidth();

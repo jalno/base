@@ -47,6 +47,9 @@ class gd extends image{
 		$rgba = imagecolorallocatealpha($this->image, $colors[0], $colors[1], $colors[2], $colors[3]);
 		imagesetpixel($this->image,$x, $y, $rgba);
 	}
+	public function getExtension(): string {
+		return 'gd';
+	}
 	protected function fromImage(image $other){
 		if($other instanceof self){
 			$this->image = $other->image;

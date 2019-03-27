@@ -9,7 +9,9 @@ class png extends gd{
 	public function saveToFile(file $file, int $quality = 75){
 		imagepng($this->image, $file->getPath(), round((100 - $quality) / 10));
 	}
-
+	public function getExtension(): string {
+		return 'png';
+	}
 	protected function createBlank(int $width, int $height, color $bg){
 		$this->image = imagecreatetruecolor($width, $height);
 		$colors = $bg->toRGBA();
