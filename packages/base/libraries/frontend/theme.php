@@ -1,6 +1,6 @@
 <?php
 namespace packages\base\frontend;
-use packages\base\{options, router, view, IO, Autoloader};
+use packages\base\{options, router, view, IO, Autoloader, Packages, Cache};
 
 class theme {
 
@@ -183,6 +183,10 @@ class theme {
 			return $tree;
 		}
 		$useCache = options::get("packages.base.env") == "production";
+		$tree = Cache::get("packages.base.frontend.theme.viewParentList");
+		if ($tree) {
+			return $tree;
+		}
 		$parentList = Autoloader::getParentList($useCache);
 
 		$views = [view::class];
@@ -197,6 +201,26 @@ class theme {
 				$views = array_merge($views, $parentList[$views[$x]]['children']);
 			}
 		}
+		$packages = [];
+		$x = 0;
+		foreach (Packages::get() as $package) {
+			$packages[$package->getName()] = $x++;
+		}
+		uasort($tree, function ($a, $b) use ($packages) {
+			$pA = self::getPackage($a['file']);
+			$pB = self::getPackage($b['file']);
+
+			return $packages[$pA] - $packages[$pB];
+		});
+		if ($tree and $useCache) {
+			Cache::set("packages.base.frontend.theme.viewParentList", $tree);
+		}
 		return $tree;
+	}
+	private static function getPackage(string $file): string {
+		if (!preg_match("/^packages\/([^\/]+)\//", $file, $matches)) {
+			throw new Exception("the file does not belong to no package");
+		}
+		return $matches[1];
 	}
 }
