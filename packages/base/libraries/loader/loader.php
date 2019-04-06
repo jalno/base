@@ -153,6 +153,7 @@ class loader {
 					}
 					$package->registerTranslates($getDefaultLang);
 					unset($allpackages[$name]);
+					$package->bootup();
 					events::trigger(new events\PackageRegistered($package));
 				}
 			}
