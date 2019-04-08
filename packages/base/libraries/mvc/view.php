@@ -366,19 +366,26 @@ class view {
 	 * @return void
 	 */
 	public function output() {
-		if (!$this->file and $this->source) {
-			$this->file = $this->source->getHTMLFile(get_class($this));
-		}
-		if (!$this->file and $this->source) {
-			$reflection = new \ReflectionClass(get_class($this));
-			$thisFile = $reflection->getFileName();
-			$sourceHome = $this->source->getHome()->getRealPath();
-			$file = substr($thisFile, strlen($sourceHome) + 1);
-			$file = $this->source->getFile("html" . substr($file, strpos($file, "/")));
-			if ($file->exists()) {
-				$this->file = $file;
+		if ($this->source) {
+			if ($this->file) {
+				if (is_string($this->file)) {
+					$this->file = $this->source->getFile($this->file);
+				}
+			} else {
+				$this->file = $this->source->getHTMLFile(get_class($this));
+				if (!$this->file) {
+					$reflection = new \ReflectionClass(get_class($this));
+					$thisFile = $reflection->getFileName();
+					$sourceHome = $this->source->getHome()->getRealPath();
+					$file = substr($thisFile, strlen($sourceHome) + 1);
+					$file = $this->source->getFile("html" . substr($file, strpos($file, "/")));
+					if ($file->exists()) {
+						$this->file = $file;
+					}
+				}
 			}
 		}
+		
 		if (!$this->file) {
 			return;
 		}
