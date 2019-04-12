@@ -66,6 +66,7 @@ class router{
 				if ($throwError) {
 					throw new InvalidLangCode;
 				}
+				return;
 			}
 		}
 		return $lang;
