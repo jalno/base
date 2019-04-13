@@ -1,7 +1,7 @@
 <?php
 namespace packages\base\db;
 
-use packages\base\{loader, db, json, Validator\IValidator, InputValidationException};
+use packages\base\{loader, db, json, Validator, Validator\IValidator, InputValidationException};
 
 /**
  * Mysqli Model wrapper
@@ -861,6 +861,9 @@ class dbObject implements \Serializable, IValidator {
 	public function validate(string $input, array $rule, $data) {
 		if (!is_string($data) and !is_numeric($data)) {
 			throw new InputValidationException($input);
+		}
+		if (!$data and isset($rule['empty']) and $rule['empty']) {
+			return new Validator\NullValue();
 		}
 		$this->db->where($this->db->prefix . $this->dbTable . '.' . $this->primaryKey, $data);
 		if (isset($rule['query'])) {
