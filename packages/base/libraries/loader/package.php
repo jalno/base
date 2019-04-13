@@ -171,10 +171,10 @@ class package implements \Serializable {
 	 * @return void
 	 */
 	public function bootup(): void {
-		if($this->bootstrap){
+		if ($this->bootstrap) {
 			$log = log::getInstance();
-			$log->debug("fire bootstrap file:", $this->bootstrap);
-			require_once($this->bootstrap);
+			$log->debug("fire bootstrap file:", $this->bootstrap->getPath());
+			require_once($this->bootstrap->getPath());
 		}
 	}
 

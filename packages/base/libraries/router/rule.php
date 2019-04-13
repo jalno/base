@@ -276,7 +276,7 @@ class rule implements \Serializable {
 		$this->wildcards = 0;
 		$this->dynamics = 0;
 		foreach ($path as $x => $part) {
-			if($x == 0 or $part !== ''){
+			if($part){
 				$valid = self::validPart($part);
 				if ($valid['type'] == 'wildcard') {
 					$this->wildcards++;
@@ -477,7 +477,7 @@ class rule implements \Serializable {
 	 * @return int
 	 */
 	public function parts(): int {
-		return count($this->path);
+		return !$this->path ? 0 : is_array($this->path) ? count($this->path) : 1;
 	}
 
 	/**
@@ -560,9 +560,6 @@ class rule implements \Serializable {
 					$url = array_slice($url, 1);
 				}
 			}
-		}
-		if (empty($url)) {
-			$url[0] = "";
 		}
 		$checkPath = $this->checkPath($url);
 		if (!$checkPath) {

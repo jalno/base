@@ -27,6 +27,34 @@ class FileValidator implements IValidator {
 		if (!is_array($data) or !isset(http::$files[$input])) {
 			throw new InputValidationException($input);
 		}
+		if (is_array($data['error'])) {
+			if (!isset($rule['multiple']) or !$rule['multiple']) {
+				throw new InputValidationException($input);
+			}
+			$data = $this->diverseArray($data);
+			$files = null;
+			$x = 0;
+			foreach ($data as $file) {
+				$result = $this->validateSingleFile($input . "[{$x}]", $rule, $file);
+				if ($result) {
+					if (is_object($result) and $result instanceof NullValue) {
+						return $result;
+					}
+					if ($files === null) {
+						$files = [];
+					}
+					$files[] = $result;
+				} else {
+					$files[] = $file;
+				}
+				$x++;
+			}
+			return $files;
+		}
+		return $this->validateSingleFile($input, $rule, $data);
+	}
+
+	protected function validateSingleFile(string $input, array $rule, $data) {
 		if ($data['error'] == UPLOAD_ERR_NO_FILE) {
 			if (!isset($rule['optional']) or !$rule['optional']) {
 				throw new InputValidationException($input);
@@ -57,5 +85,14 @@ class FileValidator implements IValidator {
 		if (isset($rule['obj']) and $rule['obj']) {
 			return new file\local($data['tmp_name']);
 		}
+	}
+	private function diverseArray(array $vector): array {
+		$result = array();
+		foreach ($vector as $key1 => $value1) {
+			foreach ($value1 as $key2 => $value2) {
+				$result[$key2][$key1] = $value2;
+			}
+		}
+		return $result;
 	}
 }
