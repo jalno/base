@@ -638,6 +638,9 @@ class dbObject implements \Serializable, IValidator {
 	private function processArrays (&$data) {
 		if (isset ($this->jsonFields) and is_array ($this->jsonFields)) {
 			foreach ($this->jsonFields as $key){
+				if (!array_key_exists($key, $data)) {
+					continue;
+				}
 				if(is_string($data[$key])){
 					$firstChars  = substr($data[$key], 0,1);
 					if($firstChars == '{' or $firstChars == '['){
