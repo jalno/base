@@ -546,7 +546,10 @@ class rule implements \Serializable {
 				}
 			}
 		}
-		$url = array_slice(explode('/', urldecode($url)), 1);
+		$url = explode('/', trim(urldecode($url), "/"));
+		if ($url[0] == "") {
+			$url = array_slice($url, 1);
+		}
 		$lang = null;
 		if (!$this->absolute) {
 			$changelang = options::get('packages.base.translator.changelang');
