@@ -23,8 +23,12 @@ abstract class file implements \Serializable{
 	public function copyFrom(file $source): bool{
 		return $source->copyTo($this);
 	}
-	public function getExtension():string{
-		return substr($this->basename, strrpos($this->basename, '.')+1);
+	public function getExtension(): string {
+		$dot = strrpos($this->basename, '.');
+		if ($dot === false) {
+			return "";
+		}
+		return substr($this->basename, $dot + 1);
 	}
 	public function isEmpty():bool{
 		return $this->size() == 0;
