@@ -153,6 +153,26 @@ abstract class Image {
 	abstract public function getExtension(): string;
 
 	/**
+	 * Put anthor image on current image.
+	 * 
+	 * @param int $x x-coordinate of destination point.
+	 * @param int $y y-coordinate of destination point. 
+	 * @return void
+	 */
+	abstract public function paste(Image $image, int $x, int $y): void;
+
+	/**
+	 * Copy a part of image starting at the x,y coordinates with a width and height.
+	 * 
+	 * @param int $x x-coordinate of point.
+	 * @param int $y y-coordinate of point.
+	 * @param int $width
+	 * @param int $height
+	 * @return Image
+	 */
+	abstract public function copy(int $x, int $y, int $width, $height): Image;
+
+	/**
 	 * Save the image to a file.
 	 * 
 	 * @param packages\base\IO\File $file
