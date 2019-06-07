@@ -215,7 +215,7 @@ class MysqliDb
 	 * @param int $port
 	 * @param string $charset
 	 */
-	public function __construct($host = null, $username = null, $password = null, $db = null, $port = null, $charset = 'utf8')
+	public function __construct($host = null, $username = null, $password = null, $db = null, $port = null, $charset = 'utf8mb4')
 	{
 		$isSubQuery = false;
 

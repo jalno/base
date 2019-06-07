@@ -3,7 +3,7 @@ namespace packages\base;
 use \packages\base\db\MysqliDb;
 class db{
 	private static $driver = array();
-	static function connect($conname, $host, $username, $db = null,$password = null,$port = null, $charset = 'utf8'){
+	static function connect($conname, $host, $username, $db = null,$password = null,$port = null, $charset = 'utf8mb4'){
 		self::$driver[$conname] = new MysqliDb($host, $username, $password, $db, $port, $charset);
 	}
 	static function has_connection($conname = 'default'){
