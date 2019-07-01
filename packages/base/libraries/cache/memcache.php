@@ -67,7 +67,7 @@ class memcache implements Ihandler{
 		return (bool)$this->get($name);
 	}
 	public function set(string $name, $value, int $timeout = 0){
-		$this->memcache->set($this->name($name), $value, date::time() + $timeout);
+		$this->memcache->set($this->name($name), $value, $timeout == 0 ? $timeout : date::time() + $timeout);
 	}
 	public function delete(string $name){
 		$this->memcache->delete(self::name($name));
