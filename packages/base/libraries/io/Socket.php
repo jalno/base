@@ -126,7 +126,7 @@ class Socket{
 		$bytes = 0;
 		if($type == self::BINARY){
 			if($this->protocol != self::UDP){
-				$bytes = socket_recv($this->socket, $buffer, $length, MSG_WAITALL);
+				$bytes = socket_recv($this->socket, $buffer, $length, MSG_DONTWAIT);
 			}else{
 				$buffer = $this->buffer;
 				$bytes = strlen($buffer);
@@ -156,5 +156,8 @@ class Socket{
 	}
 	public function getPort(){
 		return $this->port;
+	}
+	public function getProtocol(): int {
+		return $this->protocol;
 	}
 }
