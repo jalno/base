@@ -19,7 +19,7 @@ class Controller {
 	 * @return array filtered data
 	 */
 	protected function checkinputs(array $rules){
-		$validator = new Validator($rules, array_replace(http::$data, http::$files));
+		$validator = new Validator($rules, array_replace_recursive(http::$data, http::$files));
 		return $validator->validate();
 	}
 	protected function inputsvalue($fields){
