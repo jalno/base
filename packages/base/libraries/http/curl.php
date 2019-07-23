@@ -42,6 +42,9 @@ class curl implements handler{
 				curl_setopt($ch, CURLOPT_PROXYUSERPWD, $options['proxy']['username'].':'.$options['proxy']['password']);
 			}
 		}
+		if ($outgoingIP = $request->getOutgoingIP()) {
+			curl_setopt($ch, CURLOPT_INTERFACE, $outgoingIP);
+		}
 		$headers = array();
 		foreach($request->getHeaders() as $name => $value){
 			$headers[] = $name.': '.$value;
