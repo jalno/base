@@ -1,7 +1,7 @@
 <?php
 namespace packages\base;
 
-use packages\base\frontend\events\throwDynamicData;
+use packages\base\frontend\{theme, events\throwDynamicData};
 use packages\base\view\events\{beforeLoad, afterLoad, afterOutput};
 
 class view {
@@ -345,13 +345,13 @@ class view {
 			foreach ($source->getAssets(['css', 'js']) as $asset) {
 				if ($asset['type'] == 'css') {
 					if (isset($asset['file'])) {
-						$this->addCSSFile($asset['file'], $asset['name'] ?? '');
+						$this->addCSSFile(theme::url($asset['file']), $asset['name'] ?? '');
 					} elseif (isset($asset['inline'])){
 						$this->addCSS($asset['inline'], $asset['name'] ?? '');
 					}
 				} elseif ($asset['type'] == 'js') {
 					if (isset($asset['file'])) {
-						$this->addJSFile($asset['file'], $asset['name'] ?? '');
+						$this->addJSFile(theme::url($asset['file']), $asset['name'] ?? '');
 					} elseif (isset($asset['inline'])) {
 						$this->addJS($asset['inline'], $asset['name'] ?? '');
 					}

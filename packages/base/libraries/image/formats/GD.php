@@ -91,6 +91,46 @@ class GD extends Image {
 	}
 
 	/**
+	 * Place anthor image on current image.
+	 * 
+	 * @param int $x x-coordinate of destination point.
+	 * @param int $y y-coordinate of destination point. 
+	 * @param float $opacity alpha between 0-1
+	 * @return void
+	 */
+	public function paste(Image $image, int $x, int $y, float $opacity = 1): void {
+		if (!($image instanceof GD)) {
+			throw new Exception("non-GD images not supported");
+		}
+		$width = $image->getWidth();
+		$height = $image->getHeight();
+		if ($image instanceof PNG and $opacity < 1) {
+			$cut = imagecreatetruecolor($width, $height);
+			imagecopy($cut, $this->image, 0, 0, $x, $y, $width, $height);
+			imagecopy($cut, $image->image, 0, 0, 0, 0, $width, $height);
+			imagecopymerge($this->image, $cut, $x, $y, 0, 0, $width, $height, $opacity * 100);
+		} else {
+			imagecopy($this->image, $image->image, $x, $y, 0, 0, $width, $height);
+		}
+	}
+
+	/**
+	 * Copy a part of image starting at the x,y coordinates with a width and height.
+	 * 
+	 * @param int $x x-coordinate of point.
+	 * @param int $y y-coordinate of point.
+	 * @param int $width
+	 * @param int $height
+	 * @return Image
+	 */
+	public function copy(int $x, int $y, int $width, $height): Image {
+		$new = new static($width, $height, Color::fromRGBA(0, 0, 0, 0));
+		imagecopy($new->image, $this->image, 0, 0, $x, $y, $width, $height);
+		return $new;
+	}
+
+
+	/**
 	 * release the GD resource
 	 * 
 	 * @return void

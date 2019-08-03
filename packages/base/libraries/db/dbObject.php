@@ -723,7 +723,7 @@ class dbObject implements \Serializable, IValidator {
 					$regexp = "/^-?[0-9]*$/";
 					break;
 				case "double":
-					$regexp = "/^[0-9\.]*$/";
+					$regexp = "/^-?[0-9\.]*$/";
 					break;
 				case "bool":
 					$regexp = '/^[yes|no|0|1|true|false]$/i';
