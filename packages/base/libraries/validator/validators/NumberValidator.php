@@ -103,7 +103,7 @@ class NumberValidator implements IValidator {
 		}
 		$regexStr .= "\\d+";
 		if ($rule['float']) {
-			$regexStr .= "(?:\\.\\d+)";
+			$regexStr .= "(?:\\.\\d+)?";
 		}
 		$regexStr .= "\\s*$";
 		if (!preg_match("/{$regexStr}/", $data)) {
