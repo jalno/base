@@ -58,7 +58,7 @@ class http{
 		self::$request['ajax'] = (isset($_GET['ajax']) and $_GET['ajax'] == 1);
 		self::$request['post'] = $_POST;
 		self::$request['get'] = $_GET;
-		self::$files = $_FILES;
+		self::$files = self::makeFilesStandard($_FILES);
 		if(isset($_COOKIE)){
 			self::$request['cookies'] = $_COOKIE;
 		}
@@ -226,6 +226,35 @@ class http{
 		}
 		return false;
 	}
-
+	public static function makeFilesStandard($files) {
+		$walk = function($arr, $key) use(&$walk) {
+			$ret = array();
+			foreach ($arr as $k => $v) {
+				if (is_array($v)) {
+					$ret[$k] = $walk($v, $key);
+				} else {
+					$ret[$k][$key] = $v;
+				}
+			}
+			return $ret;
+		};
+		
+		$arr = array();
+		foreach ($files as $name => $values) {
+			if (!isset($arr[$name])) {
+				$arr[$name] = array();
+			}
+		
+			if (!is_array($values['error'])) {
+				// normal syntax
+				$arr[$name] = $values;
+			} else {
+				// html array feature
+				foreach ($values as $attribute_key => $attribute_values) {
+					$arr[$name] = array_replace_recursive($arr[$name], $walk($attribute_values, $attribute_key));
+				}
+			}
+		}
+		return $arr;
+	}
 }
-?>

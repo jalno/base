@@ -24,7 +24,8 @@ class client{
 		'query' => null,
 		'ssl_verify' => true,
 		'timeout' => 0,
-		'save_as' => null
+		'save_as' => null,
+		'outgoing_ip' => null,
 	);
 	private $options;
 	public function __construct(array $options = array()){
@@ -129,6 +130,9 @@ class client{
 		}
 		if(isset($thisOptions['save_as'])){
 			$request->saveAs($thisOptions['save_as']);
+		}
+		if (isset($thisOptions['outgoing_ip'])) {
+			$request->setOutgoingIP($thisOptions['outgoing_ip']);
 		}
 		$handler = new curl();
 		$response = $handler->fire($request, $thisOptions);

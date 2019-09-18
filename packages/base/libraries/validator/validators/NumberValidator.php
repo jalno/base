@@ -103,11 +103,11 @@ class NumberValidator implements IValidator {
 		}
 		$regexStr .= "\\d+";
 		if ($rule['float']) {
-			$regexStr .= "(?:\\.\\d+)";
+			$regexStr .= "(?:\\.\\d+)?";
 		}
 		$regexStr .= "\\s*$";
 		if (!preg_match("/{$regexStr}/", $data)) {
-			throw new InputValidationException(input, "not-a-number");
+			throw new InputValidationException($input, "not-a-number");
 		}
 		$number = $rule['float'] ? floatval($data) : intval($data);
 		if (isset($rule['values']) and $rule['values']) {

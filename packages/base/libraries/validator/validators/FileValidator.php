@@ -24,14 +24,13 @@ class FileValidator implements IValidator {
 	 */
 	public function validate(string $input, array $rule, $data) {
 		// To prevent user send a $_FILE-like field using post or get data, we will check http::$files directly.
-		if (!is_array($data) or !isset(http::$files[$input])) {
+		if (!is_array($data) or ((!isset($rule['prevent-reality-check']) or !$rule['prevent-reality-check']) and !isset(http::$files[$input]))) {
 			throw new InputValidationException($input);
 		}
-		if (is_array($data['error'])) {
+		if (!isset($data['error'])) {
 			if (!isset($rule['multiple']) or !$rule['multiple']) {
 				throw new InputValidationException($input);
 			}
-			$data = $this->diverseArray($data);
 			$files = null;
 			$x = 0;
 			foreach ($data as $file) {

@@ -13,6 +13,8 @@ class request{
 	private $body = '';
 	private $proxy;
 	private $file;
+	protected $outgoingIP;
+
 	public function __construct(string $host,string $uri){
 		$this->setHost($host);
 		$this->setURI($uri);
@@ -110,5 +112,11 @@ class request{
 	}
 	public function getSaveAs(){
 		return $this->file;
+	}
+	public function setOutgoingIP(?string $outgoingIP): void {
+		$this->outgoingIP = $outgoingIP;
+	}
+	public function getOutgoingIP(): ?string {
+		return $this->outgoingIP;
 	}
 }
