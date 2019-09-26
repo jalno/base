@@ -343,7 +343,7 @@ class Source {
 	 */
 	public function prependNamespaceIfNeeded(string $namespace) {
 		$namespace =  ltrim(str_replace("/", "\\", $namespace), "\\");
-		if(!preg_match('/^themes(?:\\\\[a-zA-Z0-9-\\_]+)+/', $namespace)){
+		if(!preg_match('/^(themes|packages)(?:\\\\[a-zA-Z0-9-\\_]+)+/', $namespace)){
 			$namespace = "themes\\{$this->name}\\".$namespace;
 		}
 		return strtolower($namespace);
