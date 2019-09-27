@@ -1,9 +1,12 @@
 <?php
 namespace packages\base\Validator;
 
-use packages\base\{http, IO\file, InputValidationException};
+use packages\base\{http, IO\file, IO\Directory, Exception, InputValidationException};
 
 class FileValidator implements IValidator {
+
+	public static $tmpDirectories = [];
+	
 	/**
 	 * Get alias types
 	 * 
@@ -75,6 +78,9 @@ class FileValidator implements IValidator {
 				throw new InputValidationException($input, "extension");
 			}
 		}
+		if (strpos($data['name'], "..") !== false or strpos($data['name'], "/") !== false or strpos($data['name'], "\\") !== false) {
+			throw new InputValidationException($input, "bad-name");
+		}
 		if (isset($rule['min-size']) and $rule['min-size'] > 0 and $data['size'] < $rule['min-size']) {
 			throw new InputValidationException($input, "min-size");
 		}
@@ -82,7 +88,7 @@ class FileValidator implements IValidator {
 			throw new InputValidationException($input, "max-size");
 		}
 		if (isset($rule['obj']) and $rule['obj']) {
-			return new file\local($data['tmp_name']);
+			return $this->renameToOriginal($data);
 		}
 	}
 	private function diverseArray(array $vector): array {
@@ -93,5 +99,14 @@ class FileValidator implements IValidator {
 			}
 		}
 		return $result;
+	}
+	private function renameToOriginal(array $file): File {
+		$dir = new Directory\Tmp();
+		self::$tmpDirectories[] = $dir;
+		$obj = $dir->file($file['name']);
+		if (!move_uploaded_file($file['tmp_name'], $obj->getPath())) {
+			throw new Exception("cannot move uploaded file");
+		}
+		return $obj;
 	}
 }
