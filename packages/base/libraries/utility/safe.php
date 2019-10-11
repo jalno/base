@@ -97,4 +97,7 @@ class safe{
 		}
 		return true;
 	}
+	static function htmlentities (string $value): string {
+		return str_replace(array('"', "'", "<", ">"), array("&quot;", "&apos;", "&lt;", "&gt;"), $value);
+	}
 }
