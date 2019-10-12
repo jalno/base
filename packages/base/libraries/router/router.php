@@ -202,6 +202,7 @@ class router{
 				if(isset($data['@lang'])){
 					$log->info("translator language changed to", $data['@lang']);
 					translator::setLang($data['@lang']);
+					packages::registerTranslates($data["@lang"]);
 				}
 				list($controller, $method) = $rule->getController();
 				$log->debug("run middlewares");
