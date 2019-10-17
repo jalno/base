@@ -142,6 +142,7 @@ class Validator {
 				if ($type instanceof \Closure) {
 					$newData = $type($this->data[$input], $rule, $input);
 				} else {
+					$rule['type'] = $type;
 					$newData = $validator->validate($input, $rule, $this->data[$input]);
 				}
 			} catch (InputValidationException $e) {
@@ -151,6 +152,7 @@ class Validator {
 			if ($type instanceof \Closure) {
 				$newData = $type($this->data[$input], $rule, $input);
 			} else {
+				$rule['type'] = $type;
 				$newData = $validator->validate($input, $rule, $this->data[$input]);
 			}
 		}

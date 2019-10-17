@@ -43,4 +43,10 @@ class packages {
 		}
 		return $return;
 	}
+
+	public static function registerTranslates(string $code) {
+		foreach (self::$actives as $package) {
+			$package->registerTranslates($code);
+		}
+	}
 }

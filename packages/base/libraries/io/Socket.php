@@ -124,19 +124,25 @@ class Socket{
 		$log->debug("try to read {$length} bytes");
 		$buffer = '';
 		$bytes = 0;
-		if($type == self::BINARY){
-			if($this->protocol != self::UDP){
-				$bytes = socket_recv($this->socket, $buffer, $length, MSG_DONTWAIT);
-			}else{
-				$buffer = $this->buffer;
-				$bytes = strlen($buffer);
+		$error = 0;
+		do {
+			if($type == self::BINARY){
+				if($this->protocol != self::UDP){
+					$bytes = socket_recv($this->socket, $buffer, $length, MSG_DONTWAIT);
+				}else{
+					$buffer = $this->buffer;
+					$bytes = strlen($buffer);
+				}
 			}
-		}
-		if($bytes !== false){
-			$log->reply("{$bytes} bytes read");
-		}else{
-			$log->reply()->error("failed");
-		}
+			if($bytes !== false){
+				$log->reply("{$bytes} bytes read");
+			}else{
+				$error = socket_last_error($this->socket);
+				if ($error != 11) {
+					$log->reply()->error("failed: ", $error, socket_strerror($error));
+				}
+			}
+		} while($bytes === false and $error == 11); // Error 11 is Unavailable resource temporarily
 		
 		return $buffer;
 	}

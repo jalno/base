@@ -73,4 +73,7 @@ class language{
 		}
 		return false;
 	}
+	public function isRTL() {
+		return $this->rtl;
+	}
 }
