@@ -45,7 +45,11 @@ trait LanguageContainerTrait {
 	 * @return void
 	 */
 	public function addLangs() {
+		$activeLangs = Options::get("packages.base.translator.active.langs");
 		foreach ($this->langs as $code => $file) {
+			if (is_array($activeLangs) and !in_array($code, $activeLangs)) {
+				continue;
+			}
 			translator::addLang($code);
 		}
 	}
