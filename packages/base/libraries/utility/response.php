@@ -19,6 +19,7 @@ class response implements \Serializable{
 	protected $output;
 	protected $headers = array();
 	protected $httpcode;
+	protected $isAttachment = false;
 	function __construct($status = null, $data = array()){
 		$this->status = $status;
 		$this->data = $data;
@@ -189,7 +190,8 @@ class response implements \Serializable{
 			http::setMimeType($this->file->getMimeType());
 			http::setLength($this->file->getSize());
 			if($name = $this->file->getName()){
-				http::setHeader('content-disposition', "inline; filename=\"{$name}\"");
+				$position = $this->isAttachment ? "attachment" : "inline";
+				http::setHeader('content-disposition', "{$position}; filename=\"{$name}\"");
 			}
 			$this->file->output();
 		}elseif($this->json){
@@ -202,6 +204,9 @@ class response implements \Serializable{
 			$this->view->output();
 		}
 		$log->reply("Success");
+	}
+	public function forceDownload() {
+		$this->isAttachment = true;
 	}
 	public function serialize():string{
 		$result = [

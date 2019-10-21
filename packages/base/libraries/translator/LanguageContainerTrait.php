@@ -17,6 +17,7 @@ trait LanguageContainerTrait {
 	 */
 	public function addLang(string $code, string $file): void {
 		if(isset($this->langs[$code])){
+			die("salam1 " . $file);
 			throw new translator\LangAlreadyExists($code);
 		}
 		if(!translator::is_validCode($code)){
@@ -38,7 +39,20 @@ trait LanguageContainerTrait {
 	public function getLang(string $code): ?IO\file {
 		return $this->langs[$code] ?? null;
 	}
-
+	/**
+	 * Add Package Supported langs.
+	 * 
+	 * @return void
+	 */
+	public function addLangs() {
+		$activeLangs = Options::get("packages.base.translator.active.langs");
+		foreach ($this->langs as $code => $file) {
+			if (is_array($activeLangs) and !in_array($code, $activeLangs)) {
+				continue;
+			}
+			translator::addLang($code);
+		}
+	}
 	/**
 	 * Register a translator file.
 	 * 

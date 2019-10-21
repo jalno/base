@@ -429,13 +429,13 @@ class view {
 	 */
 	protected function loadJS(): void {
 		foreach ($this->js as $js) {
-			if ($js['type'] == 'file') {
-				echo("<script src=\"{$js['file']}\"></script>\n");
+			if ($js['type'] == 'inline') {
+				echo("<script>\n{$js['code']}\n</script>\n");
 			}
 		}
 		foreach ($this->js as $js) {
-			if ($js['type'] == 'inline') {
-				echo("<script>\n{$js['code']}\n</script>\n");
+			if ($js['type'] == 'file') {
+				echo("<script src=\"{$js['file']}\"></script>\n");
 			}
 		}
 	}

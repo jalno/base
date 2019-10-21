@@ -44,16 +44,13 @@ class translator{
 		return array_keys(self::$langs);
 	}
 	public static function addLang($code){
-		if(self::is_validCode($code)){
-			if(!isset(self::$langs[$code])){
-				self::$langs[$code] = new language($code);
-				return self::$langs[$code];
-			}else{
-				throw new LangAlreadyExists;
+		if(!isset(self::$langs[$code])){
+			if(!self::is_validCode($code)){
+				throw new InvalidLangCode;
 			}
-		}else{
-			throw new InvalidLangCode;
+			self::$langs[$code] = new language($code);
 		}
+		return self::$langs[$code];
 	}
 	public static function getLang($code = null){
 		if($code){
@@ -87,6 +84,7 @@ class translator{
 			self::$langs[$code] = $lang;
 		}else{
 			$phrases = $lang->getPhrases();
+			self::$langs[$code]->setRTL($lang->isRTL());
 			try{
 				foreach($phrases as $key => $phrase){
 					self::$langs[$code]->addPhrase($key, $phrase);

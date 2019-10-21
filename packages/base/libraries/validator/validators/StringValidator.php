@@ -1,7 +1,7 @@
 <?php
 namespace packages\base\Validator;
 
-use packages\base\InputValidationException;
+use packages\base\{InputValidationException, utility};
 
 class StringValidator implements IValidator {
 	/**
@@ -45,7 +45,7 @@ class StringValidator implements IValidator {
 			}
 		} else {
 			if (!isset($rule['htmlTags']) or !$rule['htmlTags']) {
-				$data = htmlentities($data, ENT_IGNORE|ENT_SUBSTITUTE|ENT_DISALLOWED, 'UTF-8');
+				$data = utility\safe::htmlentities($data);
 			}
 			if (!isset($rule['multiLine']) or !$rule['multiLine']) {
 				$data = str_replace("\n", "", $data);
