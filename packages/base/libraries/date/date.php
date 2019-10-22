@@ -4,9 +4,30 @@ use \packages\base\log;
 use \packages\base\date\date_interface;
 use \packages\base\date\calendarNotExist;
 
-class date implements date_interface{
+class date implements date_interface {
+	public static $presetsFormats = array(
+		"LT" => "g:i A",
+		"LTS" => "g:i:s A",
+		"L" => "m/d/Y",
+		"l" => "n/j/Y",
+		"LL" => "F n Y",
+		"ll" => "M n Y",
+		"LLL" => "F n Y g:i A",
+		"lll" => "M n Y g:i A",
+		"LLLL" => "l, F n Y g:i A",
+		"llll" => "D, M n Y g:i A",
+	);
+	public static function setPresetsFormat(string $key, string $format) {
+		if (!isset(self::$presetsFormats[$key])) {
+			throw new Exception("'{$key}' is not a presets formats. allowed presets formats is: " . json\encode(self::$presetsFormats));
+		}
+		self::$presetsFormats[$key] = $format;
+	}
 	static protected $calendar;
 	public static function setCanlenderName($name){
+		if ($name !== "gregorian") {
+			throw new Exception("setCalendarName: " . $name);
+		}
 		$log = log::getInstance();
 		$classname = __NAMESPACE__.'\\date\\'.$name;
 		$log->debug("looking for",$classname,"calendar");
@@ -28,6 +49,9 @@ class date implements date_interface{
 		if(self::$calendar){
 			if($timestamp === null){
 				$timestamp = self::time();
+			}
+			if (isset(self::$presetsFormats[$format])) {
+				$format = self::$presetsFormats[$format];
 			}
 			return call_user_func_array(array(__NAMESPACE__.'\\date\\'.self::$calendar, "format"), array($format, $timestamp));
 		}
@@ -78,16 +102,24 @@ class date implements date_interface{
 		$defaultOption = array(
 			'calendar' => 'gregorian'
 		);
-		$log->debug("looking for packages.base.date option");
-		if(($option = options::load('packages.base.date')) !== false){
-			$log->reply($option);
-			$foption = array_replace_recursive($defaultOption, $option);
-			$log->debug("set calendar to",$foption['calendar']);
-			self::setCanlenderName($foption['calendar']);
-		}else{
-			$log->debug("set calendar to",$defaultOption['calendar']);
-			self::setCanlenderName($defaultOption['calendar']);
+		$log->debug("looking for active language date calendar");
+		$lang = Translator::getLang();
+		if ($lang and $calendar = $lang->getCalendar()) {
+			$log->reply($calendar);
+			$defaultOption["calendar"] = $calendar;
+		} else {
+			$log->debug("looking for packages.base.date option");
+			if (($option = options::load('packages.base.date')) !== false) {
+				$log->reply($option);
+				$defaultOption = array_replace_recursive($defaultOption, $option);
+				$log->debug("set calendar to",$foption['calendar']);
+				self::setCanlenderName($foption['calendar']);
+			} else{
+				$log->reply("Not defined");
+			}
 		}
+		$log->debug("set calendar to",$defaultOption['calendar']);
+		self::setCanlenderName($defaultOption['calendar']);
 	}
 	public static function relativeTime(int $time, string $format = 'short'):string{
 		$now = self::time();

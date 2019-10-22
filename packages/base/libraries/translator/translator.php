@@ -85,6 +85,12 @@ class translator{
 		}else{
 			$phrases = $lang->getPhrases();
 			self::$langs[$code]->setRTL($lang->isRTL());
+			if ($calendar = $lang->getCalendar()) {
+				self::$langs[$code]->setCalendar($calendar);
+			}
+			foreach ($lang->getDateFormats() as $key => $format) {
+				self::$langs[$code]->setDateFormat($key, $format);
+			}
 			try{
 				foreach($phrases as $key => $phrase){
 					self::$langs[$code]->addPhrase($key, $phrase);
