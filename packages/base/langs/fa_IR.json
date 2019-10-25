@@ -8,13 +8,13 @@
 		"calendar": "jdate",
 		"formats": {
 			"L": "d/m/Y",
-			"l": "j/n/Y",
-			"LL": "n F Y",
-			"ll": "n M Y",
-			"LLL": "n F Y H:i",
-			"lll": "n M Y H:i",
-			"LLLL": "l, n F Y H:i",
-			"llll": "D, n M Y H:i"
+			"l": "j/d/Y",
+			"LL": "d F Y",
+			"ll": "d M Y",
+			"LLL": "d F Y H:i",
+			"lll": "d M Y H:i",
+			"LLLL": "l, d F Y H:i",
+			"llll": "D, d M Y H:i"
 		}
 	},
 	"phrases":{

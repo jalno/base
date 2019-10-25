@@ -10,12 +10,12 @@ class date implements date_interface {
 		"LTS" => "g:i:s A",
 		"L" => "m/d/Y",
 		"l" => "n/j/Y",
-		"LL" => "F n Y",
-		"ll" => "M n Y",
-		"LLL" => "F n Y g:i A",
-		"lll" => "M n Y g:i A",
-		"LLLL" => "l, F n Y g:i A",
-		"llll" => "D, M n Y g:i A",
+		"LL" => "F d Y",
+		"ll" => "M d Y",
+		"LLL" => "F d Y g:i A",
+		"lll" => "M d Y g:i A",
+		"LLLL" => "l, F d Y g:i A",
+		"llll" => "D, M d Y g:i A",
 	);
 	public static function setPresetsFormat(string $key, string $format) {
 		if (!isset(self::$presetsFormats[$key])) {
