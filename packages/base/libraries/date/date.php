@@ -25,9 +25,6 @@ class date implements date_interface {
 	}
 	static protected $calendar;
 	public static function setCanlenderName($name){
-		if ($name !== "gregorian") {
-			throw new Exception("setCalendarName: " . $name);
-		}
 		$log = log::getInstance();
 		$classname = __NAMESPACE__.'\\date\\'.$name;
 		$log->debug("looking for",$classname,"calendar");
