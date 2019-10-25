@@ -104,6 +104,9 @@ class date implements date_interface {
 		if ($lang and $calendar = $lang->getCalendar()) {
 			$log->reply($calendar);
 			$defaultOption["calendar"] = $calendar;
+			foreach ($lang->getDateFormats() as $key => $format) {
+				self::setPresetsFormat($key, $format);
+			}
 		} else {
 			$log->debug("looking for packages.base.date option");
 			if (($option = options::load('packages.base.date')) !== false) {
