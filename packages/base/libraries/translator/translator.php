@@ -43,6 +43,9 @@ class translator{
 	public static function getAvailableLangs(){
 		return array_keys(self::$langs);
 	}
+	public static function getLangs() {
+		return self::$langs;
+	}
 	public static function addLang($code){
 		if(!isset(self::$langs[$code])){
 			if(!self::is_validCode($code)){
@@ -85,6 +88,12 @@ class translator{
 		}else{
 			$phrases = $lang->getPhrases();
 			self::$langs[$code]->setRTL($lang->isRTL());
+			if ($calendar = $lang->getCalendar()) {
+				self::$langs[$code]->setCalendar($calendar);
+			}
+			foreach ($lang->getDateFormats() as $key => $format) {
+				self::$langs[$code]->setDateFormat($key, $format);
+			}
 			try{
 				foreach($phrases as $key => $phrase){
 					self::$langs[$code]->addPhrase($key, $phrase);

@@ -1,12 +1,16 @@
 <?php
 namespace packages\base\translator;
-use \packages\base\translator;
-use \packages\base\json;
-class language{
 
+use \packages\base\{json, translator, Options, Exception, Date};
+
+class language{
 	private $code;
 	private $rtl;
 	private $phrases = array();
+	private $date = array(
+		"calendar" => "",
+		"formats" => array(),
+	);
 	function __construct($code){
 		$this->setCode($code);
 	}
@@ -29,6 +33,16 @@ class language{
 			if(($file = json\decode($file)) !== false){
 				if(isset($file['rtl']) and is_bool($file['rtl'])){
 					$this->setRTL($file['rtl']);
+				}
+				if (isset($file["date"]) and is_array($file["date"])) {
+					if (isset($file["date"]["calendar"])) {
+						$this->setCalendar($file["date"]["calendar"]);
+					}
+					if (isset($file["date"]["formats"]) and is_array($file["date"]["formats"])) {
+						foreach ($file["date"]["formats"] as $key => $format) {
+							$this->setDateFormat($key, $format);
+						}
+					}
 				}
 				if(isset($file['phrases'])){
 					foreach($file['phrases'] as $key => $val){
@@ -75,5 +89,23 @@ class language{
 	}
 	public function isRTL() {
 		return $this->rtl;
+	}
+	public function setCalendar(string $calendar) {
+		$this->date["calendar"] = $calendar;
+	}
+	public function setDateFormat(string $key, string $format) {
+		if (!isset(Date::$presetsFormats[$key])) {
+			throw new Exception("'{$key}' is not a presets formats. allowed presets formats is: " . json\encode(Date::$presetsFormats));
+		}
+		$this->date["formats"][$key] = $format;
+	}
+	public function getCalendar(): ?string {
+		return $this->date["calendar"] ?? null;
+	}
+	public function getDateFormat(string $key): ?string {
+		return $this->date["formats"][$key] ?? null;
+	}
+	public function getDateFormats(): array {
+		return $this->date["formats"];
 	}
 }

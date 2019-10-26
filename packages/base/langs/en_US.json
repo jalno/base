@@ -4,6 +4,19 @@
 		"website" : "http://www.jeyserver.com/"
 	},
 	"rtl": false,
+	"date": {
+		"calendar": "gregorian",
+		"formats": {
+			"Q": "m/d/Y",
+			"q": "n/j/Y",
+			"QQ": "F d Y",
+			"qq": "M d Y",
+			"QQQ": "F d Y g:i A",
+			"qqq": "M d Y g:i A",
+			"QQQQ": "l, F d Y g:i A",
+			"qqqq": "D, M d Y g:i A"
+		}
+	},
 	"phrases":{
 		"translations.langs.ab": "аҧсуа бызшәа, аҧсшәа",
 	    "translations.langs.aa": "Afaraf",
