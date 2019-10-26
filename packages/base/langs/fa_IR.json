@@ -7,16 +7,16 @@
 	"date": {
 		"calendar": "jdate",
 		"formats": {
-			"LT": "H:i",
-			"LTS": "H:i:s",
-			"L": "d/m/Y",
-			"l": "j/m/Y",
-			"LL": "d F Y",
-			"ll": "d M Y",
-			"LLL": "d F Y H:i",
-			"lll": "d M Y H:i",
-			"LLLL": "l, d F Y H:i",
-			"llll": "D, d M Y H:i"
+			"QT": "H:i",
+			"QTS": "H:i:s",
+			"Q": "d/m/Y",
+			"q": "j/m/Y",
+			"QQ": "d F Y",
+			"qq": "d M Y",
+			"QQQ": "d F Y H:i",
+			"qqq": "d M Y H:i",
+			"QQQQ": "l, d F Y H:i",
+			"qqqq": "D, d M Y H:i"
 		}
 	},
 	"phrases":{

@@ -6,16 +6,16 @@ use \packages\base\date\calendarNotExist;
 
 class date implements date_interface {
 	public static $presetsFormats = array(
-		"L" => "m/d/Y",
-		"l" => "n/j/Y",
-		"LL" => "F d Y",
-		"ll" => "M d Y",
-		"LLL" => "F d Y g:i A",
-		"lll" => "M d Y g:i A",
-		"LLLL" => "l, F d Y g:i A",
-		"llll" => "D, M d Y g:i A",
-		"LT" => "g:i A",
-		"LTS" => "g:i:s A",
+		"Q" => "m/d/Y",
+		"q" => "n/j/Y",
+		"QQ" => "F d Y",
+		"qq" => "M d Y",
+		"QQQ" => "F d Y g:i A",
+		"qqq" => "M d Y g:i A",
+		"QQQQ" => "l, F d Y g:i A",
+		"qqqq" => "D, M d Y g:i A",
+		"QT" => "g:i A",
+		"QTS" => "g:i:s A",
 	);
 	public static function setPresetsFormat(string $key, string $format) {
 		if (!isset(self::$presetsFormats[$key])) {
