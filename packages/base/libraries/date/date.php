@@ -6,8 +6,6 @@ use \packages\base\date\calendarNotExist;
 
 class date implements date_interface {
 	public static $presetsFormats = array(
-		"LT" => "g:i A",
-		"LTS" => "g:i:s A",
 		"L" => "m/d/Y",
 		"l" => "n/j/Y",
 		"LL" => "F d Y",
@@ -16,6 +14,8 @@ class date implements date_interface {
 		"lll" => "M d Y g:i A",
 		"LLLL" => "l, F d Y g:i A",
 		"llll" => "D, M d Y g:i A",
+		"LT" => "g:i A",
+		"LTS" => "g:i:s A",
 	);
 	public static function setPresetsFormat(string $key, string $format) {
 		if (!isset(self::$presetsFormats[$key])) {
@@ -47,9 +47,8 @@ class date implements date_interface {
 			if($timestamp === null){
 				$timestamp = self::time();
 			}
-			if (isset(self::$presetsFormats[$format])) {
-				$format = self::$presetsFormats[$format];
-			}
+			$presetsFormats = array_reverse(self::$presetsFormats);
+			$format = str_replace(array_keys($presetsFormats), array_values($presetsFormats), $format);
 			return call_user_func_array(array(__NAMESPACE__.'\\date\\'.self::$calendar, "format"), array($format, $timestamp));
 		}
 	}
