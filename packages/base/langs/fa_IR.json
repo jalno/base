@@ -7,8 +7,10 @@
 	"date": {
 		"calendar": "jdate",
 		"formats": {
+			"LT": "H:i",
+			"LTS": "H:i:s",
 			"L": "d/m/Y",
-			"l": "j/d/Y",
+			"l": "j/m/Y",
 			"LL": "d F Y",
 			"ll": "d M Y",
 			"LLL": "d F Y H:i",
