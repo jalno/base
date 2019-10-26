@@ -43,6 +43,9 @@ class translator{
 	public static function getAvailableLangs(){
 		return array_keys(self::$langs);
 	}
+	public static function getLangs() {
+		return self::$langs;
+	}
 	public static function addLang($code){
 		if(!isset(self::$langs[$code])){
 			if(!self::is_validCode($code)){
