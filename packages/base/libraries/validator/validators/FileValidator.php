@@ -73,7 +73,7 @@ class FileValidator implements IValidator {
 			if (!is_array($rule['extension'])) {
 				$rule['extension'] = array($rule['extension']);
 			}
-			$extension = substr($data['name'], strrpos($data['name'], '.')+1);
+			$extension = strtolower(substr($data['name'], strrpos($data['name'], '.')+1));
 			if (!in_array($extension, $rule['extension'])) {
 				throw new InputValidationException($input, "extension");
 			}
