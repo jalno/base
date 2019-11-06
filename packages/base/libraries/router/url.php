@@ -4,6 +4,19 @@ use \packages\base\router;
 use \packages\base\options;
 use \packages\base\IO;
 function url($page = '',$parameters = array(), $absolute = false){
+	$changelang = options::get('packages.base.translator.changelang');
+	$type = options::get('packages.base.translator.changelang.type');
+	if ($page == ".")  {
+		$page = http::$request["uri"];
+		if ($changelang == "uri") {
+			$page = ltrim($page, "/");
+			$firstSlash = strpos($page, "/");
+			if ($firstSlash !== false) {
+				$page = substr($page, $firstSlash + 1);
+			}
+		}
+	}
+	
 	$lastSlash = options::get('packages.base.routing.lastslash');
 	if($lastSlash == true){
 		if(substr($page, -1) != '/'){
@@ -37,8 +50,6 @@ function url($page = '',$parameters = array(), $absolute = false){
 		$url .= router::getscheme().'://'.$hostname;
 	}
 
-	$changelang = options::get('packages.base.translator.changelang');
-	$type = options::get('packages.base.translator.changelang.type');
 	if($changelang == 'uri'){
 		$lang = '';
 		if(isset($parameters['lang'])){

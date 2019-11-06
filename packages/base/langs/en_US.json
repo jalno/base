@@ -3,20 +3,18 @@
 		"name" : "JeyServer",
 		"website" : "http://www.jeyserver.com/"
 	},
-	"rtl": true,
+	"rtl": false,
 	"date": {
-		"calendar": "jdate",
+		"calendar": "gregorian",
 		"formats": {
-			"QT": "H:i",
-			"QTS": "H:i:s",
-			"Q": "d/m/Y",
-			"q": "j/m/Y",
-			"QQ": "d F Y",
-			"qq": "d M Y",
-			"QQQ": "d F Y H:i",
-			"qqq": "d M Y H:i",
-			"QQQQ": "l, d F Y H:i",
-			"qqqq": "D, d M Y H:i"
+			"Q": "m/d/Y",
+			"q": "n/j/Y",
+			"QQ": "F d Y",
+			"qq": "M d Y",
+			"QQQ": "F d Y g:i A",
+			"qqq": "M d Y g:i A",
+			"QQQQ": "l, F d Y g:i A",
+			"qqqq": "D, M d Y g:i A"
 		}
 	},
 	"phrases":{
@@ -204,16 +202,16 @@
 	    "translations.langs.yo": "Yorùbá",
 	    "translations.langs.za": "Saɯ cueŋƅ, Saw cuengh",
 	    "translations.langs.zu": "isiZulu",
-		"date.relatively.now": "همین الان",
-		"date.relatively.ago": "{expr} پیش",
-		"date.relatively.later": "{expr} دیگر",
-		"date.relatively.and": "{expr1} و {expr2}",
-		"date.relatively.seconds": "{number} ثانیه",
-		"date.relatively.minutes": "{number} دقیقه",
-		"date.relatively.hours": "{number} ساعت",
-		"date.relatively.days": "{number} روز",
-		"date.relatively.weeks": "{number} هفته",
-		"date.relatively.months": "{number} ماه",
-		"date.relatively.years": "{number} سال"
+		"date.relatively.now": "Right now",
+		"date.relatively.ago": "{expr} ago",
+		"date.relatively.later": "{expr} later",
+		"date.relatively.and": "{expr1} and {expr2}",
+		"date.relatively.seconds": "{number} seconds",
+		"date.relatively.minutes": "{number} minutes",
+		"date.relatively.hours": "{number} hours",
+		"date.relatively.days": "{number} days",
+		"date.relatively.weeks": "{number} weeks",
+		"date.relatively.months": "{number} months",
+		"date.relatively.years": "{number} years"
 	}
 }

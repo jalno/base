@@ -152,6 +152,7 @@ class loader {
 						self::packageRouting($package, $useCache);
 					}
 					$package->registerTranslates($getDefaultLang);
+					$package->addLangs();
 					unset($allpackages[$name]);
 					$package->bootup();
 					events::trigger(new events\PackageRegistered($package));
@@ -169,6 +170,7 @@ class loader {
 			$frontends = $package->getFrontends();
 			foreach ($frontends as $dir) {
 				$source = frontend\Source::fromDirectory($dir);
+				$source->addLangs();
 				self::registerAutoloader($source, $useCache);
 				frontend\theme::addSource($source);
 			}

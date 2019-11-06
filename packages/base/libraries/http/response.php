@@ -80,7 +80,7 @@ class response{
 	public function setHeader(string $name, string $value){
 		$this->headers[strtolower($name)] = $value;
 	}
-	public function getHeader(string $name):string{
+	public function getHeader(string $name): ?string {
 		$name = strtolower($name);
 		return isset($this->headers[$name]) ? $this->headers[$name] : null;
 	}
