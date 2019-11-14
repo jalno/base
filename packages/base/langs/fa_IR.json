@@ -9,14 +9,14 @@
 		"formats": {
 			"QT": "H:i",
 			"QTS": "H:i:s",
-			"Q": "d/m/Y",
-			"q": "j/m/Y",
-			"QQ": "d F Y",
-			"qq": "d M Y",
-			"QQQ": "d F Y H:i",
-			"qqq": "d M Y H:i",
-			"QQQQ": "l, d F Y H:i",
-			"qqqq": "D, d M Y H:i"
+			"Q": "Y/m/d",
+			"q": "Y/m/j",
+			"QQ": "Y F d",
+			"qq": "Y M d",
+			"QQQ": "Y F d H:i",
+			"qqq": "Y M d H:i",
+			"QQQQ": "l, Y F d H:i",
+			"qqqq": "D, Y M d H:i"
 		}
 	},
 	"phrases":{
