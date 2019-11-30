@@ -41,7 +41,7 @@ class file implements Ihandler{
 	}
 	public function delete(string $name){
 		$item = $this->item($name);
-		$this->deleteIndex($item);
+		$this->removeIndex($item);
 		if($this->item($name)->exists()){
 			$item->delete();
 		}

@@ -57,8 +57,7 @@ class sftp extends file{
 		return $this->getDriver()->chmod($this->getPath(), $mode);
 	}
     public function exists():bool{
-		$stat = $this->getDriver()->stat($this->getPath());
-        return $stat != false;
+        return $this->getStat() != false;
     }
 	public function copyTo(file $dest): bool{
 		$driver = $this->getDriver();
@@ -75,6 +74,12 @@ class sftp extends file{
 		$directory = new directory\sftp($this->directory);
 		$directory->setDriver($this->getDriver());
 		return $directory;
+	}
+	/**
+	 * @return array or false if faild to find file
+	 */
+	public function getStat() {
+		return $this->getDriver()->stat($this->getPath());
 	}
     public function serialize(){
 		$driver = $this->getDriver();
