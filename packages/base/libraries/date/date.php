@@ -3,6 +3,7 @@ namespace packages\base;
 use \packages\base\log;
 use \packages\base\date\date_interface;
 use \packages\base\date\calendarNotExist;
+use \DateTimeZone;
 
 class date implements date_interface {
 	public static $presetsFormats = array(
@@ -24,6 +25,7 @@ class date implements date_interface {
 		self::$presetsFormats[$key] = $format;
 	}
 	static protected $calendar;
+	static protected $inited = false;
 	public static function setCanlenderName($name){
 		$log = log::getInstance();
 		$classname = __NAMESPACE__.'\\date\\'.$name;
@@ -39,34 +41,39 @@ class date implements date_interface {
 	public static function getCanlenderName(){
 		return self::$calendar;
 	}
+	public static function setTimeZone(string $timezone) {
+		$log = log::getInstance();
+		$log->debug("check given timezone (" . $timezone . ") is valid?");
+		if (!in_array($timezone, DateTimeZone::listIdentifiers(DateTimeZone::ALL))) {
+			$log->reply()->fatal("is not valid");
+			throw new TimeZoneInvalidException($timezone);
+		} else {
+			$log->reply("is valid");
+		}
+		date_default_timezone_set($timezone);
+	}
+	public static function getTimeZone(): string {
+		self::init();
+		return date_default_timezone_get();
+	}
 	public static function format($format ,$timestamp = null){
-		if(!self::$calendar){
-			self::setDefaultcalendar();
+		self::init();
+		if($timestamp === null){
+			$timestamp = self::time();
 		}
-		if(self::$calendar){
-			if($timestamp === null){
-				$timestamp = self::time();
-			}
-			$presetsFormats = array_reverse(self::$presetsFormats);
-			$format = str_replace(array_keys($presetsFormats), array_values($presetsFormats), $format);
-			return call_user_func_array(array(__NAMESPACE__.'\\date\\'.self::$calendar, "format"), array($format, $timestamp));
-		}
+		$presetsFormats = array_reverse(self::$presetsFormats);
+		$format = str_replace(array_keys($presetsFormats), array_values($presetsFormats), $format);
+		return call_user_func_array(array(__NAMESPACE__.'\\date\\'.self::$calendar, "format"), array($format, $timestamp));
 	}
 	public static function strtotime($time,$now = null){
-		if(!self::$calendar){
-			self::setDefaultcalendar();
+		self::init();
+		if($now === null){
+			$now = self::time();
 		}
-		if(self::$calendar){
-			if($now === null){
-				$now = self::time();
-			}
-			return call_user_func_array(array(__NAMESPACE__.'\\date\\'.self::$calendar, "strtotime"), array($time, $now));
-		}
+		return call_user_func_array(array(__NAMESPACE__.'\\date\\'.self::$calendar, "strtotime"), array($time, $now));
 	}
 	public static function mktime($hour = null, $minute = null, $second = null , $month = null, $day = null, $year = null){
-		if(!self::$calendar){
-			self::setDefaultcalendar();
-		}
+		self::init();
 		$now = explode("/", self::format("Y/m/d/H/i/s"));
 		if($year === null){
 			$year = $now[0];
@@ -120,6 +127,21 @@ class date implements date_interface {
 		$log->debug("set calendar to",$defaultOption['calendar']);
 		self::setCanlenderName($defaultOption['calendar']);
 	}
+
+	public static function setDefaultTimeZone() {
+		$log = log::getInstance();
+		$defaultOption = array();
+		$log->debug("looking for packages.base.date option");
+		$option = Options::get('packages.base.date');
+		if ($option !== false) {
+			$log->reply("found");
+		}
+		if (!isset($defaultOption['timezone'])) {
+			return;
+		}
+		$log->debug("set timezone to", $defaultOption['timezone']);
+		self::setTimeZone($defaultOption['timezone']);
+	}
 	public static function relativeTime(int $time, string $format = 'short'):string{
 		$now = self::time();
 		$mine = $time - $now;
@@ -168,5 +190,18 @@ class date implements date_interface {
 		}else{
            return translator::trans('date.relatively.later', ['expr' => $expr_text]);
 		}
+	}
+	public static function init() {
+		if (self::$inited) {
+			return;
+		}
+		self::setDefaultTimeZone();
+		if(!self::$calendar){
+			self::setDefaultcalendar();
+		}
+		if(!self::$calendar){
+			throw new NoCalendarException();
+		}
+		self::$inited = true;
 	}
 }
