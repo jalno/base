@@ -30,21 +30,10 @@ class ImageValidator extends FileValidator {
 		if (!$file or $file instanceof NullValue) {
 			return $file;
 		}
-		$image = null;
-		$extension = substr($data['name'], strrpos($data['name'], '.')+1);
-		switch ($extension) {
-			case('jpeg'):
-			case('jpg'):
-				$image = new Image\JPEG($file);
-				break;
-			case('png'):
-				$image = new Image\PNG($file);
-				break;
-			case('gif'):
-				$image = new Image\GIF($file);
-				break;
-			default:
-				throw new InputValidationException($input, "unsupported-format");
+		try {
+			$image = Image::fromContent($file);
+		} catch (Image\UnsupportedFormatException $e) {
+			throw new InputValidationException($input, "unsupported-format");
 		}
 
 		if (isset($input['max-size'])) {

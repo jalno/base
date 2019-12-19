@@ -25,6 +25,29 @@ abstract class Image {
 		}
 	}
 
+	/**
+	 * identify and construct an image from its file content.
+	 * 
+	 * @throws packages\base\Image\UnsupportedFormatException if the format was not supported.
+	 * @return packages\base\Image
+	 */
+	public static function fromContent(File $file): Image {
+		$info = @getimagesize($file->getPath());
+		if (!$info) {
+			throw new Image\UnsupportedFormatException("");
+		}
+		switch ($info[2]) {
+			case(IMAGETYPE_JPEG):
+				return new Image\JPEG($file);
+			case(IMAGETYPE_PNG):
+				return new Image\PNG($file);
+			case(IMAGETYPE_GIF):
+				return new Image\GIF($file);
+			default:
+				throw new Image\UnsupportedFormatException($info[2]);
+		}
+	}
+
 	/** @var packages\base\IO\File constructor file */
 	protected $file;
 
