@@ -73,6 +73,7 @@ require_once('packages/base/libraries/date/date_interface.php');
 require_once('packages/base/libraries/date/exceptions.php');
 require_once('packages/base/libraries/date/gregorian.php');
 require_once('packages/base/libraries/date/jdate.php');
+require_once('packages/base/libraries/date/hdate.php');
 require_once('packages/base/libraries/date/date.php');
 
 // Comment-line and parallel process
