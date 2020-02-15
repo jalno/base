@@ -1,7 +1,7 @@
 <?php
 namespace packages\base\Validator;
 
-use packages\base\{utility\safe, InputValidationException};
+use packages\base\{utility\Safe, InputValidationException};
 
 class CellphoneValidator implements IValidator {
 	/**
@@ -39,9 +39,29 @@ class CellphoneValidator implements IValidator {
 			if (!in_array($data, $rule['values'])) {
 				throw new InputValidationException($input);
 			}
-		} elseif (!safe::is_cellphone_ir($data)) {
+			return $data;
+		}
+		$data = ltrim($data, "+");
+		if (!preg_match("/^\d+$/", $data)) {
 			throw new InputValidationException($input);
 		}
-		return safe::cellphone_ir($data);
+		$code = "";
+		if (substr($data, 0, 1) == "0") {
+			$code = Options::get("packages.base.validators.default_cellphone_country_code");
+			$data = $code . substr($data, 1);
+		} else {
+			$code = substr($data, 0, 1);
+		}
+		switch ($code) {
+			/**
+			 * Iran, Islamic Republic Of
+			 */
+			case "98":
+				if (!Safe::is_cellphone_ir($data)) {
+					throw new InputValidationException($input);
+				}
+				return Safe::cellphone_ir($data);
+		}
+		return $data;
 	}
 }
