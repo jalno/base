@@ -1,6 +1,7 @@
 <?php
 namespace packages\base\view;
-class error{
+
+class Error extends \Exception {
 	const SUCCESS = 'success';
 	const WARNING = 'warning';
 	const FATAL = 'fatal';
@@ -9,40 +10,39 @@ class error{
 	protected $data;
 	protected $message;
 	protected $type = self::FATAL;
-	public function setCode($code){
+	public function setCode($code) {
 		$this->code = $code;
 	}
-	public function getCode(){
+	public function getCode() {
 		return $this->code;
 	}
-	public function setData($val, $key = null){
-		if($key){
+	public function setData($val, $key = null) {
+		if ($key) {
 			$this->data[$key] = $val;
-		}else{
+		} else {
 			$this->data = $val;
 		}
 	}
-	public function getData($key = null){
-		if($key){
+	public function getData($key = null) {
+		if ($key) {
 			return(isset($this->data[$key]) ? $this->data[$key] : null);
-		}else{
+		} else {
 			return $this->data;
 		}
 	}
-	public function setType($type){
-		if(in_array($type, array(self::SUCCESS, self::WARNING,self::FATAL,self::NOTICE))){
-			$this->type = $type;
-		}else{
+	public function setType($type) {
+		if (!in_array($type, array(self::SUCCESS, self::WARNING,self::FATAL,self::NOTICE))) {
 			throw new Exception("type");
 		}
+		$this->type = $type;
 	}
-	public function getType(){
+	public function getType() {
 		return $this->type;
 	}
-	public function setMessage($message){
+	public function setMessage($message) {
 		$this->message = $message;
 	}
-	public function getMessage(){
+	public function getMessage() {
 		return $this->message;
 	}
 }
