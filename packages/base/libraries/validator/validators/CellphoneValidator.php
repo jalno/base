@@ -1,7 +1,7 @@
 <?php
 namespace packages\base\Validator;
 
-use packages\base\{utility\Safe, InputValidationException};
+use packages\base\{utility\Safe, InputValidationException, Options};
 
 class CellphoneValidator implements IValidator {
 	/**
@@ -26,6 +26,7 @@ class CellphoneValidator implements IValidator {
 		if (!is_string($data)) {
 			throw new InputValidationException($input);
 		}
+		$data = trim($data);
 		if (!$data) {
 			if (!isset($rule['empty']) or !$rule['empty']) {
 				throw new InputValidationException($input);
@@ -50,7 +51,7 @@ class CellphoneValidator implements IValidator {
 			$code = Options::get("packages.base.validators.default_cellphone_country_code");
 			$data = $code . substr($data, 1);
 		} else {
-			$code = substr($data, 0, 1);
+			$code = substr($data, 0, 2);
 		}
 		switch ($code) {
 			/**
