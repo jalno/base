@@ -1,17 +1,19 @@
 <?php
 namespace packages\base\view;
 
-class Error extends \Exception implements \Serializable {
+use packages\base;
+
+class Error extends base\Exception implements \Serializable {
 	const SUCCESS = 'success';
 	const WARNING = 'warning';
 	const FATAL = 'fatal';
 	const NOTICE = 'notice';
-	const FULL = 'full';
-	const SUMMARY= 'summary';
+	protected $type = self::FATAL;
+	protected $short_trace = false;
+	protected $code;
+	protected $message;
 	protected $data;
 	protected $trace;
-	protected $type = self::FATAL;
-	protected $serializing_type = self::FULL;
 	public function __construct(string $message, string $code) {
 		$this->message = $message;
 		$this->code = $code;
@@ -38,37 +40,34 @@ class Error extends \Exception implements \Serializable {
 	}
 	public function setType(string $type): void {
 		if (!in_array($type, array(self::SUCCESS, self::WARNING,self::FATAL,self::NOTICE))) {
-			throw new \Exception("type");
+			throw new base\Exception("type");
 		}
 		$this->type = $type;
 	}
 	public function getType(): string {
 		return $this->type;
 	}
-	public function setSerializeType(string $code): void {
-		if (!in_array($code, array(self::FULL, self::SUMMARY))) {
-			throw new \Exception("serializing_type");
-		}
-		$this->serializing_type = $code;
+	public function saveShortTrace(bool $saveShortTrace = true): void {
+		$this->short_trace = $saveShortTrace;
 	}
-	public function getSerializeType(): string {
-		return $this->serializing_type;
+	public function isShortTrace(): bool {
+		return $this->short_trace;
 	}
 	public function serialize(): string {
         return serialize(array(
 			"type" => $this->type,
-			"serializing_type" => $this->serializing_type,
+			"short_trace" => $this->short_trace,
 			"code" => $this->code,
 			"message" => $this->message,
 			"file" => $this->file,
 			"line" => $this->line,
-			"trace" => $this->serializing_type == self::FULL ? $this->getTrace() : $this->getTraceAsString(),
+			"trace" => $this->short_trace ? $this->getTraceAsString() : $this->getTrace(),
 		));
 	}
 	public function unserialize($serialized): void {
 		$data = unserialize($serialized);
 		$this->type = $data["type"];
-		$this->serializing_type = $data["serializing_type"];
+		$this->short_trace = $data["short_trace"];
 		$this->code = $data["code"];
 		$this->message = $data["message"];
 		$this->file = $data["file"];

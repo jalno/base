@@ -393,7 +393,7 @@ class Router {
 							} catch(\Exception $e) {
 								$process->status = Process::error;
 								if ($e instanceof Error) {
-									$e->setSerializeType(Error::SUMMARY);
+									$e->saveShortTrace();
 								}
 					            $process->response = $e;
 						    }
