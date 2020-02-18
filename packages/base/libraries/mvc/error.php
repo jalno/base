@@ -14,8 +14,7 @@ class Error extends base\Exception implements \Serializable {
 	protected $message;
 	protected $data;
 	protected $trace;
-	public function __construct(string $message, string $code) {
-		$this->message = $message;
+	public function __construct(?string $code = null) {
 		$this->code = $code;
 	}
 	public function setMessage(string $message): void {
