@@ -1,67 +1,69 @@
 <?php
 namespace packages\base;
-use packages\base\{translator\InvalidLangCode, router\rule, router\ruleControllerException};
-class router{
+
+use packages\base\{view\Error, translator\InvalidLangCode, router\Rule, router\RuleControllerException};
+
+class Router {
 	static private $rules = array();
 	static private $exceptions = array();
 	static private $hostname;
 	static private $scheme;
 	static private $defaultDomains;
 	static private $isDefaultDomain;
-	public static function getDefaultDomains(){
-		if(!self::$defaultDomains){
+	public static function getDefaultDomains() {
+		if (!self::$defaultDomains) {
 			$log = log::getInstance();
 			$log->debug("looking for packages.base.router.defaultDomain option");
-			$option = options::get('packages.base.router.defaultDomain');
-			if($option){
+			$option = Options::get("packages.base.router.defaultDomain");
+			if ($option) {
 				$log->reply($option);
-				if(!is_array($option)){
+				if (!is_array($option)) {
 					$option = array($option);
 				}
 				self::$defaultDomains = $option;
-			}elseif(isset(http::$server['hostname'])){
-				$log->reply("use server hostname:",http::$server['hostname']);
+			} elseif (isset(http::$server["hostname"])) {
+				$log->reply("use server hostname:", http::$server["hostname"]);
 				self::$defaultDomains = array(http::$server['hostname']);
-			}else{
+			} else {
 				$log->reply()->warn("notfound");
 			}
 		}
 		return self::$defaultDomains;
 	}
-	static public function isDefaultDomain(){
-		if(self::$isDefaultDomain === null){
-			$domain = strtolower(http::$request['hostname']);
-			if(substr($domain, 0, 4) == 'www.'){
+	static public function isDefaultDomain() {
+		if (self::$isDefaultDomain === null) {
+			$domain = strtolower(http::$request["hostname"]);
+			if (substr($domain, 0, 4) == 'www.') {
 				$domain = substr($domain, 4);
 			}
-			self::$isDefaultDomain = in_array($domain, router::getDefaultDomains());
+			self::$isDefaultDomain = in_array($domain, Router::getDefaultDomains());
 		}
 		return self::$isDefaultDomain;
 	}
-	static public function addRule(rule $rule){
+	static public function addRule(Rule $rule) {
 		self::$rules[] = $rule;
 	}
 	static public function resetRules() {
 		self::$rules = [];
 	}
-	public static function CheckShortLang($lang, bool $throwError = true){
-		$log = log::getInstance();
+	public static function CheckShortLang($lang, bool $throwError = true) {
+		$log = Log::getInstance();
 		$log->debug("looking for packages.base.translator.changelang.type option");
-		$type = options::get('packages.base.translator.changelang.type');
+		$type = Options::get('packages.base.translator.changelang.type');
 		$log->reply($type);
-		if($type == 'short'){
+		if ($type == 'short') {
 			$log->debug("check", $lang);
-			if(translator::is_shortCode($lang)){
+			if (Translator::is_shortCode($lang)) {
 				$log->reply("valid shortcode");
-				$langs = translator::getAvailableLangs();
+				$langs = Translator::getAvailableLangs();
 				$log->debug("Available languages: ", $langs);
-				foreach($langs as $l){
-					if(substr($l, 0, 2) == $lang){
+				foreach ($langs as $l) {
+					if (substr($l, 0, 2) == $lang) {
 						$lang = $l;
 						break;
 					}
 				}
-			}else{
+			} else {
 				$log->reply()->debug("invalid");
 				if ($throwError) {
 					throw new InvalidLangCode;
@@ -71,19 +73,19 @@ class router{
 		}
 		return $lang;
 	}
-	static function gethostname(){
-		$log = log::getInstance();
-		if(!self::$hostname){
+	static function gethostname() {
+		$log = Log::getInstance();
+		if (!self::$hostname) {
 			$log->debug("looking for packages.base.routing.www option");
-			$www = options::get('packages.base.routing.www');
+			$www = Options::get('packages.base.routing.www');
 			$log->reply($www);
 			$hostname = http::$request['hostname'];
-			if($www == 'nowww'){
-				if(substr($hostname, 0, 4) == 'www.'){
+			if ($www == 'nowww') {
+				if (substr($hostname, 0, 4) == 'www.') {
 					$hostname = substr($hostname, 4);
 				}
-			}elseif($www == 'withwww'){
-				if(substr($hostname, 0, 4) != 'www.'){
+			} elseif ($www == 'withwww') {
+				if (substr($hostname, 0, 4) != 'www.') {
 					$hostname = 'www.'.$hostname;
 				}
 			}
@@ -92,7 +94,7 @@ class router{
 		$log->debug("hostname should be", self::$hostname);
 		return self::$hostname;
 	}
-	static function getscheme(){
+	static function getscheme() {
 		$log = log::getInstance();
 		if(!self::$scheme){
 			$log->debug("looking for packages.base.routing.scheme");
@@ -263,19 +265,19 @@ class router{
 		}
 		return false;
 	}
-	static function routing(){
-		$log = log::getInstance();
+	static function routing() {
+		$log = Log::getInstance();
 		$found = false;
-		$api = loader::sapi();
+		$api = Loader::sapi();
 		$log->debug("SAPI:",$api);
-		if($api == loader::cgi){
+		if ($api == Loader::cgi) {
 			$hostname = http::$request['hostname'];
-			if(substr($hostname, 0,4) == 'www.'){
+			if (substr($hostname, 0,4) == 'www.') {
 				$hostname = substr($hostname, 4);
 			}
 			$log->debug("check",$hostname,"in default domains");
 			$defaultDomains = self::getDefaultDomains();
-			if(in_array($hostname, self::getDefaultDomains())){
+			if (in_array($hostname, self::getDefaultDomains())) {
 				$log->reply("Found");
 				$log->debug("check www");
 				$checkwww = self::checkwww();
@@ -283,45 +285,45 @@ class router{
 				$log->debug("check scheme");
 				$checkscheme = self::checkscheme();
 				$log->reply($checkscheme);
-				if(!$checkwww or !$checkscheme){
+				if (!$checkwww or !$checkscheme) {
 					return false;
 				}
 			}
-			if(!self::checkLastSlash()){
+			if (!self::checkLastSlash()) {
 				return false;
 			}
 			$log->debug("separate absolute and regex rules");
 			$absoluteRules = array();
 			$regexRules = array();
 			$normalRules = array();
-			foreach(self::$rules as $rule) {
+			foreach (self::$rules as $rule) {
 				if ($rule->getExceptions()) {
 					continue;
 				}
-				if($rule->isAbsolute()){
+				if ($rule->isAbsolute()) {
 					$absoluteRules[] = $rule;
-				}elseif($rule->isRegex()){
+				} elseif ($rule->isRegex()) {
 					$regexRules[] = $rule;
-				}else{
+				} else {
 					$normalRules[] = $rule;
 				}
 			}
 			$log->reply(count($absoluteRules),"absolute rules,",count($normalRules),"normal rule", count($regexRules),"regex rules");
-			try{
+			try {
 				$log->debug("sort absolute rules");
 				self::sortRules($absoluteRules);
 				$log->reply("Success");
 				$log->debug("check in absolute rules");
 				$found = self::checkRules($absoluteRules);
-				if($found){
+				if ($found) {
 					$log->reply("Found");
-				}else{
+				} else {
 					$log->reply("Notfound");
 					
 					$uri = rtrim(http::$request['uri'], "/");
 					$log->debug("sort normal rules");
 					
-					try{
+					try {
 						self::sortRules($normalRules);
 						$log->reply("Success");
 						$log->debug("check in normal rules");
@@ -331,10 +333,10 @@ class router{
 						}else{
 							$log->reply("Notfound");
 						}
-					}catch(InvalidLangCode $e){
+					} catch(InvalidLangCode $e) {
 
 					}
-					if(!$found){
+					if (!$found) {
 						$log->debug("check in regex rules");
 						$found = self::checkRules($regexRules);
 						if($found){
@@ -345,65 +347,69 @@ class router{
 						}
 					}
 				}
-			}catch(\Exception $e){
+			} catch(\Exception $e) {
 				self::routingExceptions($e);
 			}
-		}else{
-			if($processID = cli::getParameter('process')){
+		} else {
+			$processID = CLI::getParameter("process");
+			if ($processID) {
 				$process = null;
 				$processID = str_replace("/", "\\", $processID);
-				if(preg_match('/^packages\\\\([a-zA-Z0-9_]+\\\\)+([a-zA-Z0-9_]+)\@([a-zA-Z0-9_]+)$/', $processID)){
-					$parameters = cli::$request['parameters'];
-					unset($parameters['process']);
-					if(count($parameters) == 0){
+				if (preg_match('/^packages\\\\([a-zA-Z0-9_]+\\\\)+([a-zA-Z0-9_]+)\@([a-zA-Z0-9_]+)$/', $processID)) {
+					$parameters = CLI::$request["parameters"];
+					unset($parameters["process"]);
+					if (count($parameters) == 0) {
 						$parameters = null;
 					}
-					$process = new process();
+					$process = new Process();
 					$process->name = '\\'.$processID;
 					$process->parameters = $parameters;
 					$process->save();
-				}elseif(!$process = process::byId($processID)){
+				} elseif (!$process = Process::byId($processID)) {
 					throw new NotFound();
 				}
-				if($process){
-					if($process->status != process::running){
+				if ($process) {
+					if ($process->status != Process::running) {
 						list($controller, $method) = explode('@', $process->name, 2);
-						if(class_exists($controller) and method_exists($controller, $method)){
+						if (class_exists($controller) and method_exists($controller, $method)) {
 						    $process = new $controller($process);
 						    $process->start = time();
 						    $process->end = null;
-							$process->status = process::running;
+							$process->status = Process::running;
 						    $process->setPID();
 							$parameters = $process->parameters;
-							if($parameters === null){
+							if ($parameters === null) {
 								$parameters = [];
 							}
-						    try{
+						    try {
 						        $return = $process->$method($parameters);
-						        if($return instanceof response){
-							        $process->status = $return->getStatus() ? process::stopped : process::error;
+						        if ($return instanceof response) {
+							        $process->status = $return->getStatus() ? Process::stopped : Process::error;
 							        $process->response = $return;
-							        if($return->getStatus()){
+							        if ($return->getStatus()) {
 								        $process->progress = 100;
 							        }
 						        }
-						    }catch(\Exception $e){
-						        $process->status = process::error;
+							} catch(\Exception $e) {
+								$process->status = Process::error;
+								if ($e instanceof Error) {
+									$e->saveShortTrace();
+								}
 					            $process->response = $e;
 						    }
 					        $process->end = time();
 					        $process->save();
-						}else{
-							throw new proccessClass($process->name);
+						} else {
+							throw new ProccessClass($process->name);
 						}
-					}else{
-						throw new proccessAlive($process->id);
+					} else {
+						throw new ProccessAlive($process->id);
 					}
-				}else{
+				} else {
 					throw new NotFound();
 				}
-			}else{
-				echo("Please specify an process ID by passing --process argument".PHP_EOL);
+			} else {
+				echo("Please specify an process ID by passing --process argument" . PHP_EOL);
 				exit(1);
 			}
 
