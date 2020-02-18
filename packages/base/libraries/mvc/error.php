@@ -1,9 +1,9 @@
 <?php
 namespace packages\base\view;
 
-use packages\base;
+use packages\base\Exception;
 
-class Error extends base\Exception implements \Serializable {
+class Error extends Exception implements \Serializable {
 	const SUCCESS = 'success';
 	const WARNING = 'warning';
 	const FATAL = 'fatal';
@@ -39,7 +39,7 @@ class Error extends base\Exception implements \Serializable {
 	}
 	public function setType(string $type): void {
 		if (!in_array($type, array(self::SUCCESS, self::WARNING,self::FATAL,self::NOTICE))) {
-			throw new base\Exception("type");
+			throw new Exception("type");
 		}
 		$this->type = $type;
 	}
