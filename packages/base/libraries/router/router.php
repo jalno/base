@@ -72,6 +72,9 @@ class router{
 		return $lang;
 	}
 	static function gethostname(){
+		if (!isset(http::$request['hostname'])) {
+			return null;
+		}
 		$log = log::getInstance();
 		if(!self::$hostname){
 			$log->debug("looking for packages.base.routing.www option");
@@ -98,7 +101,7 @@ class router{
 			$log->debug("looking for packages.base.routing.scheme");
 			$schemeoption = options::get('packages.base.routing.scheme');
 			$log->reply($schemeoption);
-			$scheme = http::$request['scheme'];
+			$scheme = http::$request['scheme'] ?? "";
 			if($schemeoption and $scheme != $schemeoption){
 				$scheme = $schemeoption;
 			}
