@@ -106,6 +106,13 @@ class view {
 		return $this->description;
 	}
 
+	public function getCSSAssets(): array {
+		return $this->css;
+	}
+	public function getJSAssets(): array {
+		return $this->js;
+	}
+
 	/**
 	 * Add an inline of css block.
 	 * 
@@ -126,16 +133,18 @@ class view {
 	 * 
 	 * @param string $file Should be public URL.
 	 * @param string $name It will set to file URL if it was empty (or not set).
+	 * @param bool $preload default: false
 	 * @return void
 	 */
-	public function addCSSFile(string $file, string $name = ""): void {
+	public function addCSSFile(string $file, string $name = "", $preload = false): void {
 		if($name == ""){
 			$name = $file;
 		}
 		$this->css[] = array(
 			'name' => $name,
 			'type' => 'file',
-			'file' => $file
+			'file' => $file,
+			'preload' => $preload
 		);
 	}
 
@@ -345,7 +354,7 @@ class view {
 			foreach ($source->getAssets(['css', 'js']) as $asset) {
 				if ($asset['type'] == 'css') {
 					if (isset($asset['file'])) {
-						$this->addCSSFile(theme::url($asset['file']), $asset['name'] ?? '');
+						$this->addCSSFile(theme::url($asset['file']), $asset['name'] ?? '', $asset['preload'] ?? false);
 					} elseif (isset($asset['inline'])){
 						$this->addCSS($asset['inline'], $asset['name'] ?? '');
 					}
@@ -412,7 +421,12 @@ class view {
 	protected function loadCSS(): void {
 		foreach ($this->css as $css){
 			if ($css['type'] == 'file') {
-				echo("<link rel=\"stylesheet\" type=\"text/css\" href=\"{$css['file']}\" />\n");
+				if ($css['preload']) {
+					echo("<link rel=\"preload\" type=\"text/css\" href=\"{$css['file']}\" as=\"style\" onload=\"this.onload=null;this.rel='stylesheet'\">\n");
+					echo("<noscript><link rel=\"stylesheet\" type=\"text/css\" href=\"{$css['file']}\"></noscript>\n");
+				} else {
+					echo("<link rel=\"stylesheet\" type=\"text/css\" href=\"{$css['file']}\" />\n");
+				}
 			}
 		}
 		foreach ($this->css as $css) {
@@ -435,7 +449,7 @@ class view {
 		}
 		foreach ($this->js as $js) {
 			if ($js['type'] == 'file') {
-				echo("<script src=\"{$js['file']}\"></script>\n");
+				echo("<script async src=\"{$js['file']}\"></script>\n");
 			}
 		}
 	}
