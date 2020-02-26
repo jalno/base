@@ -28,4 +28,5 @@ CREATE TABLE `options` (
 
 INSERT INTO `options` (`name`, `value`, `autoload`) VALUES
 ('packages.base.routing.www', 'nowww', 1),
+('packages.base.validators.default_cellphone_country_code', '98', 0),
 ('packages.base.routing.scheme', 'http', 1);
