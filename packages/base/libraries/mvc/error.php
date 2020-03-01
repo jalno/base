@@ -58,6 +58,7 @@ class Error extends Exception implements \Serializable {
 			"short_trace" => $this->short_trace,
 			"code" => $this->code,
 			"message" => $this->message,
+			"data" => $this->data,
 			"file" => $this->file,
 			"line" => $this->line,
 			"trace" => $this->short_trace ? $this->getTraceAsString() : $this->getTrace(),
@@ -69,6 +70,7 @@ class Error extends Exception implements \Serializable {
 		$this->short_trace = $data["short_trace"];
 		$this->code = $data["code"];
 		$this->message = $data["message"];
+		$this->data = $data["data"];
 		$this->file = $data["file"];
 		$this->line = $data["line"];
 		$this->trace = $data["trace"];
