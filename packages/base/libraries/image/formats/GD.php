@@ -8,6 +8,26 @@ class GD extends Image {
 	protected $image;
 
 	/**
+	 * Construct an image object with three ways:
+	 * 	1. pass a file to {$param}
+	 * 	2. pass other image to {$param}
+	 * 	3. pass new image width to {$param}
+	 *  4. pass a GD image resouce.
+	 * 
+	 * @param packages\base\IO\File|packages\base\Image|int|resouce
+	 * @param int|null $height height of new image in third method
+	 * @param packages\base\Image\Color $bg background color of new image in third method
+	 * @throws packages\base\IO\NotFoundException if passed file cannot be found.
+	 */
+	public function __construct($param = null, ?int $height = null, ?Image\Color $bg = null){
+		if (is_resource($param)) {
+			$this->fromGDImage($param);
+		} else {
+			parent::__construct($param, $height, $bg);
+		}
+	}
+
+	/**
 	 * Save the image to a file.
 	 * 
 	 * @param packages\base\IO\File $file
@@ -129,6 +149,21 @@ class GD extends Image {
 		return $new;
 	}
 
+	/**
+	 * Rotate an image with a given angle
+	 * The center of rotation is the center of the image, and the rotated image may have different dimensions than the original image.
+	 * 
+	 * @param float $angle Rotation angle, in degrees. The rotation angle is interpreted as the number of degrees to rotate the image anticlockwise.
+	 * @param Image\Color $bg Specifies the color of the uncovered zone after the rotation.
+	 * @return Image Rotated image
+	 */
+	public function rotate(float $angle, Image\Color $bg): Image {
+		$colors = $bg->toRGBA();
+		$colors[3] = round(127 - ($colors[3] * 127));
+		$rgba = imagecolorallocatealpha($this->image, $colors[0], $colors[1], $colors[2], $colors[3]);
+		$rotated = imagerotate($this->image, $angle, $rgba);
+		return new static($rotated);
+	}
 
 	/**
 	 * release the GD resource
@@ -178,5 +213,15 @@ class GD extends Image {
 		} else {
 			parent::fromImage($other);
 		}
+	}
+
+	/**
+	 * Construct a image from GD image resouce.
+	 * 
+	 * @param resource $image resource image
+	 * @return void
+	 */
+	protected function fromGDImage($image): void {
+		$this->image = $image;
 	}
 }

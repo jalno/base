@@ -196,6 +196,16 @@ abstract class Image {
 	abstract public function copy(int $x, int $y, int $width, $height): Image;
 
 	/**
+	 * Rotate an image with a given angle
+	 * The center of rotation is the center of the image, and the rotated image may have different dimensions than the original image.
+	 * 
+	 * @param float $angle Rotation angle, in degrees. The rotation angle is interpreted as the number of degrees to rotate the image anticlockwise.
+	 * @param Image\Color $bg Specifies the color of the uncovered zone after the rotation.
+	 * @return Image Rotated image
+	 */
+	abstract public function rotate(float $angle, Image\Color $bg): Image;
+
+	/**
 	 * Save the image to a file.
 	 * 
 	 * @param packages\base\IO\File $file
