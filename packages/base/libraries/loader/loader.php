@@ -338,7 +338,7 @@ class loader {
 			if (!isset($config['port']) or !$config['port']) {
 				$config['port'] = 3306;
 			}
-			if (!isset($config['host'], $config['user'], $config['pass'],$config['dbname'],$config['port'])) {
+			if (!isset($config['host'], $config['user'], $config['pass'],$config['dbname'])) {
 				throw new DatabaseConfigException("{$name} connection is invalid");
 			}
 			db::connect($name, $config['host'], $config['user'], $config['dbname'],$config['pass'],$config['port']);
