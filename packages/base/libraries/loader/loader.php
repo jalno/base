@@ -335,10 +335,13 @@ class loader {
 			);
 		}
 		foreach ($db as $name => $config) {
-			if (!isset($config['host'], $config['user'], $config['pass'],$config['dbname'])) {
+			if (!isset($config['port']) or !$config['port']) {
+				$config['port'] = 3306;
+			}
+			if (!isset($config['host'], $config['user'], $config['pass'],$config['dbname'],$config['port'])) {
 				throw new DatabaseConfigException("{$name} connection is invalid");
 			}
-			db::connect($name, $config['host'], $config['user'], $config['dbname'],$config['pass']);
+			db::connect($name, $config['host'], $config['user'], $config['dbname'],$config['pass'],$config['port']);
 		}
 	}
 	public static function requiredb(){

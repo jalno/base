@@ -4,13 +4,14 @@ $options = array(
 	'packages.base.loader.db' => array(
 		'type' => 'mysql',
 		'host' => 'localhost',
-		'user' => '',
-		'pass' => '',
-		'dbname' => ''
+		'user' => 'root',
+		'pass' => 'Jeyserver5*',
+		'dbname' => 'jeyserver_mainsite',
+		'port' => '',
 	),
 	'packages.base.session' => array(
 		'handler' => 'php',//cache,mysql,php
-		'ip' => true,
+		'ip' => false,
 	),
 	'packages.base.translator.defaultlang' => 'fa_IR',
 	'packages.base.translator.changelang' => 'uri',//uri,parameter
