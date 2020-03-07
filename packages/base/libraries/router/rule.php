@@ -477,7 +477,7 @@ class rule implements \Serializable {
 	 * @return int
 	 */
 	public function parts(): int {
-		return !$this->path ? 0 : is_array($this->path) ? count($this->path) : 1;
+		return !$this->path ? 0 : (is_array($this->path) ? count($this->path) : 1);
 	}
 
 	/**
