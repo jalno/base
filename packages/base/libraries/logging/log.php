@@ -105,10 +105,14 @@ class Log {
 				break;
 		}
 		$generation = (self::$generation > 1 ? str_repeat(self::$indentation, self::$generation-1) : " ");
-		$coloredLine = $date . " " . $coloredLevelText . $generation . $coloredMessage . "\n";
-		$line = $date . " " . $levelText . $generation . $message . "\n";
+		$coloredLine = $date . " " . $coloredLevelText . $generation . $coloredMessage . PHP_EOL;
+		$line = $date . " " . $levelText . $generation . $message . PHP_EOL;
 		if (Options::get("packages.base.logging.quiet", false) == 0) {
-			echo $coloredLine;
+			if (in_array($level, array(self::error, self::fatal))) {
+				fwrite(STDERR, stream_isatty(STDERR) ? $coloredLine : $line);
+			} else {
+				echo (stream_isatty(STDOUT) ? $coloredLine : $line);
+			}
 		}
 		file_put_contents(self::$file, $line, is_file(self::$file) ? FILE_APPEND : 0);
 	}
