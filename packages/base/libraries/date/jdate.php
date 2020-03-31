@@ -2,6 +2,9 @@
 namespace packages\base\date;
 use \packages\base\utility\safe;
 class jdate implements date_interface{
+    public static function getFirstDayOfWeek(): int {
+        return 6;
+    }
     public static function format($type,$maket="now"){
     	$transnumber=0;
     	$TZhours=0;

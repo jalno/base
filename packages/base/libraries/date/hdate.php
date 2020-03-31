@@ -405,6 +405,9 @@ class hdate implements date_interface {
 	public static function gregorianToJulian(int $year, int $month, int $day): int {
         return gregoriantojd($month, $day, $year);
 	}
+	public static function getFirstDayOfWeek(): int {
+        return 6;
+    }
 	private static function getUmalquradata($with_adj = true): array {
 		$myumdata = array(15140, 15169, 15199, 15228, 15258, 15287, 15317, 15347, 15377, 15406, 15436, 15465, 15494, 15524, 15553, 15582, 15612, 15641, 15671, 15701, 15731, 15760, 15790, 15820, 15849, 15878, 15908, 15937, 15966, 15996, 16025, 16055, 16085, 16114, 16144, 16174, 16204, 16233, 
 			16262, 16292, 16321, 16350, 16380, 16409, 16439, 16468, 16498, 16528, 16558, 16587, 16617, 16646, 16676, 16705, 16734, 16764, 16793, 16823, 16852, 16882, 16912, 16941, 16971, 17001, 17030, 17060, 17089, 17118, 17148, 17177, 17207, 17236, 17266, 17295, 17325, 17355, 17384, 17414, 
