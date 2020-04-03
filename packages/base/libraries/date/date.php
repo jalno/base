@@ -72,6 +72,11 @@ class date implements date_interface {
 		}
 		return call_user_func_array(array(__NAMESPACE__.'\\date\\'.self::$calendar, "strtotime"), array($time, $now));
 	}
+
+	public static function getFirstDayOfWeek(): int {
+		self::init();
+		return call_user_func(array(__NAMESPACE__.'\\date\\'.self::$calendar, "getFirstDayOfWeek"));
+	}
 	public static function mktime($hour = null, $minute = null, $second = null , $month = null, $day = null, $year = null){
 		self::init();
 		$now = explode("/", self::format("Y/m/d/H/i/s"));

@@ -13,6 +13,10 @@ class gregorian implements date_interface{
 		}
 		return strtotime($time, $now);
 	}
+
+	public static function getFirstDayOfWeek(): int {
+		return 0;
+	}
 	public static function mktime($hour = null, $minute = null, $second = null , $month = null, $day = null, $year = null){
 		if ($hour === null) {
 			$hour = date("H");
