@@ -67,37 +67,20 @@ class response implements \Serializable{
 			if($this->view instanceof form){
 				$log->debug("view is a form, colleting form errors");
 				$errors = $this->view->getFormErrors();
-				if($errors){
-					$dataerror = array();
-					foreach($errors as $error){
-						$dataerror[] = array(
-							'type' => $error->getType(),
-							'error' => $error->getCode(),
-							'input' => $error->getInput()
-						);
+				if ($errors) {
+					foreach ($errors as $e) {
+						$e->setTraceMode(View\Error::NO_TRACE);
 					}
-					$this->setData($dataerror, 'error');
-					$log->reply("Success");
-				}else{
-					$log->reply("there is no error");
+					$this->setData($errors, 'error');
 				}
 			}
 			$log->debug("colleting errors");
 			$errors = $this->view->getErrors();
-			if($errors){
-				$dataerror = $this->getData('error');
-				foreach($errors as $error){
-					$dataerror[] = array(
-						'type' => $error->getType(),
-						'code' => $error->getCode(),
-						'data' => $error->getData(),
-						'message' => $error->getMessage(),
-					);
+			if ($errors) {
+				foreach ($errors as $e) {
+					$e->setTraceMode(View\Error::NO_TRACE);
 				}
-				$this->setData($dataerror, 'error');
-				$log->reply("Success");
-			}else{
-				$log->reply("there is no error");
+				$this->setData($errors, 'error');
 			}
 		}
 	}
