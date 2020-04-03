@@ -74,6 +74,7 @@ class Log {
 	public static function write($level, $message) {
 		$microtime = explode(" ", microtime());
 		$date = date("Y-m-d H:i:s." . substr($microtime[0], 2) . " P");
+		$pidText = " [" . getmypid() . "] ";
 		$coloredMessage = $message;
 		$levelText = "";
 		$coloredLevelText = "";
@@ -105,8 +106,8 @@ class Log {
 				break;
 		}
 		$generation = (self::$generation > 1 ? str_repeat(self::$indentation, self::$generation-1) : " ");
-		$coloredLine = $date . " " . $coloredLevelText . $generation . $coloredMessage . PHP_EOL;
-		$line = $date . " " . $levelText . $generation . $message . PHP_EOL;
+		$coloredLine = $date . $pidText . $coloredLevelText . $generation . $coloredMessage . PHP_EOL;
+		$line = $date . $pidText . $levelText . $generation . $message . PHP_EOL;
 		if (Options::get("packages.base.logging.quiet", false) == 0) {
 			if (in_array($level, array(self::error, self::fatal))) {
 				fwrite(STDERR, stream_isatty(STDERR) ? $coloredLine : $line);
