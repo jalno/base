@@ -218,41 +218,52 @@ class Router {
 					$response = $controllerClass->$method($data);
 				} catch(InputValidationException $e) {
 					$response = $controllerClass->getResponse();
-					if ($response) {
-						$response->setStatus(false);
-						$view = $response->getView();
-						if ($view instanceof views\form) {
-							$error = views\FormError::fromException($e);
-							$view->setFormError($error);
-							$view->setDataForm(http::$request['post']);
-						} else {
-							$response->setData(array(
-								'error' => [array(
-									'type' => view\error::FATAL,
-									'error' => views\FormError::DATA_VALIDATION,
-									'input' => $e->getInput()
-								)]
-							));
-						}
+					if (!$response) {
+						throw $e;
 					}
-				} catch(db\duplicateRecord $e) {
+					$response->setStatus(false);
+					$error = views\FormError::fromException($e);
+					$view = $response->getView();
+					if ($view instanceof views\form) {
+						$view->setFormError($error);
+						$view->setDataForm(http::$request['post']);
+					} else {
+						$error->setTraceMode(Error::NO_TRACE);
+						$response->setData(array(
+							'error' => [$error]
+						));
+					}
+				} catch(db\DuplicateRecord $e) {
 					$response = $controllerClass->getResponse();
-					if ($response) {
-						$response->setStatus(false);
-						$view = $response->getView();
-						if ($view instanceof views\form) {
-							$error = views\FormError::fromException($e);
-							$view->setFormError($error);
-							$view->setDataForm(http::$request['post']);
-						} else {
-							$response->setData(array(
-								'error' => [array(
-									'type' => view\error::FATAL,
-									'error' => views\FormError::DATA_DUPLICATE,
-									'input' => $e->getInput()
-								)]
-							));
-						}
+					if (!$response) {
+						throw $e;
+					}
+					$response->setStatus(false);
+					$error = views\FormError::fromException($e);
+					$view = $response->getView();
+					if ($view instanceof views\form) {
+						$view->setFormError($error);
+						$view->setDataForm(http::$request['post']);
+					} else {
+						$error->setTraceMode(Error::NO_TRACE);
+						$response->setData(array(
+							'error' => [$error]
+						));
+					}
+				} catch(Error $e) {
+					$response = $controllerClass->getResponse();
+					if (!$response) {
+						throw $e;
+					}
+					$response->setStatus(false);
+					$view = $response->getView();
+					if ($view) {
+						$view->addError($e);
+					} else {
+						$e->setTraceMode(Error::NO_TRACE);
+						$response->setData(array(
+							'error' => [$e]
+						));
 					}
 				}
 				$log->reply("Success");
@@ -396,7 +407,7 @@ class Router {
 							} catch(\Exception $e) {
 								$process->status = Process::error;
 								if ($e instanceof Error) {
-									$e->saveShortTrace();
+									$e->setTraceMode(Error::SHORT_TRACE);
 								}
 					            $process->response = $e;
 						    }
