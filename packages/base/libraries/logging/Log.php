@@ -1,6 +1,7 @@
 <?php
 namespace packages\base;
 
+use packages\base\Loader;
 use packages\base\log\Instance;
 
 class Log {
@@ -10,8 +11,9 @@ class Log {
 	const error = 4;
 	const fatal = 6;
 	const off = 0;
-	static private $parent;
 	static protected $file;
+	static private $api;
+	static private $parent;
 	static private $generation = 0;
 	static private $indentation = "\t";
 	public static function newChild() {
@@ -27,11 +29,14 @@ class Log {
 		return self::$parent;
 	}
 	public static function getInstance() {
+		if (!self::$api) {
+			self::$api = Loader::sapi();
+		}
 		$level = self::off;
 		if (self::$parent) {
 			$level = self::$parent->getLevel();
 		}
-		return new instance($level);
+		return new Instance($level);
 	}
 	public static function setFile($file) {
 		self::$file = $file;
@@ -74,7 +79,7 @@ class Log {
 	public static function write($level, $message) {
 		$microtime = explode(" ", microtime());
 		$date = date("Y-m-d H:i:s." . substr($microtime[0], 2) . " P");
-		$pidText = " [" . getmypid() . "] ";
+		$pidText = (self::$api == Loader::cli ? (" [" . getmypid() . "] ") : " ");
 		$coloredMessage = $message;
 		$levelText = "";
 		$coloredLevelText = "";
