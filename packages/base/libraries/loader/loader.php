@@ -91,7 +91,7 @@ require_once('packages/base/libraries/router/url.php');
 require_once('packages/base/libraries/router/exceptions.php');
 
 // Logging
-require_once("packages/base/libraries/logging/log.php");
+require_once("packages/base/libraries/logging/Log.php");
 require_once("packages/base/libraries/logging/instance.php");
 
 // Events
