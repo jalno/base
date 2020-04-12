@@ -976,11 +976,8 @@ class MysqliDb
 		}
 
 		if (is_array($customFields)) {
-			foreach ($customFields as $key => $value) {
-				$customFields[$key] = preg_replace("/[^-a-z0-9\.\(\),_` ]+/i", '', $value);
-			}
-
-			$orderByField = 'FIELD (' . $orderByField . ', "' . implode('","', $customFields) . '")';
+			$orderbyDirection = array_merge(array($orderbyDirection, $orderByField), array_values($customFields));
+			$orderByField = 'FIELD()';
 		}
 
 		$this->_orderBy[$orderByField] = $orderbyDirection;
@@ -1644,6 +1641,11 @@ class MysqliDb
 		foreach ($this->_orderBy as $prop => $value) {
 			if (strtolower(str_replace(" ", "", $prop)) == 'rand()') {
 				$this->_query .= "rand(), ";
+			} elseif ($prop == "FIELD()") {
+				$this->_query .= "FIELD({$value[1]}" . str_repeat(", ?", count($value) - 2) . ") {$value[0]}, ";
+				for ($x = 2, $l = count($value); $x < $l; $x++) {
+					$this->_bindParam($value[$x]);
+				}
 			} else {
 				$this->_query .= $prop . " " . $value . ", ";
 			}
