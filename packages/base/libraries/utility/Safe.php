@@ -44,10 +44,12 @@ class Safe {
     }
     static function is_cellphone_ir(string $cellphone): bool {
 		$length = strlen($cellphone);
-		if (($length == 10 and substr($cellphone, 0, 1) == '9') or
-			($length == 11 and substr($cellphone, 0, 2) == '09') or
-			($length == 12 and substr($cellphone, 0, 3) == '989') or
-			($length == 13 and substr($cellphone, 0, 4) == '+989'))
+		if (($length == 10 and substr($cellphone, 0, 1) == '9') or // 9131101234
+			($length == 11 and substr($cellphone, 0, 2) == '09') or // 09131101234
+			($length == 12 and substr($cellphone, 0, 3) == '989') or // 989131101234
+			($length == 13 and substr($cellphone, 0, 4) == '9809') or // 9809131101234
+			($length == 13 and substr($cellphone, 0, 4) == '+989') or // +989131101234
+			($length == 14 and substr($cellphone, 0, 5) == '98989')) // 98989131101234
 		{
 			$sub4 = '';
 			switch ($length) {
@@ -60,49 +62,65 @@ class Safe {
 				case(12): // 98913
 					$sub4 = '0' . substr($cellphone, 2, 3);
 					break;
-				case(13): // +98913
-					$sub4 = '0' . substr($cellphone, 3, 3);
+				case(13): // 9809 || +98913
+					if (substr($cellphone, 0, 4) == '9809') {
+						$sub4 = substr($cellphone, 2, 4);
+					} else if (substr($cellphone, 0, 4) == '+989') {
+						$sub4 = '0' . substr($cellphone, 3, 3);
+					}
+					break;
+				case(14): // 9898913
+					$sub4 = '0' . substr($cellphone, 4, 3);
 					break;
 			}
 			$isValid = false;
-            switch ($sub4) {
-            	case('0910'):case('0911'):case('0912'):case('0913'):case('0914'):case('0915'):case('0916'):case('0917'):case('0918'):case('0919'):case('0990'):case('0991'):case('0992'): // TCI
-            	case('0931'): // Spadan
-            	case('0932'): // Taliya
-            	case('0934'): // TKC
-            	case('0901'):case('0902'):case('0903'):case('0905'): // IranCell - ISim
-            	case('0930'):case('0933'):case('0935'):case('0936'):case('0937'):case('0938'):case('0939'): // IranCell
-            	case('0920'):case('0921'):case('0922'): // RighTel
-            		$isValid = true;
-            		break;
-            	default:
+			switch ($sub4) {
+				case('0910'):case('0911'):case('0912'):case('0913'):case('0914'):case('0915'):case('0916'):case('0917'):case('0918'):case('0919'):case('0990'):case('0991'):case('0992'): // TCI
+				case('0931'): // Spadan
+				case('0932'): // Taliya
+				case('0934'): // TKC
+				case('0901'):case('0902'):case('0903'):case('0905'): // IranCell - ISim
+				case('0930'):case('0933'):case('0935'):case('0936'):case('0937'):case('0938'):case('0939'): // IranCell
+				case('0920'):case('0921'):case('0922'): // RighTel
+					$isValid = true;
+					break;
+				default:
 					$isValid = false;
-            		break;
-            }
-            return $isValid;
-        }
-        return false;
-    }
+					break;
+			}
+			return $isValid;
+		}
+		return false;
+	}
     static function cellphone_ir(string $cellphone) {
 		$length = strlen($cellphone);
-		if (($length == 10 and substr($cellphone, 0, 1) == '9') or
-			($length == 11 and substr($cellphone, 0, 2) == '09') or
-			($length == 12 and substr($cellphone, 0, 3) == '989') or
-			($length == 13 and substr($cellphone, 0, 4) == '+989'))
+		if (($length == 10 and substr($cellphone, 0, 1) == '9') or // 9131101234
+			($length == 11 and substr($cellphone, 0, 2) == '09') or // 09131101234
+			($length == 12 and substr($cellphone, 0, 3) == '989') or // 989131101234
+			($length == 13 and substr($cellphone, 0, 4) == '9809') or // 9809131101234
+			($length == 13 and substr($cellphone, 0, 4) == '+989') or // +989131101234
+			($length == 14 and substr($cellphone, 0, 5) == '98989')) // 98989131101234
 		{
-			switch ($length) {
+			switch ($length) { // should return somthing like this: 989131101234
 				case(10): // 913
 					return '98' . $cellphone;
 				case(11): // 0913
 					return '98' . substr($cellphone, 1);
 				case(12): // 98913
 					return $cellphone;
-				case(13): // +98913
-					return substr($cellphone, 1);
+				case(13): // 980913 || +98913
+					if (substr($cellphone, 0, 4) == '9809') {
+						return '98' . substr($cellphone, 3);
+					} else if (substr($cellphone, 0, 4) == '+989') {
+						return substr($cellphone, 1);
+					}
+				case(14):
+					return substr($cellphone, 2);
+				break;
 			}
-        }
-        return false;
-    }
+		}
+		return false;
+	}
     static function bool($value){
         return ($value == 'true' or $value == 1);
     }
