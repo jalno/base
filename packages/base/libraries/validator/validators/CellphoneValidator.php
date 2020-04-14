@@ -42,16 +42,20 @@ class CellphoneValidator implements IValidator {
 			}
 			return $data;
 		}
-		$data = ltrim($data, "+");
+		$defaultCode = Options::get("packages.base.validators.default_cellphone_country_code");
+		$code = '';
+		if (substr($data, 0, 1) == '+') {
+			$data = substr($data, 1);
+			$code = substr($data, 0, -10);
+		} elseif (substr($data, 0, 1) == "0") {
+			$code = $defaultCode;
+			$data = $defaultCode . substr($data, 1);
+		} else {
+			$code = $defaultCode;
+			$data = $defaultCode . $data;
+		}
 		if (!preg_match("/^\d+$/", $data)) {
 			throw new InputValidationException($input);
-		}
-		$code = "";
-		if (substr($data, 0, 1) == "0") {
-			$code = Options::get("packages.base.validators.default_cellphone_country_code");
-			$data = $code . substr($data, 1);
-		} else {
-			$code = substr($data, 0, 2);
 		}
 		switch ($code) {
 			/**
