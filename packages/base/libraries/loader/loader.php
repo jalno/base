@@ -65,7 +65,7 @@ require_once('packages/base/libraries/session/session.php');
 
 // utilities
 require_once('packages/base/libraries/utility/password.php');
-require_once('packages/base/libraries/utility/safe.php');
+require_once('packages/base/libraries/utility/Safe.php');
 require_once('packages/base/libraries/utility/response.php');
 
 // DATE and calendar
