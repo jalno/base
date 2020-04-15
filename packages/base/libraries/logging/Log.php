@@ -114,10 +114,14 @@ class Log {
 		$coloredLine = $date . $pidText . $coloredLevelText . $generation . $coloredMessage . PHP_EOL;
 		$line = $date . $pidText . $levelText . $generation . $message . PHP_EOL;
 		if (Options::get("packages.base.logging.quiet", false) == 0) {
-			if (in_array($level, array(self::error, self::fatal))) {
-				fwrite(STDERR, stream_isatty(STDERR) ? $coloredLine : $line);
+			if (self::$api == Loader::cli) {
+				if (in_array($level, array(self::error, self::fatal))) {
+					fwrite(STDERR, stream_isatty(STDERR) ? $coloredLine : $line);
+				} else {
+					echo(stream_isatty(STDOUT) ? $coloredLine : $line);
+				}
 			} else {
-				echo (stream_isatty(STDOUT) ? $coloredLine : $line);
+				echo $line;
 			}
 		}
 		file_put_contents(self::$file, $line, is_file(self::$file) ? FILE_APPEND : 0);
