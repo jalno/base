@@ -47,12 +47,9 @@ class CellphoneValidator implements IValidator {
 		if (substr($data, 0, 1) == '+') {
 			$data = substr($data, 1);
 			$code = substr($data, 0, -10);
-		} elseif (substr($data, 0, 1) == "0") {
-			$code = $defaultCode;
-			$data = $defaultCode . substr($data, 1);
 		} else {
 			$code = $defaultCode;
-			$data = $defaultCode . $data;
+			$data = $defaultCode . ltrim($data, "0");
 		}
 		if (!preg_match("/^\d+$/", $data)) {
 			throw new InputValidationException($input);
