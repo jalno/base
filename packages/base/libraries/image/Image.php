@@ -20,6 +20,8 @@ abstract class Image {
 				return new Image\PNG($file);
 			case('gif'):
 				return new Image\GIF($file);
+			case('webp'):
+				return new Image\WEBP($file);
 			default:
 				throw new Image\UnsupportedFormatException($file->getExtension());
 		}
@@ -43,6 +45,8 @@ abstract class Image {
 				return new Image\PNG($file);
 			case(IMAGETYPE_GIF):
 				return new Image\GIF($file);
+			case(IMAGETYPE_WEBP):
+				return new Image\WEBP($file);
 			default:
 				throw new Image\UnsupportedFormatException($info[2]);
 		}
