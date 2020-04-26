@@ -12,7 +12,7 @@ abstract class Image {
 	 * @return packages\base\Image
 	 */
 	public static function fromFormat(File $file): Image {
-		switch ($file->getExtension()) {
+		switch (strtolower($file->getExtension())) {
 			case('jpeg'):
 			case('jpg'):
 				return new Image\JPEG($file);
