@@ -23,6 +23,13 @@ class ImageValidator extends FileValidator {
 	 * @return packages\base\IO\image|null new value, if needed.
 	 */
 	public function validate(string $input, array $rule, $data) {
+		if (isset($data['error'])) {
+			$this->checkAndFixExtensionByMime($data);
+		} else {
+			foreach ($data as $item) {
+				$this->checkAndFixExtensionByMime($item);
+			}
+		}
 		if (!isset($rule['extension'])) {
 			$rule['extension'] = ['jpeg', 'jpg', 'png', 'gif'];
 		}
@@ -68,6 +75,27 @@ class ImageValidator extends FileValidator {
 		}
 		if (!isset($rule['obj']) or $rule['obj']) {
 			return $image;
+		}
+	}
+
+	/**
+	 * Check given file extension and mime is equal to real file extension and mime
+	 * and correct it if not equal
+	 *
+	 * @param array $file that is array should contain "name", "tmp_name", "type" indexes
+	 */
+	private function checkAndFixExtensionByMime(array &$file): void {
+		$lastDot = strrpos($file['name'], '.');
+		$extension = ($lastDot === false ? '' : substr($file['name'], $lastDot + 1));
+
+		$mime = mime_content_type($file['tmp_name']);
+		$realExtension = substr($mime, strrpos($mime, '/') + 1);
+
+		if ($file['type'] != $mime) {
+			$file['type'] = $mime;
+		}
+		if ($extension != $realExtension) {
+			$file['name'] .= '.' . strtolower($realExtension);
 		}
 	}
 }
