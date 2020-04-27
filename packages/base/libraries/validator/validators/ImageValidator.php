@@ -24,10 +24,11 @@ class ImageValidator extends FileValidator {
 	 */
 	public function validate(string $input, array $rule, $data) {
 		if (isset($data['error'])) {
-			$data = [$data];
-		}
-		foreach ($data as $item) {
-			$this->checkAndFixExtensionByMime($item);
+			$this->checkAndFixExtensionByMime($data);
+		} else {
+			foreach ($data as $item) {
+				$this->checkAndFixExtensionByMime($item);
+			}
 		}
 		if (!isset($rule['extension'])) {
 			$rule['extension'] = ['jpeg', 'jpg', 'png', 'gif'];
