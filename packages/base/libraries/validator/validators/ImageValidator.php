@@ -31,7 +31,7 @@ class ImageValidator extends FileValidator {
 			}
 		}
 		if (!isset($rule['extension'])) {
-			$rule['extension'] = ['jpeg', 'jpg', 'png', 'gif'];
+			$rule['extension'] = ['jpeg', 'jpg', 'png', 'gif', 'webp'];
 		}
 		$file = parent::validate($input, array_replace($rule, ['obj' => true]), $data);
 		if (!$file or $file instanceof NullValue) {
