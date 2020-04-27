@@ -25,6 +25,12 @@ class MysqliDb
 	protected static $_instance;
 
 	/**
+	 * This flag indicates should print database credentials in var_dump or print_r
+	 * @var bool
+	 */
+	public $printDatabaseCredentials = false;
+
+	/**
 	 * Table prefix
 	 * @var string
 	 */
@@ -248,6 +254,23 @@ class MysqliDb
 		}
 
 		self::$_instance = $this;
+	}
+
+	/**
+	 * This magic method indicates which properites shown in export of var_dump or print_r
+	 *
+	 * removes database credentials in dumping by $printDatabaseCredentials flags status
+	 *
+	 * @return array
+	 */
+	public function __debugInfo(): array {
+		$properties = get_object_vars($this);
+		if (!$this->printDatabaseCredentials) {
+			foreach (['host', 'port', 'username', 'password', 'db', 'charset'] as $property) {
+				unset($properties[$property]);
+			}
+		}
+		return $properties;
 	}
 
 	/**
