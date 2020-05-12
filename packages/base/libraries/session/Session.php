@@ -1,7 +1,7 @@
 <?php
 namespace packages\base;
 
-use packages\base\session\{ISessionHandler, StartSessionException, PHPSessionHandler, CacheSessionHandler};
+use packages\base\session\{ISessionHandler, StartSessionException, PHPSessionHandler, DbSessionHandler, CacheSessionHandler};
 
 
 class Session {
@@ -52,6 +52,9 @@ class Session {
 			switch (self::$options['handler']) {
 				case "php":
 					self::$options['handler'] = PHPSessionHandler::class;
+					break;
+				case "DB":
+					self::$options['handler'] = DbSessionHandler::class;
 					break;
 				case "cache":
 					self::$options['handler'] = CacheSessionHandler::class;
