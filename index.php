@@ -9,6 +9,7 @@ require_once("packages/base/libraries/config/config.php");
 require_once("packages/base/libraries/loader/loader.php");
 
 try{
+	Autoloader::setDefaultClassMap();
 	Autoloader::register();
 
 	$api = loader::sapi();

@@ -4,7 +4,16 @@ namespace packages\base;
 use packages\PhpParser\{ParserFactory, NodeTraverser, Node, NodeVisitorAbstract};
 
 class Autoloader {
-	private static $classes = array();
+	private static $classes = [];
+
+	/**
+	 * Read and put base package default class map.
+	 *
+	 * @return void
+	 */
+	public static function setDefaultClassMap(): void {
+		self::$classes = require_once("packages/base/defaultClassMap.php");
+	}
 
 	/**
 	 * Register autoloader as __autoload() implementation.
