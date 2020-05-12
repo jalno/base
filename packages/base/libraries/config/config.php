@@ -9,7 +9,7 @@ $options = array(
 		'dbname' => ''
 	),
 	'packages.base.session' => array(
-		'handler' => 'php',//cache,mysql,php
+		'handler' => 'php',//cache,DB,php
 		'ip' => true,
 	),
 	'packages.base.translator.defaultlang' => 'fa_IR',
