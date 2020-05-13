@@ -25,7 +25,7 @@ class Cache {
 				self::$options = [];
 			}
 			self::$options = array_replace_recursive(array(
-				'handler' => Cache\DbCachehandler::class,
+				'handler' => Cache\FileCachehandler::class,
 			), self::$options);
 
 			switch (self::$options['handler']) {
