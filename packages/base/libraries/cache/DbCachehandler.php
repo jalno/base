@@ -105,6 +105,7 @@ class DbCacheHandler implements ICachehandler {
 	public function clear(): void {
 		$this->connection
 			->where("expire_at", date::time(), '<=')
+			->where("expire_at", 0, '!=')
 			->delete("base_cache");
 	}
 
