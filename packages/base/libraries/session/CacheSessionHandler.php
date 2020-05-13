@@ -189,7 +189,7 @@ class CacheSessionHandler implements ISessionHandler {
 		}
 
 		Cache::set("session-" . $this->id, array(
-			'ip' => $this->ip,
+			'ip' => $this->ip ?? Http::$client['ip'],
 			'create_at' => $this->createAt,
 			'data' => $this->data,
 		), $this->options['gc']['ttl']);
@@ -328,13 +328,13 @@ class CacheSessionHandler implements ISessionHandler {
 	public function load(): void {
 		$this->loaded = false;
 		$row = Cache::get("session-" . $this->id);
-		if ($this->options['ip'] and $row['ip'] != Http::$client['ip']) {
-			$row = null;
-		}
-
 		if (!$row) {
 			return;
 		}
+		if ($this->options['ip'] and $row['ip'] and $row['ip'] != Http::$client['ip']) {
+			return;
+		}
+
 
 		$this->loaded = true;
 		$this->ip = $row['ip'];
