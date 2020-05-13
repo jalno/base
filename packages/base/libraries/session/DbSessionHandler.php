@@ -147,7 +147,7 @@ class DbSessionHandler implements ISessionHandler {
 		}
 		$this->data[$key] = $value;
 
-		if (!$this->loaded and !$this->id) {
+		if (!$this->loaded) {
 			// Very first data for new session that hasn't a cookie, yet.
 			// We must save it immediately and send the cookie before some other code cause sending body of http response.
 			$this->save();

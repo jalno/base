@@ -5,14 +5,6 @@ use packages\base\{HTTP, db as DatabaseManager, db\Mysqlidb, json, Date, Cache};
 
 class CacheSessionHandler implements ISessionHandler {
 
-	public static function setInCache(string $id, string $ip, int $createAt, array $data, int $ttl) {
-		Cache::set("session-" . $id, array(
-			'ip' => $ip,
-			'create_at' => $createAt,
-			'data' => $data,
-		), $ttl);
-	}
-
 	/**
 	 * @var bool
 	 */
@@ -118,7 +110,7 @@ class CacheSessionHandler implements ISessionHandler {
 		}
 		$this->data[$key] = $value;
 
-		if (!$this->loaded and !$this->id) {
+		if (!$this->loaded) {
 			// Very first data for new session that hasn't a cookie, yet.
 			// We must save it immediately and send the cookie before some other code cause sending body of http response.
 			$this->save();
@@ -146,9 +138,6 @@ class CacheSessionHandler implements ISessionHandler {
 			$this->changed = true;
 		}
 		unset($this->data[$key]);
-		if (!$this->loaded and !$this->id) {
-			$this->save();
-		}
 	}
 
 	/**
@@ -190,7 +179,7 @@ class CacheSessionHandler implements ISessionHandler {
 
 		Cache::set("session-" . $this->id, array(
 			'ip' => $this->ip ?? Http::$client['ip'],
-			'create_at' => $this->createAt,
+			'create_at' => $this->createAt ?? Date::time(),
 			'data' => $this->data,
 		), $this->options['gc']['ttl']);
 
