@@ -1,6 +1,6 @@
 CREATE TABLE `base_cache` (
     `name` varchar(255) NOT NULL,
-    `value` text NOT NULL,
+    `value` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
     `expire_at` int(10) unsigned NOT NULL,
     PRIMARY KEY (`name`),
     KEY `expire_at` (`expire_at`)
