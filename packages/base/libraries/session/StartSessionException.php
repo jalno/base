@@ -1,5 +1,5 @@
 <?php
-namespace packages\base\Sesssion;
+namespace packages\base\Session;
 
 use packages\base\Exception;
 
