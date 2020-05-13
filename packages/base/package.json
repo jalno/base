@@ -5,19 +5,7 @@
 		"directories": ["libraries"],
 		"files": [
 			{
-				"file": "libraries/json/encode.php",
-				"function": true
-			},
-			{
-				"file": "libraries/json/decode.php",
-				"function": true
-			},
-			{
-				"file": "libraries/router/url.php",
-				"function": true
-			},
-			{
-				"file": "libraries/translator/t.php",
+				"file": "libraries/io/io.php",
 				"function": true
 			}
 		]

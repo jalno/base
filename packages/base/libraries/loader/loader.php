@@ -2,108 +2,14 @@
 namespace packages\base;
 
 
-require_once('packages/base/libraries/utility/exceptions.php');
-
 // Autoloader
 require_once('packages/base/libraries/autoloader/Autoloader.php');
 
-// Packages
-require_once('packages.php');
-
-require_once('packages/base/libraries/autoloader/AutoloadContainerTrait.php');
-require_once('packages/base/libraries/events/ListenerContainerTrait.php');
-require_once('packages/base/libraries/translator/LanguageContainerTrait.php');
-require_once('package.php');
-require_once('exceptions.php');
-
-// JSON
-require_once('packages/base/libraries/json/JsonException.php');
+// functions
+require_once('packages/base/libraries/json/encode.php');
 require_once('packages/base/libraries/json/decode.php');
-require_once('packages/base/libraries/json/decode.php');
-
-// Cache
-require_once('packages/base/libraries/cache/Ihandler.php');
-require_once('packages/base/libraries/cache/cache.php');
-require_once('packages/base/libraries/cache/database.php');
-require_once('packages/base/libraries/cache/file.php');
-require_once('packages/base/libraries/cache/file/LockTimeoutException.php');
-require_once('packages/base/libraries/cache/memcache.php');
-require_once('packages/base/libraries/cache/memcache/MemcacheExtensionException.php');
-require_once('packages/base/libraries/cache/memcache/ServerException.php');
-require_once('packages/base/libraries/cache/NotFoundHandlerException.php');
-
-// IO
-require_once('packages/base/libraries/io/io.php');
-require_once('packages/base/libraries/io/file.php');
-require_once('packages/base/libraries/io/directory.php');
-require_once('packages/base/libraries/io/exceptions.php');
-require_once('packages/base/libraries/io/Socket.php');
-require_once('packages/base/libraries/io/buffer.php');
-require_once('packages/base/libraries/io/directory/local.php');
-require_once('packages/base/libraries/io/directory/tmp.php');
-require_once('packages/base/libraries/io/directory/ftp.php');
-require_once('packages/base/libraries/io/directory/sftp.php');
-require_once('packages/base/libraries/io/file/local.php');
-require_once('packages/base/libraries/io/file/tmp.php');
-require_once('packages/base/libraries/io/file/ftp.php');
-require_once('packages/base/libraries/io/file/sftp.php');
-
-// IValidator
-require_once('packages/base/libraries/validator/IValidator.php');
-
-// Database
-require_once('packages/base/libraries/db/db.php');
-require_once('packages/base/libraries/db/MysqliDb.php');
-require_once('packages/base/libraries/db/dbObject.php');
-require_once('packages/base/libraries/db/exceptions.php');
-
-require_once('packages/base/libraries/config/options.php');
-require_once('packages/base/libraries/frontend/exceptions.php');
-require_once('packages/base/libraries/frontend/theme.php');
-require_once('packages/base/libraries/http/http.php');
-require_once('packages/base/libraries/session/session.php');
-
-// utilities
-require_once('packages/base/libraries/utility/password.php');
-require_once('packages/base/libraries/utility/Safe.php');
-require_once('packages/base/libraries/utility/response.php');
-
-// DATE and calendar
-require_once('packages/base/libraries/date/date_interface.php');
-require_once('packages/base/libraries/date/exceptions.php');
-require_once('packages/base/libraries/date/gregorian.php');
-require_once('packages/base/libraries/date/jdate.php');
-require_once('packages/base/libraries/date/hdate.php');
-require_once('packages/base/libraries/date/date.php');
-
-// Comment-line and parallel process
-require_once('packages/base/libraries/background/cli.php');
-
-// Tanslator
-require_once('packages/base/libraries/translator/translator.php');
-require_once('packages/base/libraries/translator/language.php');
-require_once('packages/base/libraries/translator/exceptions.php');
-
-// Routing
-require_once('packages/base/libraries/router/router.php');
-require_once('packages/base/libraries/router/rule.php');
 require_once('packages/base/libraries/router/url.php');
-require_once('packages/base/libraries/router/exceptions.php');
-
-// Logging
-require_once("packages/base/libraries/logging/Log.php");
-require_once("packages/base/libraries/logging/instance.php");
-
-// Events
-require_once("packages/base/libraries/events/EventInterface.php");
-require_once("packages/base/libraries/events/event.php");
-require_once("packages/base/libraries/events/events.php");
-require_once("packages/base/libraries/events/exceptions.php");
-require_once("packages/base/libraries/events/PackageLoad.php");
-require_once("packages/base/libraries/events/PackageLoaded.php");
-require_once("packages/base/libraries/events/PackageRegistered.php");
-
-
+require_once('packages/base/libraries/translator/t.php');
 
 class loader {
 	const cli = 1;

@@ -16,6 +16,8 @@ class options{
 				}
 				self::$options[$option] = $value;
 				return $value;
+			} else {
+				self::$options[$option] = false;
 			}
 		}else{
 			return self::$options[$option];
