@@ -26,10 +26,11 @@ try{
 	}
 	log::debug("set 'root_directory' option to ", __DIR__);
 	options::set('root_directory', __DIR__);
-	loader::autoStartSession();
 	log::info("loading packages");
 	loader::packages();
 	log::reply("Success");
+
+	Session::autoStart();
 
 	if($api == loader::cgi){
 		log::info("loading themes");
