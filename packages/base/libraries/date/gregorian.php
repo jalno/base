@@ -1,6 +1,7 @@
 <?php
 namespace packages\base\date;
 class gregorian implements date_interface{
+	public static $weekDays = array(1, 2, 3, 4, 5, 6, 0);
 	public static function format($format ,$timestamp = null){
 		if ($timestamp === null) {
 			$timestamp = time();
@@ -15,7 +16,11 @@ class gregorian implements date_interface{
 	}
 
 	public static function getFirstDayOfWeek(): int {
-		return 0;
+		return self::$weekDays[0];
+	}
+	public static function getWeekDay(int $day) {
+		$return = array_search($day, self::$weekDays);
+		return $return;
 	}
 	public static function mktime($hour = null, $minute = null, $second = null , $month = null, $day = null, $year = null){
 		if ($hour === null) {
