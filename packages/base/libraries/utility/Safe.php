@@ -140,7 +140,7 @@ class Safe {
 		}
 		return true;
 	}
-	static function htmlentities (string $value, ?array $replaces = null): string {
+	public static function htmlentities (string $value, ?array $replaces = null): string {
 		if (!$replaces) {
 			$replaces = array(
 				'"' => "&quot;",
