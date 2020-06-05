@@ -140,7 +140,15 @@ class Safe {
 		}
 		return true;
 	}
-	static function htmlentities (string $value): string {
-		return str_replace(array('"', "'", "<", ">"), array("&quot;", "&apos;", "&lt;", "&gt;"), $value);
+	public static function htmlentities (string $value, ?array $replaces = null): string {
+		if (!$replaces) {
+			$replaces = array(
+				'"' => "&quot;",
+				"'" => "&apos;",
+				"<" => "&lt;",
+				">" => "&gt;",
+			);
+		}
+		return str_replace(array_keys($replaces), array_values($replaces), $value);
 	}
 }
