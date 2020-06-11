@@ -18,9 +18,9 @@ class gregorian implements date_interface{
 	public static function getFirstDayOfWeek(): int {
 		return self::$weekDays[0];
 	}
-	public static function getWeekDay(int $day) {
-		$return = array_search($day, self::$weekDays);
-		return $return;
+	public static function getWeekDay(int $day): ?int {
+		$key = array_search($day, self::$weekDays);
+		return $key !== false ? $key : null;
 	}
 	public static function mktime($hour = null, $minute = null, $second = null , $month = null, $day = null, $year = null){
 		if ($hour === null) {

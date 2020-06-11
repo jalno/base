@@ -409,8 +409,9 @@ class hdate implements date_interface {
 	public static function getFirstDayOfWeek(): int {
 		return self::$weekDays[0];
 	}
-	public static function getWeekDay(int $day) {
-		return array_search($day, self::$weekDays);
+	public static function getWeekDay(int $day): ?int {
+		$key = array_search($day, self::$weekDays);
+		return $key !== false ? $key : null;
 	}
 	private static function getUmalquradata($with_adj = true): array {
 		$myumdata = array(15140, 15169, 15199, 15228, 15258, 15287, 15317, 15347, 15377, 15406, 15436, 15465, 15494, 15524, 15553, 15582, 15612, 15641, 15671, 15701, 15731, 15760, 15790, 15820, 15849, 15878, 15908, 15937, 15966, 15996, 16025, 16055, 16085, 16114, 16144, 16174, 16204, 16233, 

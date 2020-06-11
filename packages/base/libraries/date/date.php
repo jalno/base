@@ -77,7 +77,7 @@ class date implements date_interface {
 		self::init();
 		return call_user_func(array(__NAMESPACE__.'\\date\\'.self::$calendar, "getFirstDayOfWeek"));
 	}
-	public static function getWeekDay(int $day) {
+	public static function getWeekDay(int $day): ?int {
 		self::init();
 		return call_user_func(array(__NAMESPACE__.'\\date\\'.self::$calendar, "getWeekDay"), $day);
 	}
