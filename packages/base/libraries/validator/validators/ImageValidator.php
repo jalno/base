@@ -14,7 +14,7 @@ class ImageValidator extends FileValidator {
 	}
 
 	/**
-	 * Validate data to be a email.
+	 * Validate data to be a image.
 	 * 
 	 * @throws packages\base\InputValidationException
 	 * @param string $input
@@ -24,10 +24,14 @@ class ImageValidator extends FileValidator {
 	 */
 	public function validate(string $input, array $rule, $data) {
 		if (isset($data['error'])) {
-			$this->checkAndFixExtensionByMime($data);
+			if ($data['error'] == UPLOAD_ERR_OK) {
+				$this->checkAndFixExtensionByMime($data);
+			}
 		} else {
-			foreach ($data as $item) {
-				$this->checkAndFixExtensionByMime($item);
+			foreach ($data as $key => $item) {
+				if ($item['error'] == UPLOAD_ERR_OK) {
+					$this->checkAndFixExtensionByMime($item);
+				}
 			}
 		}
 		if (!isset($rule['extension'])) {
