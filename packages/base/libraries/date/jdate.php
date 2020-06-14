@@ -1,10 +1,15 @@
 <?php
 namespace packages\base\date;
 use \packages\base\utility\safe;
-class jdate implements date_interface{
+class jdate implements date_interface {
+	public static $weekDays = array(6, 0, 1, 2, 3, 4, 5);
     public static function getFirstDayOfWeek(): int {
-        return 6;
-    }
+		return self::$weekDays[0];
+	}
+	public static function getWeekDay(int $day): ?int {
+		$key = array_search($day, self::$weekDays);
+        return $key !== false ? $key : null;
+	}
     public static function format($type,$maket="now"){
     	$transnumber=0;
     	$TZhours=0;
