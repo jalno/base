@@ -382,46 +382,10 @@ class Router {
 				} elseif (!$process = Process::byId($processID)) {
 					throw new NotFound();
 				}
-				if ($process) {
-					if ($process->status != Process::running) {
-						list($controller, $method) = explode('@', $process->name, 2);
-						if (class_exists($controller) and method_exists($controller, $method)) {
-						    $process = new $controller($process);
-						    $process->start = time();
-						    $process->end = null;
-							$process->status = Process::running;
-						    $process->setPID();
-							$parameters = $process->parameters;
-							if ($parameters === null) {
-								$parameters = [];
-							}
-						    try {
-						        $return = $process->$method($parameters);
-						        if ($return instanceof response) {
-							        $process->status = $return->getStatus() ? Process::stopped : Process::error;
-							        $process->response = $return;
-							        if ($return->getStatus()) {
-								        $process->progress = 100;
-							        }
-						        }
-							} catch(\Exception $e) {
-								$process->status = Process::error;
-								if ($e instanceof Error) {
-									$e->setTraceMode(Error::SHORT_TRACE);
-								}
-					            $process->response = $e;
-						    }
-					        $process->end = time();
-					        $process->save();
-						} else {
-							throw new ProccessClass($process->name);
-						}
-					} else {
-						throw new ProccessAlive($process->id);
-					}
-				} else {
+				if (!$process) {
 					throw new NotFound();
 				}
+				$process->run();
 			} else {
 				echo("Please specify an process ID by passing --process argument" . PHP_EOL);
 				exit(1);
