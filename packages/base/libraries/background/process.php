@@ -140,10 +140,10 @@ class process extends dbObject{
 			$obj = new $class();
 			$return = $obj->$method($this->parameters);
 			if ($return instanceof Response) {
-				$obj->status = $return->getStatus() ? self::stopped : self::error;
-				$obj->response = $return;
+				$this->status = $return->getStatus() ? self::stopped : self::error;
+				$this->response = $return;
 				if ($return->getStatus()) {
-					$obj->progress = 100;
+					$this->progress = 100;
 				}
 			} else {
 				$this->status = self::stopped;
