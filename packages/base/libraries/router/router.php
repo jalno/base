@@ -366,31 +366,29 @@ class Router {
 			}
 		} else {
 			$processID = CLI::getParameter("process");
-			if ($processID) {
-				$process = null;
-				$processID = str_replace("/", "\\", $processID);
-				if (preg_match('/^packages\\\\([a-zA-Z0-9_]+\\\\)+([a-zA-Z0-9_]+)\@([a-zA-Z0-9_]+)$/', $processID)) {
-					$parameters = CLI::$request["parameters"];
-					unset($parameters["process"]);
-					if (count($parameters) == 0) {
-						$parameters = null;
-					}
-					$process = new Process();
-					$process->name = '\\'.$processID;
-					$process->parameters = $parameters;
-					$process->save();
-				} elseif (!$process = Process::byId($processID)) {
-					throw new NotFound();
-				}
-				if (!$process) {
-					throw new NotFound();
-				}
-				$process->run();
-			} else {
+			if (!$processID) {
 				echo("Please specify an process ID by passing --process argument" . PHP_EOL);
 				exit(1);
 			}
-
+			$process = null;
+			$processID = str_replace("/", "\\", $processID);
+			if (is_numeric($processID)) {
+				$process = Process::byId($processID);
+			} else if (preg_match('/^packages\\\\([a-zA-Z0-9_]+\\\\)+([a-zA-Z0-9_]+)\@([a-zA-Z0-9_]+)$/', $processID)) {
+				$parameters = CLI::$request["parameters"];
+				unset($parameters["process"]);
+				if (count($parameters) == 0) {
+					$parameters = null;
+				}
+				$process = new Process();
+				$process->name = $processID;
+				$process->parameters = $parameters;
+				$process->save();
+			}
+			if (!$process) {
+				throw new NotFound();
+			}
+			$process->run();
 		}
 		return $found;
 	}
