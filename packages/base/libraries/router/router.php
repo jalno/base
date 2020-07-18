@@ -366,67 +366,29 @@ class Router {
 			}
 		} else {
 			$processID = CLI::getParameter("process");
-			if ($processID) {
-				$process = null;
-				$processID = str_replace("/", "\\", $processID);
-				if (preg_match('/^packages\\\\([a-zA-Z0-9_]+\\\\)+([a-zA-Z0-9_]+)\@([a-zA-Z0-9_]+)$/', $processID)) {
-					$parameters = CLI::$request["parameters"];
-					unset($parameters["process"]);
-					if (count($parameters) == 0) {
-						$parameters = null;
-					}
-					$process = new Process();
-					$process->name = '\\'.$processID;
-					$process->parameters = $parameters;
-					$process->save();
-				} elseif (!$process = Process::byId($processID)) {
-					throw new NotFound();
-				}
-				if ($process) {
-					if ($process->status != Process::running) {
-						list($controller, $method) = explode('@', $process->name, 2);
-						if (class_exists($controller) and method_exists($controller, $method)) {
-						    $process = new $controller($process);
-						    $process->start = time();
-						    $process->end = null;
-							$process->status = Process::running;
-						    $process->setPID();
-							$parameters = $process->parameters;
-							if ($parameters === null) {
-								$parameters = [];
-							}
-						    try {
-						        $return = $process->$method($parameters);
-						        if ($return instanceof response) {
-							        $process->status = $return->getStatus() ? Process::stopped : Process::error;
-							        $process->response = $return;
-							        if ($return->getStatus()) {
-								        $process->progress = 100;
-							        }
-						        }
-							} catch(\Exception $e) {
-								$process->status = Process::error;
-								if ($e instanceof Error) {
-									$e->setTraceMode(Error::SHORT_TRACE);
-								}
-					            $process->response = $e;
-						    }
-					        $process->end = time();
-					        $process->save();
-						} else {
-							throw new ProccessClass($process->name);
-						}
-					} else {
-						throw new ProccessAlive($process->id);
-					}
-				} else {
-					throw new NotFound();
-				}
-			} else {
+			if (!$processID) {
 				echo("Please specify an process ID by passing --process argument" . PHP_EOL);
 				exit(1);
 			}
-
+			$process = null;
+			$processID = str_replace("/", "\\", $processID);
+			if (is_numeric($processID)) {
+				$process = Process::byId($processID);
+			} else if (preg_match('/^packages\\\\([a-zA-Z0-9_]+\\\\)+([a-zA-Z0-9_]+)\@([a-zA-Z0-9_]+)$/', $processID)) {
+				$parameters = CLI::$request["parameters"];
+				unset($parameters["process"]);
+				if (count($parameters) == 0) {
+					$parameters = null;
+				}
+				$process = new Process();
+				$process->name = $processID;
+				$process->parameters = $parameters;
+				$process->save();
+			}
+			if (!$process) {
+				throw new NotFound();
+			}
+			$process->run();
 		}
 		return $found;
 	}

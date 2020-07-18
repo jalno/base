@@ -113,36 +113,53 @@ class process extends dbObject{
 			}
 		}
 	}
-	public function run(){
+
+	/**
+	 * Call a process method.
+	 * All runtime throws of process will caught and save in process response.
+	 * 
+	 * @throws Exception if Could not find process.
+	 * @throws Exception if the process is alread running
+	 * @return null|Response if process successfully return a Response object, it will return. In case of exception null will return.
+	 */
+	public function run() {
 		list($class,$method) = explode('@',$this->name,2);
-		if(class_exists($class) and method_exists($class, $method)){
-			if($this->status != self::running){
-				$this->status = self::running;
-				$this->start = date::time();
-				$this->end = null;
-				$this->setPID();
-				$this->save();
-				$obj = new $class();
-				$return = $obj->$method($this->parameters);
-				if($return instanceof response){
-					$obj->status = $return->getStatus() ? self::stopped : self::error;
-					$obj->response = $return;
-					if($return->getStatus()){
-						$obj->progress = 100;
-					}
-				}else{
-					$this->status = self::stopped;
-				}
-				$this->end = date::time();
-				$this->save();
-				return $return;
-			}else{
-				throw new proccessAlive($this->id);
-			}
-		}else{
-			throw new proccessClass($this->name);
+		if (!class_exists($class) or !method_exists($class, $method)) {
+			throw new Exception("Could not find process:" . $this->name);
 		}
+		if ($this->status == self::running) {
+			throw new Exception("Process #{$this->id} already running");
+		}
+		$this->status = self::running;
+		$this->start = Date::time();
+		$this->end = null;
+		$this->setPID();
+		$this->save();
+		$return = null;
+		try {
+			$obj = new $class();
+			$return = $obj->$method($this->parameters);
+			if ($return instanceof Response) {
+				$obj->status = $return->getStatus() ? self::stopped : self::error;
+				$obj->response = $return;
+				if ($return->getStatus()) {
+					$obj->progress = 100;
+				}
+			} else {
+				$this->status = self::stopped;
+			}
+		} catch(\Throwable $e) {
+			$this->status = Process::error;
+			if ($e instanceof Error) {
+				$e->setTraceMode(Error::SHORT_TRACE);
+			}
+            $this->response = $e;
+	    }
+		$this->end = Date::time();
+		$this->save();
+		return $return;
 	}
+
 	/**
      * Returns if the process is currently running.
      *
@@ -227,14 +244,14 @@ class process extends dbObject{
         }
         return self::OS_OTHER;
 	}
-	public function waitFor(int $timeout = 0):bool{
+	public function waitFor(int $timeout = 0, bool $throwable = true): bool {
 		$ftime = time();
 		while($this->isRunning() and ($timeout == 0 or time() - $ftime < $timeout)){
 			usleep(250000);
 		}
 		$this->where("id", $this->id);
 		$this->getOne();
-		if($this->response instanceof \Exception){
+		if ($throwable and $this->response instanceof \Exception) {
 	        throw $this->response;
 	    }
 		return !$this->isRunning();
