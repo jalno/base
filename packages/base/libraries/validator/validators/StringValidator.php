@@ -26,6 +26,9 @@ class StringValidator implements IValidator {
 		if (!is_string($data)) {
 			throw new InputValidationException($input);
 		}
+		if (!isset($rule['trim']) or $rule['trim']) {
+			$data = trim($data);
+		}
 		if (!$data) {
 			if (!isset($rule['empty']) or !$rule['empty']) {
 				throw new InputValidationException($input);
