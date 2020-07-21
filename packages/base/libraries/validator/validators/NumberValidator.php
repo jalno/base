@@ -87,15 +87,16 @@ class NumberValidator implements IValidator {
 				break;
 		}
 		$rule['float'] = $rule['float'] ?? false;
-		$rule['zero'] = $rule['zero'] ?? $rule['empty'] ?? false;
-		if (!$data) {
-			if (!$rule['zero']) {
+		$rule['zero'] = $rule['zero'] ?? false;
+		$rule['empty'] = $rule['empty'] ?? false;
+		if ($data === "") {
+			if (!$rule['empty']) {
 				throw new InputValidationException($input, "empty-value");
 			}
 			if (isset($rule['default'])) {
 				return $rule['default'];
 			}
-			return;
+			return new NullValue();
 		}
 		$regexStr = "^\\s*";
 		if (isset($rule['negetive']) and $rule['negetive']) {
