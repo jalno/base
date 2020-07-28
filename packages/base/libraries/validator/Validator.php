@@ -92,7 +92,7 @@ class Validator {
 				}
 				continue;
 			}
-			if (empty($this->data[$input]) and !isset($rule['empty']) and isset($rule['optional']) and $rule['optional']) {
+			if (is_string($this->data[$input]) and $this->data[$input] === "" and !isset($rule['empty']) and isset($rule['optional']) and $rule['optional']) {
 				continue;
 			}
 			if (!isset($rule['type'])) {
