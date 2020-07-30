@@ -375,26 +375,7 @@ class view {
 	 * @return void
 	 */
 	public function output() {
-		if ($this->source) {
-			if ($this->file) {
-				if (is_string($this->file)) {
-					$this->file = $this->source->getFile($this->file);
-				}
-			} else {
-				$this->file = $this->source->getHTMLFile(get_class($this));
-				if (!$this->file) {
-					$reflection = new \ReflectionClass(get_class($this));
-					$thisFile = $reflection->getFileName();
-					$sourceHome = $this->source->getHome()->getRealPath();
-					$file = substr($thisFile, strlen($sourceHome) + 1);
-					$file = $this->source->getFile("html" . substr($file, strpos($file, "/")));
-					if ($file->exists()) {
-						$this->file = $file;
-					}
-				}
-			}
-		}
-		
+		$this->loadHTMLFile();
 		if (!$this->file) {
 			return;
 		}
@@ -451,6 +432,31 @@ class view {
 			if ($js['type'] == 'file') {
 				echo("<script async src=\"{$js['file']}\"></script>\n");
 			}
+		}
+	}
+	protected function loadHTMLFile() {
+		if (!$this->source) {
+			return;
+		}
+		if ($this->file) {
+			if (!is_string($this->file)) {
+				return;
+			}
+			$this->file = $this->source->getFile($this->file);
+		} else {
+			$this->file = $this->source->getHTMLFile(get_class($this));
+			if ($this->file) {
+				return;
+			}
+			$reflection = new \ReflectionClass(get_class($this));
+			$thisFile = $reflection->getFileName();
+			$sourceHome = $this->source->getHome()->getRealPath();
+			$file = substr($thisFile, strlen($sourceHome) + 1);
+			$file = $this->source->getFile("html" . substr($file, strpos($file, "/")));
+			if (!$file->exists()) {
+				throw new IO\NotFoundException($file);
+			}
+			$this->file = $file;
 		}
 	}
 }
