@@ -1050,20 +1050,13 @@ class MysqliDb
 			case 'NULL':
 			case 'string':
 				return 's';
-				break;
-
 			case 'boolean':
 			case 'integer':
 				return 'i';
-				break;
-
 			case 'blob':
 				return 'b';
-				break;
-
 			case 'double':
-				return 'd';
-				break;
+				return 's';
 		}
 		return '';
 	}
