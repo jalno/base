@@ -18,6 +18,9 @@ use \packages\base\log;
 class MysqliDb
 {
 
+	const DEADLOCKTRY = 5;
+	const DEADLOCK_ERRNO = 1213;
+
 	/**
 	 * Static instance of self
 	 * @var MysqliDb
@@ -731,7 +734,11 @@ class MysqliDb
 		$this->_query = "UPDATE " . $this->prefix . $tableName;
 
 		$stmt = $this->_buildQuery($numRows, $tableData);
-		$status = $stmt->execute();
+		$tries = self::DEADLOCKTRY;
+		do {
+			$status = $stmt->execute();
+			$tries--;
+		} while ($stmt->errno == self::DEADLOCK_ERRNO and $tries > 0);
 		$this->reset();
 		$this->_stmtError = $stmt->error;
 		$this->_stmtErrno = $stmt->errno;
@@ -764,7 +771,11 @@ class MysqliDb
 		}
 
 		$stmt = $this->_buildQuery($numRows);
-		$stmt->execute();
+		$tries = self::DEADLOCKTRY;
+		do {
+			$stmt->execute();
+			$tries--;
+		} while ($stmt->errno == self::DEADLOCK_ERRNO and $tries > 0);
 		$this->_stmtError = $stmt->error;
 		$this->_stmtErrno = $stmt->errno;
 		$this->reset();
@@ -1124,7 +1135,11 @@ class MysqliDb
 
 		$this->_query = $operation . " " . implode(' ', $this->_queryOptions) . " INTO " . $this->prefix . $tableName;
 		$stmt = $this->_buildQuery(null, $insertData);
-		$status = $stmt->execute();
+		$tries = self::DEADLOCKTRY;
+		do {
+			$status = $stmt->execute();
+			$tries--;
+		} while ($stmt->errno == self::DEADLOCK_ERRNO and $tries > 0);
 		$this->_stmtError = $stmt->error;
 		$this->_stmtErrno = $stmt->errno;
 		$haveOnDuplicate = !empty ($this->_updateColumns);
