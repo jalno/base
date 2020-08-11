@@ -437,7 +437,7 @@ class MysqliDb
 		$log = log::getInstance();
 		$log->debug("SQL Query:",$this->_lastQuery);
 
-		$stmt->execute();
+		$this->executeStmt($stmt);
 		$this->count = $stmt->affected_rows;
 		$this->_stmtError = $stmt->error;
 		$this->_stmtErrno = $stmt->errno;
@@ -509,7 +509,7 @@ class MysqliDb
 	{
 		$this->_query = $query;
 		$stmt = $this->_buildQuery($numRows);
-		$stmt->execute();
+		$this->executeStmt($stmt);
 		$this->_stmtError = $stmt->error;
 		$this->_stmtErrno = $stmt->errno;
 		$res = $this->_dynamicBindResults($stmt);
@@ -601,7 +601,7 @@ class MysqliDb
 			return $this;
 		}
 
-		$stmt->execute();
+		$this->executeStmt($stmt);
 		$this->_stmtError = $stmt->error;
 		$this->_stmtErrno = $stmt->errno;
 		$res = $this->_dynamicBindResults($stmt);
@@ -734,11 +734,7 @@ class MysqliDb
 		$this->_query = "UPDATE " . $this->prefix . $tableName;
 
 		$stmt = $this->_buildQuery($numRows, $tableData);
-		$tries = self::DEADLOCKTRY;
-		do {
-			$status = $stmt->execute();
-			$tries--;
-		} while ($stmt->errno == self::DEADLOCK_ERRNO and $tries > 0);
+		$status = $this->executeStmt($stmt);
 		$this->reset();
 		$this->_stmtError = $stmt->error;
 		$this->_stmtErrno = $stmt->errno;
@@ -771,11 +767,7 @@ class MysqliDb
 		}
 
 		$stmt = $this->_buildQuery($numRows);
-		$tries = self::DEADLOCKTRY;
-		do {
-			$stmt->execute();
-			$tries--;
-		} while ($stmt->errno == self::DEADLOCK_ERRNO and $tries > 0);
+		$this->executeStmt($stmt);
 		$this->_stmtError = $stmt->error;
 		$this->_stmtErrno = $stmt->errno;
 		$this->reset();
@@ -1135,11 +1127,7 @@ class MysqliDb
 
 		$this->_query = $operation . " " . implode(' ', $this->_queryOptions) . " INTO " . $this->prefix . $tableName;
 		$stmt = $this->_buildQuery(null, $insertData);
-		$tries = self::DEADLOCKTRY;
-		do {
-			$status = $stmt->execute();
-			$tries--;
-		} while ($stmt->errno == self::DEADLOCK_ERRNO and $tries > 0);
+		$status = $this->executeStmt($stmt);
 		$this->_stmtError = $stmt->error;
 		$this->_stmtErrno = $stmt->errno;
 		$haveOnDuplicate = !empty ($this->_updateColumns);
@@ -2114,6 +2102,27 @@ class MysqliDb
 		$res = $this->withTotalCount()->get ($table, Array ($offset, $this->pageLimit), $fields);
 		$this->totalPages = ceil($this->totalCount / $this->pageLimit);
 		return $res;
+	}
+	
+	/**
+	 * Excectue a sql statement and watch for deadlock.
+	 * In case of dead lock it will try agian up to {MysqliDb::DEADLOCKTRY} times.
+	 * 
+	 * @param \mysqli_stmt $stmt
+	 * @throws SqlException if sql still occur a deadlock after {MysqliDb::DEADLOCKTRY} tries.
+	 * @return bool  Returns TRUE on success or FALSE on failure. 
+	 */
+	private function executeStmt(\mysqli_stmt $stmt): bool {
+		$tries = self::DEADLOCKTRY;
+		do {
+			$status = $stmt->execute();
+			$tries--;
+		} while ($stmt->errno == self::DEADLOCK_ERRNO and $tries > 0);
+
+		if ($stmt->errno == self::DEADLOCK_ERRNO) {
+			throw new SqlException($stmt->error, $stmt->errno);
+		}
+		return $status;
 	}
 }
 
