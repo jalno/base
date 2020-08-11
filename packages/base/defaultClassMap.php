@@ -32,6 +32,8 @@ return array(
 	'packages\base\db\inputdatatype' => 'packages/base/libraries/db/exceptions.php',
 	'packages\base\db\inputrequired' => 'packages/base/libraries/db/exceptions.php',
 	'packages\base\db\mysqlidb' => 'packages/base/libraries/db/MysqliDb.php',
+	'packages\base\db\databaseexception' => 'packages/base/libraries/db/DatabaseException.php',
+	'packages\base\db\sqlexception' => 'packages/base/libraries/db/SqlException.php',
 	'packages\base\event' => 'packages/base/libraries/events/event.php',
 	'packages\base\eventinterface' => 'packages/base/libraries/events/EventInterface.php',
 	'packages\base\events' => 'packages/base/libraries/events/events.php',
