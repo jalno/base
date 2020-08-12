@@ -434,7 +434,17 @@ class view {
 			}
 		}
 	}
-	protected function loadHTMLFile() {
+
+	/**
+	 * Locate html file and put in $file property based on this priority:
+	 *  1. $file property of extended class.
+	 *  2. theme.json file.
+	 *  3. same path of view file in frontend source in it's html directory.
+	 * 
+	 * @throws IO\NotFoundException if located file doesn't exist
+	 * @return void
+	 */
+	protected function loadHTMLFile(): void {
 		if (!$this->source) {
 			return;
 		}
@@ -453,10 +463,10 @@ class view {
 			$sourceHome = $this->source->getHome()->getRealPath();
 			$file = substr($thisFile, strlen($sourceHome) + 1);
 			$file = $this->source->getFile("html" . substr($file, strpos($file, "/")));
-			if (!$file->exists()) {
-				throw new IO\NotFoundException($file);
-			}
 			$this->file = $file;
+		}
+		if ($this->file and !$this->file->exists()) {
+			throw new IO\NotFoundException($this->file);
 		}
 	}
 }
