@@ -138,7 +138,7 @@ class process extends dbObject{
 		$return = null;
 		try {
 			$obj = new $class();
-			$return = $obj->$method($this->parameters);
+			$return = $obj->$method($this->parameters ?? []);
 			if ($return instanceof Response) {
 				$this->status = $return->getStatus() ? self::stopped : self::error;
 				$this->response = $return;
