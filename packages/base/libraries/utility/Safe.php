@@ -2,6 +2,25 @@
 namespace packages\base\Utility;
 
 class Safe {
+	/**
+	 * Safe compare two float value to avoid the floating-point problem
+	 *
+	 * @param float $a
+	 * @param float $b
+	 * @return int positive value if a > b, zero if a = b and a negative value if a < b.
+	 * @see https://www.php.net/manual/en/language.types.float.php#language.types.float.comparison
+	 */
+	public static function floats_cmp(float $a, float $b): int {
+		if ($a == 0 or $b == 0) {
+			return $a <=> $b;
+		} else if (abs(($a - $b) / $b) < PHP_FLOAT_EPSILON) { // PHP_FLOAT_EPSILON available as of PHP 7.2.0.
+			return 0;
+		} else if ($a - $b > 0) {
+			return 1;
+		} else {
+			return -1;
+		}
+	}
 	static function string($str){
         $str = trim($str);
         $str = str_replace(array('\\', '\'', '"'), "", $str);
