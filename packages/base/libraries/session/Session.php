@@ -131,7 +131,7 @@ class Session {
 	 * 
 	 * @return string|null NULL if session isn't started yet.
 	 */
-	public static function getID(): string {
+	public static function getID():? string {
 		return self::getHandler()->getID();
 	}
 }
