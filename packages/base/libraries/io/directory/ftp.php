@@ -123,16 +123,16 @@ class ftp extends directory{
 		$driver = $this->getDriver();
 		$scanner = function($dir) use ($recursively, $driver, &$scanner) {
 			$items = [];
-			foreach ($driver->nlist($dir) as $item) {
-				$basename = basename($item);
-				if ($basename != '.' and $basename != '..') {
-					if (!$driver->is_dir($item)) {
-						$file = new file\ftp($item);
-						$file->setDriver($driver);
-						$items[] = $file;
-					} elseif($recursively) {
-						$items = array_merge($items, $scanner($item));
-					}
+			foreach ($driver->list($dir) as $item) {
+				if ($item['name'] == '.' or $item['name'] == '..') {
+					continue;
+				}
+				if ($item['type'] == 'f') {
+					$file = new file\ftp($dir . "/" . $item['name']);
+					$file->setDriver($driver);
+					$items[] = $file;
+				} elseif($item['type'] == 'd' and $recursively) {
+					$items = array_merge($items, $scanner($dir . "/" . $item['name']));
 				}
 			}
 			return $items;
@@ -150,16 +150,16 @@ class ftp extends directory{
 		$driver = $this->getDriver();
 		$scanner = function($dir) use ($recursively, $driver, &$scanner) {
 			$items = [];
-			foreach ($driver->nlist($dir) as $item) {
-				$basename = basename($item);
-				if ($basename != '.' and $basename != '..') {
-					if ($driver->is_dir($item)){
-						$directory = new directory\ftp($item);
-						$directory->setDriver($driver);
-						$items[] = $directory;
-						if ($recursively) {
-							$items = array_merge($items, $scanner($item));
-						}
+			foreach ($driver->list($dir) as $item) {
+				if ($item['name'] == '.' or $item['name'] == '..') {
+					continue;
+				}
+				if ($item['type'] == 'd'){
+					$directory = new directory\ftp($dir . "/" . $item['name']);
+					$directory->setDriver($driver);
+					$items[] = $directory;
+					if ($recursively) {
+						$items = array_merge($items, $scanner($dir . "/" . $item['name']));
 					}
 				}
 			}
@@ -178,21 +178,21 @@ class ftp extends directory{
 		$driver = $this->getDriver();
 		$scanner = function($dir) use($recursively, $driver, &$scanner) {
 			$items = [];
-			foreach ($driver->nlist($dir) as $item) {
-				$basename = basename($item);
-				if ($basename != '.' and $basename != '..') {
-					if ($driver->is_dir($item)){
-						$directory = new directory\ftp($item);
-						$directory->setDriver($driver);
-						$items[] = $directory;
-						if($recursively){
-							$items = array_merge($items, $scanner($item));
-						}
-					} elseif ($driver->is_file($item)) {
-						$file = new file\ftp($item);
-						$file->setDriver($driver);
-						$items[] = $file;
+			foreach ($driver->list($dir) as $item) {
+				if ($item['name'] == '.' or $item['name'] == '..') {
+					continue;
+				}
+				if ($item['type'] == 'd'){
+					$directory = new directory\ftp($dir . "/" . $item['name']);
+					$directory->setDriver($driver);
+					$items[] = $directory;
+					if($recursively){
+						$items = array_merge($items, $scanner($dir . "/" . $item['name']));
 					}
+				} elseif ($item['type'] == 'f') {
+					$file = new file\ftp($dir . "/" . $item['name']);
+					$file->setDriver($driver);
+					$items[] = $file;
 				}
 			}
 			return $items;

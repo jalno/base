@@ -1,9 +1,9 @@
 <?php
 namespace packages\base\IO\drivers;
-use \packages\base\IO\drivers\ftp\CannectionException;
-use \packages\base\IO\drivers\ftp\AuthException;
-use \packages\base\IO\drivers\ftp\ChangeDirException;
-use \packages\base\IO\drivers\ftp\NotReady;
+
+use packages\base\Exception;
+use packages\base\IO\drivers\ftp\{NotReady, ChangeDirException, AuthException, CannectionException};
+
 class ftp{
 	const BINARY = FTP_BINARY;
 	const ASCII = FTP_ASCII;
@@ -153,6 +153,36 @@ class ftp{
 		$list = @ftp_nlist($this->connection, $dir);
 		if(!is_array($list)){
 			$list = [];
+		}
+		return $list;
+	}
+	public function rawList(string $dir):array{
+		if(!$this->ready){
+			throw new NotReady();
+		}
+		$list = @ftp_rawlist($this->connection, $dir);
+		if(!is_array($list)){
+			$list = [];
+		}
+		return $list;
+	}
+	public function list(string $dir): array {
+		$raw = $this->rawList($dir);
+		$list = [];
+		foreach ($raw as $line) {
+			if (!preg_match("/^([\-dbclps])([\-rwxs]{9})\\s+(\\d+)\\s+(\\w+)\\s+(\\w+)\\s+(\\d+)\\s+(\\w{3}\\s+\\d{1,2}\\s+(?:\\d{1,2}:\\d{1,2}|\\d{4}))\\s+(.+)$/", $line, $matches)) {
+				throw new Exception("invalid line: {$line}");
+			}
+			$list[] = array(
+				"type" =>  $matches[1] != "-" ? $matches[1] : "f",
+				"permissions" => $matches[2],
+				"items" => intval($matches[3]),
+				"owner" => $matches[4],
+				"group" => $matches[5],
+				"size" =>  intval($matches[6]),
+				"date" =>  $matches[7],
+				"name" =>  $matches[8],
+			);
 		}
 		return $list;
 	}
