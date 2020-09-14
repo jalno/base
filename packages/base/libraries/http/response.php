@@ -64,6 +64,7 @@ class response{
 	);
 	private $statusCode;
 	private $reasonPhrase;
+	private $primaryIP;
 	private $headers;
 	private $body;
 	private $file;
@@ -106,5 +107,11 @@ class response{
 	}
 	public function getFile(){
 		return $this->file;
+	}
+	public function setPrimaryIP(string $ip): void {
+		$this->primaryIP = $ip;
+	}
+	public function getPrimaryIP(): string {
+		return $this->primaryIP ?? "";
 	}
 }
