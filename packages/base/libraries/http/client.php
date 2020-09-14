@@ -27,7 +27,7 @@ class client{
 		'save_as' => null,
 		'outgoing_ip' => null,
 	);
-	private $options;
+	protected $options;
 	public function __construct(array $options = array()){
 		$this->options = array_replace_recursive(self::$defaultOptions, $options);
 
@@ -134,8 +134,7 @@ class client{
 		if (isset($thisOptions['outgoing_ip'])) {
 			$request->setOutgoingIP($thisOptions['outgoing_ip']);
 		}
-		$handler = new curl();
-		$response = $handler->fire($request, $thisOptions);
+		$response = $this->fire($request, $thisOptions);
 		
 		$status = $response->getStatusCode();
 		if($status >= 400 and $status < 500){
@@ -150,5 +149,10 @@ class client{
 	}
 	public function post(string $URI, array $options = array()):response{
 		return $this->request('post', $URI, $options);
+	}
+
+	public function fire(Request $request, array $options): Response {
+		$handler = new curl();
+		return $handler->fire($request, $options);
 	}
 }
