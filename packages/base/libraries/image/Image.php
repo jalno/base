@@ -1,7 +1,7 @@
 <?php
 namespace packages\base;
 
-use packages\base\IO\{File, NotFoundException};
+use packages\base\{IO\File, IO\NotFoundException, Image\InvalidImageFileException};
 
 abstract class Image {
 
@@ -12,19 +12,28 @@ abstract class Image {
 	 * @return packages\base\Image
 	 */
 	public static function fromFormat(File $file): Image {
+		$image = null;
 		switch (strtolower($file->getExtension())) {
 			case('jpeg'):
 			case('jpg'):
-				return new Image\JPEG($file);
+				$image = new Image\JPEG($file);
+				break;
 			case('png'):
-				return new Image\PNG($file);
+				$image = new Image\PNG($file);
+				break;
 			case('gif'):
-				return new Image\GIF($file);
+				$image = new Image\GIF($file);
+				break;
 			case('webp'):
-				return new Image\WEBP($file);
+				$image = new Image\WEBP($file);
+				break;
 			default:
 				throw new Image\UnsupportedFormatException($file->getExtension());
 		}
+		if (!$image->image) {
+			throw new InvalidImageFileException($file);
+		}
+		return $image;
 	}
 
 	/**
