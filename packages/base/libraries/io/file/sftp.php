@@ -1,12 +1,10 @@
 <?php
-namespace packages\base\IO\file;
-use \packages\base\ssh;
-use \packages\base\IO\file;
-use \packages\base\IO\directory;
-use \packages\base\IO\file\local;
-use \packages\base\IO\drivers\sftp as driver;
-use \packages\base\IO\ReadException;
-class sftp extends file{
+namespace packages\base\IO\File;
+
+use packages\base\SSH;
+use packages\base\IO\{Buffer, File, Directory, drivers\Sftp as Driver, ReadException};
+
+class Sftp extends File {
 	public $hostname;
 	public $port;
 	public $username;
@@ -26,7 +24,7 @@ class sftp extends file{
 		$this->driver = new driver($ssh);
 		return $this->driver;
 	}
-	public function open(string $mode):buffer {
+	public function open(string $mode): Buffer {
         return $this->getDriver()->open($this->getPath(), $mode);
     }
 	public function write(string $data):bool{
@@ -61,7 +59,7 @@ class sftp extends file{
     }
 	public function copyTo(file $dest): bool{
 		$driver = $this->getDriver();
-		if($dest instanceof local){
+		if($dest instanceof Local){
 			return $driver->download($this->getPath(), $dest->getPath());
 		}else{
 			$tmp = new tmp();
