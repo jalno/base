@@ -158,7 +158,7 @@ class sftp extends directory{
 		$directory->setDriver($this->getDriver());
 		return $directory;
 	}
-	public function getDirectory():directory\ftp{
+	public function getDirectory():directory\sftp{
 		$directory = new directory\sftp($this->dirname);
 		$directory->setDriver($this->getDriver());
 		return $directory;
