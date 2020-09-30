@@ -52,4 +52,12 @@ abstract class directory implements \Serializable{
 	public function isEmpty():bool{
 		return empty($this->items(false));
 	}
+	public function getRelativePath($item): string {
+		if (!$item instanceof Directory and !$item instanceof File) {
+			throw new \TypeError("item must be instance of Directory or file");
+		}
+		$base = $this->getPath();
+		$path = $item->getPath();
+		return substr($path, strlen($base) + 1);
+	}
 }
