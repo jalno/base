@@ -103,7 +103,7 @@ class curl implements handler{
 		}
 		$header = $this->decodeHeader($header);
 		$response = new Response($info['http_code'], $header);
-		$response->setPrimaryIP($info['primary_ip']);
+		$response->setPrimaryIP($info['primary_ip'] ? $info['primary_ip'] : null);
 		if (isset($options['save_as'])) {
 			$response->setFile($options['save_as']);
 		} else {

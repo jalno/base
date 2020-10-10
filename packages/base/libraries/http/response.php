@@ -108,10 +108,10 @@ class response{
 	public function getFile(){
 		return $this->file;
 	}
-	public function setPrimaryIP(string $ip): void {
+	public function setPrimaryIP(?string $ip): void {
 		$this->primaryIP = $ip;
 	}
-	public function getPrimaryIP(): string {
-		return $this->primaryIP ?? "";
+	public function getPrimaryIP(): ?string {
+		return $this->primaryIP;
 	}
 }
