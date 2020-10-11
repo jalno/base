@@ -28,9 +28,13 @@ class JPEG extends GD {
 	/**
 	 * Read the image from constructor file.
 	 * 
+	 * @throws InvalidImageFileException if gd library was unable to load a jpeg image from the file.
 	 * @return void
 	 */
 	protected function fromFile(): void {
 		$this->image = imagecreatefromjpeg($this->file->getPath());
+		if (!is_resource($this->image)) {
+			throw new InvalidImageFileException($this->file);
+		}
 	}
 }

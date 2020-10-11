@@ -179,10 +179,14 @@ class GD extends Image {
 	/**
 	 * Read the image from constructor file.
 	 * 
+	 * @throws InvalidImageFileException if gd library was unable to load image from the file.
 	 * @return void
 	 */
 	protected function fromFile(): void {
 		$this->image = imagecreatefromgd($this->file->getPath());
+		if (!is_resource($this->image)) {
+			throw new InvalidImageFileException($this->file);
+		}
 	}
 
 	/**

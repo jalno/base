@@ -1,39 +1,31 @@
 <?php
 namespace packages\base;
 
-use packages\base\{IO\File, IO\NotFoundException, Image\InvalidImageFileException};
+use packages\base\{IO\File, IO\NotFoundException};
 
 abstract class Image {
 
 	/**
 	 * identify and construct an image from its file extension.
 	 * 
-	 * @throws packages\base\Image\UnsupportedFormatException if the format was not supported.
-	 * @return packages\base\Image
+	 * @throws Image\UnsupportedFormatException if the format was not supported.
+	 * @throws Image\InvalidImageFileException if file content was corrupted or was incompatible to its extension.
+	 * @return Image
 	 */
 	public static function fromFormat(File $file): Image {
-		$image = null;
 		switch (strtolower($file->getExtension())) {
 			case('jpeg'):
 			case('jpg'):
-				$image = new Image\JPEG($file);
-				break;
+				return new Image\JPEG($file);
 			case('png'):
-				$image = new Image\PNG($file);
-				break;
+				return new Image\PNG($file);
 			case('gif'):
-				$image = new Image\GIF($file);
-				break;
+				return new Image\GIF($file);
 			case('webp'):
-				$image = new Image\WEBP($file);
-				break;
+				return new Image\WEBP($file);
 			default:
 				throw new Image\UnsupportedFormatException($file->getExtension());
 		}
-		if (!$image->image) {
-			throw new InvalidImageFileException($file);
-		}
-		return $image;
 	}
 
 	/**
@@ -74,6 +66,7 @@ abstract class Image {
 	 * @param int|null $height height of new image in third method
 	 * @param packages\base\Image\Color $bg background color of new image in third method
 	 * @throws packages\base\IO\NotFoundException if passed file cannot be found.
+	 * @throws Images\InvalidImageFileException if file content was corrupted
 	 */
 	public function __construct($param = null, ?int $height = null, ?Image\Color $bg = null){
 		if ($param instanceof File) {
@@ -249,6 +242,7 @@ abstract class Image {
 	/**
 	 * Read the image from constructor file.
 	 * 
+	 * @throws Image\InvalidImageFileException if the format was not supported.
 	 * @return void
 	 */
 	abstract protected function fromFile(): void;
