@@ -61,7 +61,7 @@ class Safe {
     static function is_email($address){
         return preg_match('/^(?:[\w\!\#\$\%\&\'\*\+\-\/\=\?\^\`\{\|\}\~]+\.)*[\w\!\#\$\%\&\'\*\+\-\/\=\?\^\`\{\|\}\~]+@(?:(?:(?:[a-zA-Z0-9_](?:[a-zA-Z0-9_\-](?!\.)){0,61}[a-zA-Z0-9_-]?\.)+[a-zA-Z0-9_](?:[a-zA-Z0-9_\-](?!$)){0,61}[a-zA-Z0-9_]?)|(?:\[(?:(?:[01]?\d{1,2}|2[0-4]\d|25[0-5])\.){3}(?:[01]?\d{1,2}|2[0-4]\d|25[0-5])\]))$/', $address);
     }
-    static function is_cellphone_ir(string $cellphone): bool {
+    public static function is_cellphone_ir(string $cellphone): bool {
 		$length = strlen($cellphone);
 		if (($length == 10 and substr($cellphone, 0, 1) == '9') or // 9131101234
 			($length == 11 and substr($cellphone, 0, 2) == '09') or // 09131101234
@@ -92,22 +92,20 @@ class Safe {
 					$sub4 = '0' . substr($cellphone, 4, 3);
 					break;
 			}
-			$isValid = false;
 			switch ($sub4) {
 				case('0910'):case('0911'):case('0912'):case('0913'):case('0914'):case('0915'):case('0916'):case('0917'):case('0918'):case('0919'):case('0990'):case('0991'):case('0992'): // TCI
+				case('0930'):case('0933'):case('0935'):case('0936'):case('0937'):case('0938'):case('0939'): // IranCell
+				case('0901'):case('0902'):case('0903'):case('0905'): // IranCell - ISim
+				case('0920'):case('0921'):case('0922'): // RighTel
 				case('0931'): // Spadan
 				case('0932'): // Taliya
 				case('0934'): // TKC
-				case('0901'):case('0902'):case('0903'):case('0905'): // IranCell - ISim
-				case('0930'):case('0933'):case('0935'):case('0936'):case('0937'):case('0938'):case('0939'): // IranCell
-				case('0920'):case('0921'):case('0922'): // RighTel
-					$isValid = true;
-					break;
+				case('0998'): // ShuttleMobile
+				case('0999'): // Private Sector: ApTel, Azartel, LOTUSTEL, SamanTel
+					return true;
 				default:
-					$isValid = false;
-					break;
+					return false;
 			}
-			return $isValid;
 		}
 		return false;
 	}
