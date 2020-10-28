@@ -20,10 +20,10 @@ class curl implements handler{
 			curl_setopt($ch, CURLOPT_POSTFIELDS, $this->replaceFiles($request->getBody()));
 		}
 		if(isset($options['timeout']) and $options['timeout'] > 0){
-			curl_setopt($ch, CURLOPT_TIMEOUT_MS, $options['timeout'] * 1000000);
+			curl_setopt($ch, CURLOPT_TIMEOUT, $options['timeout']);
 		}
-		if(isset($options['connent_timeout']) and $options['connect_timeout'] > 0){
-			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT_MS, $options['connent_timeout'] * 1000000);
+		if(isset($options['connect_timeout']) and $options['connect_timeout'] > 0){
+			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $options['connect_timeout']);
 		}
 		if(isset($options['allow_redirects'])){
 			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, $options['allow_redirects']);
