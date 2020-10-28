@@ -102,10 +102,11 @@ class curl implements handler{
 			list($header, $body) = $this->getParts($result);
 		}
 		$header = $this->decodeHeader($header);
-		$response = new response($info['http_code'], $header);
-		if(isset($options['save_as'])){
+		$response = new Response($info['http_code'], $header);
+		$response->setPrimaryIP($info['primary_ip'] ? $info['primary_ip'] : null);
+		if (isset($options['save_as'])) {
 			$response->setFile($options['save_as']);
-		}else{
+		} else {
 			$response->setBody($body);
 		}
 		return $response;

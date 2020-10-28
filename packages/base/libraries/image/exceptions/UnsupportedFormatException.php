@@ -7,12 +7,12 @@ class UnsupportedFormatException extends Exception {
 	/** @var string */
 	protected $format;
 
-	public function __constrcut(string $format, string $message = "") {
-		$this->format = $fotmat;
+	public function __construct(string $format, string $message = "") {
+		$this->format = $format;
 		if (!$message) {
 			$message = "{$format} is an unsupported image format";
 		}
-		parent::__constrcut($message);
+		parent::__construct($message);
 	}
 
 	public function getFormat(): string {
