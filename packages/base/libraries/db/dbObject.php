@@ -642,9 +642,17 @@ class dbObject implements \Serializable, IValidator {
 					continue;
 				}
 				if(is_string($data[$key])){
-					$firstChars  = substr($data[$key], 0,1);
-					if($firstChars == '{' or $firstChars == '['){
-						$data[$key] = json\decode ($data[$key]);
+					$firstChars = substr($data[$key], 0,1);
+					$lastChar = substr($data[$key], -1);
+					if (
+						($firstChars == '{' or $firstChars == '[') and
+						($lastChar == '}' or $lastChar == ']')
+					) {
+						try {
+							$data[$key] = json\decode ($data[$key]);
+						} catch(json\JsonException $e) {
+							// So we pass data without decoding
+						}
 					}
 				}
 			}
