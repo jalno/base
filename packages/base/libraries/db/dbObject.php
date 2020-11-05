@@ -645,8 +645,8 @@ class dbObject implements \Serializable, IValidator {
 					$firstChars = substr($data[$key], 0,1);
 					$lastChar = substr($data[$key], -1);
 					if (
-						($firstChars == '{' or $firstChars == '[') and
-						($lastChar == '}' or $lastChar == ']')
+						($firstChars == '{' and $lastChar == '}') or
+						($firstChars == '[' and $lastChar == ']')
 					) {
 						try {
 							$data[$key] = json\decode ($data[$key]);
