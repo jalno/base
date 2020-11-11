@@ -124,6 +124,7 @@ class process extends dbObject{
 	 */
 	public function run() {
 		list($class,$method) = explode('@',$this->name,2);
+		$class = ltrim($class, "\\");
 		if (!class_exists($class) or !method_exists($class, $method)) {
 			throw new Exception("Could not find process:" . $this->name);
 		}
@@ -137,8 +138,16 @@ class process extends dbObject{
 		$this->save();
 		$return = null;
 		try {
-			$obj = new $class();
+			if (get_class($this) == $class) {
+				$obj = $this;
+			} else {
+				$obj = new $class();
+				$obj->data = $this->data;
+			}
 			$return = $obj->$method($this->parameters ?? []);
+			if ($this !== $obj) {
+				$this->data = $obj->data;
+			}
 			if ($return instanceof Response) {
 				$this->status = $return->getStatus() ? self::stopped : self::error;
 				$this->response = $return;
