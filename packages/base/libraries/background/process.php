@@ -103,9 +103,9 @@ class process extends dbObject{
 		}
 		$this->save();
 	}
-	public function runAndWaitFor(int $seconds = 0){
+	public function runAndWaitFor(int $seconds = 0, bool $throwable = true){
 		if($this->background_run()){
-			if($this->waitFor($seconds)){
+			if($this->waitFor($seconds, $throwable)){
 				$this->byId($this->id);
 				return $this->response;
 			}else{
