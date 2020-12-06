@@ -15,5 +15,6 @@ $options = array(
 	'packages.base.translator.defaultlang' => 'fa_IR',
 	'packages.base.translator.changelang' => 'uri',//uri,parameter
 	'packages.base.translator.changelang.type' => 'short',//short, complete
-	'packages.base.safe_referers' => array()
+	'packages.base.safe_referers' => array(),
+	"packages.base.router.defaultDomain" => "*"
 );
