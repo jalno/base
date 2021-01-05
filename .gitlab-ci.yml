@@ -1,8 +1,26 @@
-services:
-  - mysql:latest
-test:7:
-  image: php:7
+stages:
+  - test
+  - build
+  - release
+
+variables:
+  REPO_SERVER_HOST: ${CI_SERVER_PROTOCOL}://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}:${CI_SERVER_PORT}
+
+static analyse:
+  image: php:7.4-cli-alpine3.12
+  stage: test
+  variables:
+    GIT_ROOT_PATH: $CI_BUILDS_DIR/$CI_PROJECT_PATH
+  before_script:
+    - apk update && apk add git libzip-dev zip
+    - docker-php-ext-install zip
+    - mkdir /tmp/gitlab-ci-container
+    - cd /tmp/gitlab-ci-container
+    - php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+    - php composer-setup.php --install-dir=/bin --filename=composer
+    - php -r "unlink('composer-setup.php');"
+    - COMPOSER_ALLOW_SUPERUSER=1 composer require --dev phpstan/phpstan
+    - cd $GIT_ROOT_PATH/packages
+    - rm -rf PhpParser && git clone --depth 1 ${REPO_SERVER_HOST}/yeganemehr/PhpParser.git
   script:
-    - find -type f -name "*.php" -exec php -l {} \; > find
-    - bash -c 'grep -v "No syntax errors detected" find && exit 128 || exit 0'
-    - rm -f find
+    - /tmp/gitlab-ci-container/vendor/bin/phpstan analyse --memory-limit 4G -c $GIT_ROOT_PATH/packages/base/phpstan.neon $GIT_ROOT_PATH
