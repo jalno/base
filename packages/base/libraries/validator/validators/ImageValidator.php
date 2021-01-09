@@ -47,36 +47,42 @@ class ImageValidator extends FileValidator {
 			throw new InputValidationException($input, "unsupported-format");
 		}
 
-		if (isset($input['max-size'])) {
-			$input['max-width'] = $input['max-size'][0];
-			$input['max-height'] = $input['max-size'][1];
+		if (isset($rule['min-size'])) {
+			$rule['min-width'] = $rule['min-size'][0];
+			$rule['min-height'] = $rule['min-size'][1];
 		}
-		if (isset($input['min-size'])) {
-			$input['min-width'] = $input['min-size'][0];
-			$input['min-height'] = $input['min-size'][1];
+		if (isset($rule['max-size'])) {
+			$rule['max-width'] = $rule['max-size'][0];
+			$rule['max-height'] = $rule['max-size'][1];
 		}
-		if (isset($input['min-width']) and $input['min-width'] > 0 and $image->getWidth() < $input['min-width']) {
-			throw new InputValidationException($input, "min-width: {$input['min-width']}px");
+		if (isset($rule['min-width']) and $rule['min-width'] > 0 and $image->getWidth() < $rule['min-width']) {
+			throw new InputValidationException($input, "min-width: {$rule['min-width']}px");
 		}
-		if (isset($input['max-width']) and $input['max-width'] > 0 and $image->getWidth() > $input['max-width']) {
-			throw new InputValidationException($input, "max-width: {$input['max-width']}px");
+		if (isset($rule['max-width']) and $rule['max-width'] > 0 and $image->getWidth() > $rule['max-width']) {
+			throw new InputValidationException($input, "max-width: {$rule['max-width']}px");
 		}
-		if (isset($input['min-height']) and $input['min-height'] > 0 and $image->getHeight() < $input['min-height']) {
-			throw new InputValidationException($input, "min-height: {$input['min-height']}px");
+		if (isset($rule['min-height']) and $rule['min-height'] > 0 and $image->getHeight() < $rule['min-height']) {
+			throw new InputValidationException($input, "min-height: {$rule['min-height']}px");
 		}
-		if (isset($input['max-height']) and $input['max-height'] > 0 and $image->getHeight() > $input['max-height']) {
-			throw new InputValidationException($input, "max-height: {$input['max-height']}px");
+		if (isset($rule['max-height']) and $rule['max-height'] > 0 and $image->getHeight() > $rule['max-height']) {
+			throw new InputValidationException($input, "max-height: {$rule['max-height']}px");
 		}
-		if (isset($input['resize'])) {
-			$input['resize-width'] = $input['resize'][0];
-			$input['resize-height'] = $input['resize'][1];
+		if (isset($rule['resize'])) {
+			$rule['resize-width'] = $rule['resize'][0];
+			$rule['resize-height'] = $rule['resize'][1];
 		}
-		if (isset($input['resize-width']) and $input['resize-width'] > 0) {
-			$image = $image->resize($input['resize-width'], $image->getHeight());
+
+		$shouldResizeWidth = (isset($rule['resize-width']) and $rule['resize-width'] > 0);
+		$shouldResizeHeight = (isset($rule['resize-height']) and $rule['resize-height'] > 0);
+
+		if ($shouldResizeWidth and $shouldResizeHeight) {
+			$image = $image->resize($rule['resize-width'], $rule['resize-height']);
+		} else if ($shouldResizeWidth) {
+			$image = $image->resize($rule['resize-width'], $image->getHeight());
+		} else if ($resizeHeight) {
+			$image = $image->resize($image->getWidth(), $rule['resize-height']);
 		}
-		if (isset($input['resize-height']) and $input['resize-height'] > 0) {
-			$image = $image->resize($image->getWidth(), $input['resize-height']);
-		}
+
 		if (!isset($rule['obj']) or $rule['obj']) {
 			return $image;
 		}

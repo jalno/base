@@ -17,7 +17,19 @@ class curl implements handler{
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		if ($request->getMethod() != "GET") {
 			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $request->getMethod());
-			curl_setopt($ch, CURLOPT_POSTFIELDS, $this->replaceFiles($request->getBody()));
+			$reqBody = $request->getBody();
+			if (is_string($reqBody) or is_array($reqBody)) {
+				curl_setopt($ch, CURLOPT_POSTFIELDS, $this->replaceFiles($request->getBody()));
+			} elseif ($reqBody instanceof File) {
+				if (!($reqBody instanceof File\Local)) {
+					throw new Exception("Cannot open stream for non-local files");
+				}
+				$inFile = fopen($reqBody->getPath(), 'r');
+				curl_setopt($ch, CURLOPT_UPLOAD, true);
+				curl_setopt($ch, CURLOPT_INFILE, $inFile);
+				curl_setopt($ch, CURLOPT_INFILESIZE, $reqBody->size());
+			}
+
 		}
 		if(isset($options['timeout']) and $options['timeout'] > 0){
 			curl_setopt($ch, CURLOPT_TIMEOUT, $options['timeout']);
