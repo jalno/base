@@ -2,13 +2,13 @@
 namespace packages\base;
 
 class packages {
-	/** @var packages\base\package[] */
+	/** @var package[] */
 	static private $actives = [];
 	
 	/**
 	 * Register a new package
 	 * 
-	 * @param packages\base\package
+	 * @param package
 	 * @return void
 	 */
 	static function register(package $package): void {
@@ -19,7 +19,7 @@ class packages {
 	 * Return package by search its name
 	 * 
 	 * @param string $name
-	 * @return packages\base\package|null
+	 * @return package|null
 	 */
 	static function package(string $name): ?package {
 		return self::$actives[$name] ?? null;
@@ -29,7 +29,7 @@ class packages {
 	 * get list of active packages.
 	 * 
 	 * @param string[] $names
-	 * @return packages\base\package[]
+	 * @return Package[]
 	 */
 	static function get($names = []): array {
 		if (empty($names)) {
