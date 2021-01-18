@@ -28,6 +28,8 @@ use packages\base\{loader, db, json, Validator, Validator\IValidator, InputValid
  * @method static mixed get(mixed $limit = null, mixed $fields = null)
  * @method mixed getOne (mixed $fields = null)
  * @method static mixed getOne(mixed $fields = null)
+ * @method mixed getValue (string $field)
+ * @method static mixed getValue(string $field)
  * @method mixed paginate(int $page, array $fields = null)
  * @method static mixed paginate(int $page, array $fields = null)
  * @method dbObject query(string $query, $numRows = null)

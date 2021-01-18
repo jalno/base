@@ -229,7 +229,7 @@ abstract class Image {
 	protected function fromImage(Image $other): void {
 		$width = $other->getWidth();
 		$height = $other->getHeight();
-		$bg = color::fromRGBA(0,0,0,0);
+		$bg = Image\color::fromRGBA(0,0,0,0);
 		$this->createBlank($width, $height, $bg);
 		for ($x = 0; $x < $width; $x++) {
 			for ($y = 0; $y < $height; $y++) {

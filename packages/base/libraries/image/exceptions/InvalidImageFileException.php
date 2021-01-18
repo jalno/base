@@ -6,17 +6,17 @@ use packages\base\{Exception, IO\File};
 class InvalidImageFileException extends Exception {
 
 	/** @var package\base\IO\File is the invalid image file */
-	protected $file;
+	protected $invalidImageFile;
 
-	public function __construct(File $file, string $message = "") {
-		$this->file = $file;
+	public function __construct(File $invalidImageFile, string $message = "") {
+		$this->invalidImageFile = $invalidImageFile;
 		if (!$message) {
-			$message = "{$file->getPath()} is an invalid image";
+			$message = "{$invalidImageFile->getPath()} is an invalid image";
 		}
 		parent::__construct($message);
 	}
 
 	public function getInvalidFile(): File {
-		return $this->file;
+		return $this->invalidImageFile;
 	}
 }
