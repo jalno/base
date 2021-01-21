@@ -16,6 +16,7 @@ abstract class file implements \Serializable{
 	abstract public function read(int $length = 0): string;
 	abstract public function write(string $data): bool;
 	abstract public function size(): int;
+	abstract public function exists(): bool;
 	abstract public function getDirectory();
 	public function getPath():string {
 		return ($this->directory and $this->basename) ? $this->directory.'/'.$this->basename : '';
