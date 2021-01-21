@@ -79,7 +79,7 @@ class ImageValidator extends FileValidator {
 			$image = $image->resize($rule['resize-width'], $rule['resize-height']);
 		} else if ($shouldResizeWidth) {
 			$image = $image->resize($rule['resize-width'], $image->getHeight());
-		} else if ($resizeHeight) {
+		} else if ($shouldResizeHeight) {
 			$image = $image->resize($image->getWidth(), $rule['resize-height']);
 		}
 
