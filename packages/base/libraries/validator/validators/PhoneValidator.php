@@ -3,18 +3,18 @@ namespace packages\base\Validator;
 
 use packages\base\{InputValidationException, Options, utility\Safe, Validator\Geo\CountryCodeToRegionCodeMap};
 
-class CellphoneValidator implements IValidator {
+class PhoneValidator implements IValidator {
 	/**
 	 * Get alias types
 	 * 
 	 * @return string[]
 	 */
 	public function getTypes(): array {
-		return ['cellphone'];
+		return ['phone'];
 	}
 
 	/**
-	 * Validate data to be a cellphone.
+	 * Validate data to be a phone.
 	 * 
 	 * @throws packages\base\InputValidationException
 	 * @param string $input
@@ -36,7 +36,7 @@ class CellphoneValidator implements IValidator {
 			if (isset($rule['default'])) {
 				return $rule['default'];
 			}
-			return;
+			return new NullValue;
 		}
 		if (!is_array($data)) {
 			throw new InputValidationException($input, 'datatype');
@@ -87,15 +87,6 @@ class CellphoneValidator implements IValidator {
 			throw new InputValidationException($input, 'invalid_code');
 		}
 
-		switch ($data['code']) {
-			/**
-			 * Iran, Islamic Republic Of
-			 */
-			case "98":
-				if (!Safe::is_cellphone_ir($combinedData)) {
-					throw new InputValidationException($input, "not_ir_cellphone");
-				}
-		}
 		return $combinedOutput ? $data['code'] . '.' . $data['number'] : $data;;
 	}
 }

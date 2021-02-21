@@ -52,6 +52,7 @@ class Validator {
 	private static function addDefaultValidators(): void {
 		$classes = [
 			Validator\BooleanValidator::class,
+			Validator\PhoneValidator::class,
 			Validator\CellphoneValidator::class,
 			Validator\EmailValidator::class,
 			Validator\IPValidator::class,
