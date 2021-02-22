@@ -249,4 +249,17 @@ class CountryCodeToRegionCodeMap {
 		998 => array('UZ'),
 	);
 
+	private static $regionCodeToCountryCodeMap = array();
+
+	public static function regionCodeToCountryCode(): array {
+		if (empty(self::$regionCodeToCountryCodeMap)) {
+			foreach (self::$CC2RMap as $countryCode => $regions) {
+				foreach ($regions as $region) {
+					self::$regionCodeToCountryCodeMap[$region] = $countryCode;
+				}
+			}
+		}
+		return self::$regionCodeToCountryCodeMap;
+	}
+
 }

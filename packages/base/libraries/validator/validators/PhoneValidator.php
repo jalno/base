@@ -36,7 +36,7 @@ class PhoneValidator implements IValidator {
 			if (isset($rule['default'])) {
 				return $rule['default'];
 			}
-			return new NullValue;
+			return;
 		}
 		if (!is_array($data)) {
 			throw new InputValidationException($input, 'datatype');
@@ -46,20 +46,24 @@ class PhoneValidator implements IValidator {
 		}
 
 		$data = array_map('trim', $data);
-		$data['code'] = ltrim($data['code'], '+');
+		$data['code'] = strtoupper($data['code']);
 		$data['number'] = ltrim($data['number'], '0');
-		$combinedData = $data['code'] . $data['number'];
 
-		if (empty($data['code'])) {
-			$data['code'] = strval(Options::get("packages.base.validators.default_cellphone_country_code"));
+		if (empty($data['code'])) { // in case of empty code
+			$data['code'] = strval(Options::get("packages.base.validators.default_cellphone_country_code")) ?: 'IR';
 		}
-		if (!is_numeric($data['code'])) {
+		if (!is_string($data['code'])) {
 			throw new InputValidationException($input, 'bad_code_datatype');
 		}
 		if (!is_numeric($data['number'])) {
 			throw new InputValidationException($input, 'bad_number_datatype');
 		}
 
+		$regionCodeToCountryCode = CountryCodeToRegionCodeMap::regionCodeToCountryCode();
+		if (!array_key_exists($data['code'], $regionCodeToCountryCode)) {
+			throw new InputValidationException($input, 'invalid_code');
+		}
+		$combinedData = $regionCodeToCountryCode[$data['code']] . '.' . $data['number'];
 		$combinedOutput = isset($rule['combined-output']) ? boolval($rule['combined-output']) : true;
 
 		if (isset($rule['values']) and $rule['values'] and is_array($rule['values'])) {
@@ -83,10 +87,10 @@ class PhoneValidator implements IValidator {
 			return $combinedOutput ? $data['code'] . '.' . $data['number'] : $data;
 		}
 
-		if (!array_key_exists($data['code'], CountryCodeToRegionCodeMap::$CC2RMap)) {
-			throw new InputValidationException($input, 'invalid_code');
-		}
-
-		return $combinedOutput ? $data['code'] . '.' . $data['number'] : $data;;
+		return $combinedOutput ? $regionCodeToCountryCode[$data['code']] . '.' . $data['number'] : array(
+			'code' => $data['code'],
+			'number' => $data['number'],
+			'dialingCode' => $regionCodeToCountryCode[$data['code']],
+		);
 	}
 }

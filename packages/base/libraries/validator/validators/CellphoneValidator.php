@@ -19,7 +19,10 @@ class CellphoneValidator implements IValidator {
 	 * @throws packages\base\InputValidationException
 	 * @param string $input
 	 * @param array $rule
-	 * @param mixed $data
+	 * @param array $data that should have 'code' and 'number' index, ex: array(
+	 * 				[code]: 'IR',
+	 * 				[number]: '9131104625
+	 * )
 	 * @return mixed|null new value, if needed.
 	 */
 	public function validate(string $input, array $rule, $data) {
@@ -46,20 +49,24 @@ class CellphoneValidator implements IValidator {
 		}
 
 		$data = array_map('trim', $data);
-		$data['code'] = ltrim($data['code'], '+');
+		$data['code'] = strtoupper($data['code']);
 		$data['number'] = ltrim($data['number'], '0');
-		$combinedData = $data['code'] . $data['number'];
 
-		if (empty($data['code'])) {
-			$data['code'] = strval(Options::get("packages.base.validators.default_cellphone_country_code"));
+		if (empty($data['code'])) { // in case of empty code
+			$data['code'] = strval(Options::get("packages.base.validators.default_cellphone_country_code")) ?: 'IR';
 		}
-		if (!is_numeric($data['code'])) {
+		if (!is_string($data['code'])) {
 			throw new InputValidationException($input, 'bad_code_datatype');
 		}
 		if (!is_numeric($data['number'])) {
 			throw new InputValidationException($input, 'bad_number_datatype');
 		}
 
+		$regionCodeToCountryCode = CountryCodeToRegionCodeMap::regionCodeToCountryCode();
+		if (!array_key_exists($data['code'], $regionCodeToCountryCode)) {
+			throw new InputValidationException($input, 'invalid_code');
+		}
+		$combinedData = $regionCodeToCountryCode[$data['code']] . '.' . $data['number'];
 		$combinedOutput = isset($rule['combined-output']) ? boolval($rule['combined-output']) : true;
 
 		if (isset($rule['values']) and $rule['values'] and is_array($rule['values'])) {
@@ -83,19 +90,19 @@ class CellphoneValidator implements IValidator {
 			return $combinedOutput ? $data['code'] . '.' . $data['number'] : $data;
 		}
 
-		if (!array_key_exists($data['code'], CountryCodeToRegionCodeMap::$CC2RMap)) {
-			throw new InputValidationException($input, 'invalid_code');
-		}
-
 		switch ($data['code']) {
 			/**
 			 * Iran, Islamic Republic Of
 			 */
-			case "98":
-				if (!Safe::is_cellphone_ir($combinedData)) {
+			case 'IR':
+				if (!Safe::is_cellphone_ir($regionCodeToCountryCode[$data['code']] . $data['number'])) {
 					throw new InputValidationException($input, "not_ir_cellphone");
 				}
 		}
-		return $combinedOutput ? $data['code'] . '.' . $data['number'] : $data;;
+		return $combinedOutput ? $regionCodeToCountryCode[$data['code']] . '.' . $data['number'] : array(
+			'code' => $data['code'],
+			'number' => $data['number'],
+			'dialingCode' => $regionCodeToCountryCode[$data['code']],
+		);
 	}
 }
