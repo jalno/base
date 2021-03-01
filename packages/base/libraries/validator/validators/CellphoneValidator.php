@@ -66,7 +66,7 @@ class CellphoneValidator implements IValidator {
 		if (!array_key_exists($data['code'], $regionCodeToCountryCode)) {
 			throw new InputValidationException($input, 'invalid_code');
 		}
-		$combinedData = $regionCodeToCountryCode[$data['code']] . '.' . $data['number'];
+		$combinedData = $data['code'] . '.' . $data['number'];
 		$combinedOutput = isset($rule['combined-output']) ? boolval($rule['combined-output']) : true;
 
 		if (isset($rule['values']) and $rule['values'] and is_array($rule['values'])) {
@@ -87,7 +87,10 @@ class CellphoneValidator implements IValidator {
 			if (!$found) {
 				throw new InputValidationException($input, 'invalid_value');
 			}
-			return $combinedOutput ? $data['code'] . '.' . $data['number'] : $data;
+			return $combinedOutput ? $combinedData : array(
+				'code' => $data['code'],
+				'number' => $data['number'],
+			);
 		}
 
 		switch ($data['code']) {
@@ -98,11 +101,11 @@ class CellphoneValidator implements IValidator {
 				if (!Safe::is_cellphone_ir($regionCodeToCountryCode[$data['code']] . $data['number'])) {
 					throw new InputValidationException($input, "not_ir_cellphone");
 				}
+				break;
 		}
-		return $combinedOutput ? $regionCodeToCountryCode[$data['code']] . '.' . $data['number'] : array(
+		return $combinedOutput ? $combinedData : array(
 			'code' => $data['code'],
 			'number' => $data['number'],
-			'dialingCode' => $regionCodeToCountryCode[$data['code']],
 		);
 	}
 }
