@@ -162,6 +162,7 @@ class Source {
 			case ("scss"):
 			case ('sass'):
 			case ('ts'):
+			case ('tsx'):
 				$this->addCodeAsset($asset);
 				break;
 			case ('package'):
