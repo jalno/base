@@ -5,6 +5,20 @@ use packages\base\{InputValidationException, Options, utility\Safe, Validator\Ge
 
 class CellphoneValidator implements IValidator {
 	/**
+	 * @var string $defaultCountryCode that is default country in ISO 3166-1 alpha-2 format
+	 */
+	private static $defaultCountryCode = null;
+
+	/**
+	 * @return string that is the code of default country in ISO 3166-1 alpha-2 format
+	 */
+	public static function getDefaultCountryCode(bool $useCache = true): string {
+		if (empty(self::$defaultCountryCode) or !$useCache) {
+			self::$defaultCountryCode = strval(Options::get("packages.base.validators.default_cellphone_country_code")) ?: 'IR';
+		}
+		return self::$defaultCountryCode;
+	}
+	/**
 	 * Get alias types
 	 * 
 	 * @return string[]
@@ -39,7 +53,29 @@ class CellphoneValidator implements IValidator {
 			if (isset($rule['default'])) {
 				return $rule['default'];
 			}
-			return;
+			return new NullValue;
+		}
+		if (is_string($data)) {
+			if (strpos($data, '.') !== false) {
+				$parts = explode('.', $data);
+				$code = $parts[0];
+				// check if code is numeric, we find the related region code if just one region exists for the code
+				if (is_numeric($parts[0])) {
+					$relatedCountries = array_key_exists($parts[0], CountryCodeToRegionCodeMap::$CC2RMap);
+					if (count($relatedCountries) == 1) {
+						$code = $relatedCountries[0];
+					}
+				}
+				$data = array(
+					'code' => $code,
+					'number' => $parts[1],
+				);
+			} else {
+				$data = array(
+					'code' => '',
+					'number' => $data,
+				);
+			}
 		}
 		if (!is_array($data)) {
 			throw new InputValidationException($input, 'datatype');

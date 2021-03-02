@@ -36,7 +36,29 @@ class PhoneValidator implements IValidator {
 			if (isset($rule['default'])) {
 				return $rule['default'];
 			}
-			return;
+			return new NullValue;
+		}
+		if (is_string($data)) {
+			if (strpos($data, '.') !== false) {
+				$parts = explode('.', $data);
+				$code = $parts[0];
+				// check if code is numeric, we find the related region code if just one region exists for the code
+				if (is_numeric($parts[0])) {
+					$relatedCountries = array_key_exists($parts[0], CountryCodeToRegionCodeMap::$CC2RMap);
+					if (count($relatedCountries) == 1) {
+						$code = $relatedCountries[0];
+					}
+				}
+				$data = array(
+					'code' => $code,
+					'number' => $parts[1],
+				);
+			} else {
+				$data = array(
+					'code' => '',
+					'number' => $data,
+				);
+			}
 		}
 		if (!is_array($data)) {
 			throw new InputValidationException($input, 'datatype');
