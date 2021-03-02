@@ -827,8 +827,8 @@ class MysqliDb
 		}elseif($operator == 'equals'){
 			$whereValue = $whereValue;
 			$operator = '=';
-		}elseif($operator == 'startswith'){
-			$whereValue = '%'.$whereValue;
+		} elseif ($operator == 'startswith') {
+			$whereValue = $whereValue . '%';
 			$operator = 'LIKE';
 		}
 		$this->_where[] = array($cond, $whereProp, $operator, $whereValue);
