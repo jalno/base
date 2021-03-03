@@ -2168,7 +2168,7 @@ class parenthesis{
 			$whereValue = $whereValue;
 			$operator = '=';
 		}elseif($operator == 'startswith'){
-			$whereValue = '%'.$whereValue;
+			$whereValue = $whereValue . '%';
 			$operator = 'LIKE';
 		}
 		$this->_where[] = array($cond, $whereProp, $operator, $whereValue);
