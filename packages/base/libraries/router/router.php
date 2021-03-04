@@ -4,12 +4,16 @@ namespace packages\base;
 use packages\base\{view\Error, translator\InvalidLangCode, router\Rule, router\RuleControllerException};
 
 class Router {
+	static private $activeRule = null;
 	static private $rules = array();
 	static private $exceptions = array();
 	static private $hostname;
 	static private $scheme;
 	static private $defaultDomains;
 	static private $isDefaultDomain;
+	public static function getActiveRule(): ?Rule {
+		return self::$activeRule;
+	}
 	public static function getDefaultDomains() {
 		if (!self::$defaultDomains) {
 			$log = log::getInstance();
@@ -202,6 +206,7 @@ class Router {
 			$log->info("check in {$x}th rule");
 			$data = $rule->check(http::$request['method'], http::$request['scheme'], http::$request['hostname'], $uri, http::$request['get']);
 			if($data !== false){
+				self::$activeRule = $rule;
 				$log->reply("matched");
 				$log->debug("URL data:", $data);
 				if(isset($data['@lang'])){
