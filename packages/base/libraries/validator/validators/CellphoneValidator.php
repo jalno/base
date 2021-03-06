@@ -89,7 +89,7 @@ class CellphoneValidator implements IValidator {
 		$data['number'] = ltrim($data['number'], '0');
 
 		if (empty($data['code'])) { // in case of empty code
-			$data['code'] = strval(Options::get("packages.base.validators.default_cellphone_country_code")) ?: 'IR';
+			$data['code'] = Options::get("packages.base.validators.default_cellphone_country_code");
 		}
 		if (!is_string($data['code'])) {
 			throw new InputValidationException($input, 'bad_code_datatype');
