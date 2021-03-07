@@ -118,23 +118,7 @@ class Safe {
 			($length == 13 and substr($cellphone, 0, 4) == '+989') or // +989131101234
 			($length == 14 and substr($cellphone, 0, 5) == '98989')) // 98989131101234
 		{
-			switch ($length) { // should return somthing like this: 989131101234
-				case(10): // 913
-					return '98' . $cellphone;
-				case(11): // 0913
-					return '98' . substr($cellphone, 1);
-				case(12): // 98913
-					return $cellphone;
-				case(13): // 980913 || +98913
-					if (substr($cellphone, 0, 4) == '9809') {
-						return '98' . substr($cellphone, 3);
-					} else if (substr($cellphone, 0, 4) == '+989') {
-						return substr($cellphone, 1);
-					}
-				case(14):
-					return substr($cellphone, 2);
-				break;
-			}
+			return substr($cellphone, $length - 10);
 		}
 		return false;
 	}

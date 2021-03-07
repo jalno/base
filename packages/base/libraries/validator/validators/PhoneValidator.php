@@ -3,40 +3,23 @@ namespace packages\base\Validator;
 
 use packages\base\{InputValidationException, Options, utility\Safe, Validator\Geo\CountryCodeToRegionCodeMap};
 
-class CellphoneValidator implements IValidator {
-	/**
-	 * @var string $defaultCountryCode that is default country in ISO 3166-1 alpha-2 format
-	 */
-	private static $defaultCountryCode = null;
-
-	/**
-	 * @return string that is the code of default country in ISO 3166-1 alpha-2 format
-	 */
-	public static function getDefaultCountryCode(bool $useCache = true): string {
-		if (empty(self::$defaultCountryCode) or !$useCache) {
-			self::$defaultCountryCode = Options::get("packages.base.validators.default_cellphone_country_code");
-		}
-		return self::$defaultCountryCode;
-	}
+class PhoneValidator implements IValidator {
 	/**
 	 * Get alias types
 	 * 
 	 * @return string[]
 	 */
 	public function getTypes(): array {
-		return ['cellphone'];
+		return ['phone'];
 	}
 
 	/**
-	 * Validate data to be a cellphone.
+	 * Validate data to be a phone.
 	 * 
 	 * @throws packages\base\InputValidationException
 	 * @param string $input
 	 * @param array $rule
-	 * @param array $data that should have 'code' and 'number' index, ex: array(
-	 * 				[code]: 'IR',
-	 * 				[number]: '9131104625
-	 * )
+	 * @param mixed $data
 	 * @return mixed|null new value, if needed.
 	 */
 	public function validate(string $input, array $rule, $data) {
@@ -88,8 +71,8 @@ class CellphoneValidator implements IValidator {
 		$data['code'] = strtoupper($data['code']);
 		$data['number'] = ltrim($data['number'], '0');
 
-		if (empty($data['code'])) {
-			$data['code'] = Options::get("packages.base.validators.default_cellphone_country_code");
+		if (empty($data['code'])) { // in case of empty code
+			$data['code'] = strval(Options::get("packages.base.validators.default_cellphone_country_code")) ?: 'IR';
 		}
 		if (!is_string($data['code'])) {
 			throw new InputValidationException($input, 'bad_code_datatype');
@@ -102,19 +85,6 @@ class CellphoneValidator implements IValidator {
 		if (!array_key_exists($data['code'], $regionCodeToCountryCode)) {
 			throw new InputValidationException($input, 'invalid_code');
 		}
-
-		switch ($data['code']) {
-			/**
-			 * Iran, Islamic Republic Of
-			 */
-			case 'IR':
-				if (!Safe::is_cellphone_ir((substr($data['number'], 0, 2) !== "98" ? "98" : "") . $data['number'])) {
-					throw new InputValidationException($input, "not_ir_cellphone");
-				}
-				$data["number"] = Safe::cellphone_ir($data["number"]);
-				break;
-		}
-
 		$combinedData = $data['code'] . '.' . $data['number'];
 		$combinedOutput = isset($rule['combined-output']) ? boolval($rule['combined-output']) : true;
 
@@ -141,6 +111,7 @@ class CellphoneValidator implements IValidator {
 				'number' => $data['number'],
 			);
 		}
+
 		return $combinedOutput ? $combinedData : array(
 			'code' => $data['code'],
 			'number' => $data['number'],
