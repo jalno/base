@@ -257,6 +257,13 @@ class rule implements \Serializable {
 	}
 
 	/**
+	 * @return array http methods for this rule
+	 */
+	public function getMethods(): array {
+		return $this->methods;
+	}
+
+	/**
 	 * Setter for path
 	 * 
 	 * @param string|array $path
@@ -287,6 +294,13 @@ class rule implements \Serializable {
 				$this->path[] = $valid;
 			}
 		}
+	}
+
+	/**
+	 * @return array of arrays that each array has 'type' and 'name' indexes
+	 */
+	public function getPath(): array {
+		return $this->path;
 	}
 
 	/**
