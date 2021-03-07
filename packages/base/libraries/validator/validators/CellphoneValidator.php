@@ -14,7 +14,7 @@ class CellphoneValidator implements IValidator {
 	 */
 	public static function getDefaultCountryCode(bool $useCache = true): string {
 		if (empty(self::$defaultCountryCode) or !$useCache) {
-			self::$defaultCountryCode = strval(Options::get("packages.base.validators.default_cellphone_country_code")) ?: 'IR';
+			self::$defaultCountryCode = Options::get("packages.base.validators.default_cellphone_country_code");
 		}
 		return self::$defaultCountryCode;
 	}
