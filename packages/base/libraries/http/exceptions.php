@@ -1,33 +1,34 @@
 <?php
 namespace packages\base\http;
-use \packages\base\http\request;
-use \packages\base\http\response;
-class responseException extends \Exception{
+
+use packages\base\Exception;
+
+class ResponseException extends Exception{
 	private $response;
 	private $request;
-	public function __construct(request $request, response $response){
+	public function __construct(Request $request, response $response){
 		$this->request = $request;
 		$this->response = $response;
 	}
 	public function getResponse():response{
 		return $this->response;
 	}
-	public function getRequest():request{
+	public function getRequest(): Request {
 		return $this->request;
 	}
 }
-class serverException extends responseException{
+class ServerException extends ResponseException {
 	
 }
-class clientException extends responseException{
+class ClientException extends ResponseException {
 	
 }
-class timeoutException extends \Exception{
+class TimeoutException extends \Exception {
 	private $request;
-	public function __construct(request $request){
+	public function __construct(Request $request){
 		$this->request = $request;
 	}
-	public function getRequest():request{
+	public function getRequest(): Request {
 		return $this->request;
 	}
 }
