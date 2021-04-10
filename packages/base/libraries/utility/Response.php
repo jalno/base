@@ -1,12 +1,11 @@
 <?php
 namespace packages\base;
-use packages\base\json;
-use packages\base\http;
-use packages\base\view;
+
 use packages\base\views\form;
 use packages\base\views\FormError;
 use packages\base\response\file;
-class response implements \Serializable{
+
+class Response implements \Serializable {
 	protected $status;
 	protected $data;
 	protected $view;

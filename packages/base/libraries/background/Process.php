@@ -1,8 +1,9 @@
 <?php
 namespace packages\base;
-use \packages\base;
-use \packages\base\db\dbObject;
-class process extends dbObject{
+use packages\base;
+use packages\base\db\dbObject;
+
+class Process extends dbObject{
 	const SIGHUP = 1;
 	const SIGINT = 2;
 	const SIGQUIT = 3;
