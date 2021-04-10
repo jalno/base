@@ -46,7 +46,7 @@ class URLValidator implements IValidator {
 			}
 			if (!array_key_exists('protocols', $rule) or $rule['protocols'] !== null) {
 				$protocols = $rule['protocols'] ?? ["http", "https"];
-				if (!in_array($url['scheme'], $protocols)) {
+				if (!isset($url['scheme']) or !in_array($url['scheme'], $protocols)) {
 					throw new InputValidationException($input);
 				}
 			}
