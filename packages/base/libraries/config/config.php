@@ -1,13 +1,13 @@
 <?php
 namespace packages\base;
 $options = array(
-	'packages.base.loader.db' => array(
+	'packages.base.loader.db' => (getenv("JALNO_DB") != "disabled") ? array(
 		'type' => 'mysql',
-		'host' => 'localhost',
-		'user' => '',
-		'pass' => '',
-		'dbname' => ''
-	),
+		'host' => getenv("JALNO_DB_HOST") ?: "localhost",
+		'user' => getenv("JALNO_DB_USER") ?: "root",
+		'pass' => getenv("JALNO_DB_PASSWORD") ?: "",
+		'dbname' => getenv("JALNO_DB_NAME") ?: "jalno"
+	) : null,
 	'packages.base.session' => array(
 		'handler' => 'php',//cache,DB,php
 		'ip' => true,
