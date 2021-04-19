@@ -206,6 +206,7 @@ class Router {
 			$log->info("check in {$x}th rule");
 			$data = $rule->check(http::$request['method'], http::$request['scheme'], http::$request['hostname'], $uri, http::$request['get']);
 			if($data !== false){
+				$data = is_array($data) ? $data : [];
 				self::$activeRule = $rule;
 				$log->reply("matched");
 				$log->debug("URL data:", $data);
@@ -216,7 +217,7 @@ class Router {
 				}
 				list($controller, $method) = $rule->getController();
 				$log->debug("run middlewares");
-				$rule->runMiddlewares(is_array($data) ? $data : array());
+				$rule->runMiddlewares($data);
 				$log->info("call",$controller.'@'.$method);
 				$controllerClass = new $controller();
 				try {
