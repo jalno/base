@@ -1,11 +1,10 @@
 <?php
 namespace packages\base\http;
-use \TypeError;
-use \packages\base\json;
-use \packages\base\http\curl;
-use \packages\base\IO\file;
 
-class client{
+use TypeError;
+use packages\base\{Json, IO\File};
+
+class Client {
 	private static $defaultOptions = array(
 		'base_uri' => null,
 		'allow_redirects' => true,

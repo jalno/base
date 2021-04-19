@@ -4,7 +4,7 @@ namespace packages\base;
 use packages\base\frontend\{theme, events\throwDynamicData};
 use packages\base\view\events\{beforeLoad, afterLoad, afterOutput};
 
-class view {
+class View {
 
 	/**
 	 * Find a view by it's name or parents name.

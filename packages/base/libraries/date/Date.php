@@ -1,11 +1,11 @@
 <?php
 namespace packages\base;
-use \packages\base\log;
-use \packages\base\date\date_interface;
-use \packages\base\date\calendarNotExist;
-use \DateTimeZone;
 
-class date implements date_interface {
+use DateTimeZone;
+use packages\base\date\date_interface;
+use packages\base\date\CalendarNotExist;
+
+class Date implements date_interface {
 	public static $presetsFormats = array(
 		"Q" => "m/d/Y",
 		"q" => "n/j/Y",

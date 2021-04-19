@@ -2152,7 +2152,11 @@ class MysqliDb
 // END class
 class parenthesis{
 	protected $_where = array();
-	public function where($whereProp, $whereValue = 'DBNULL', $operator = '=', $cond = 'AND'){
+
+	/**
+	 * @return $this
+	 */
+	public function where($whereProp, $whereValue = 'DBNULL', $operator = '=', $cond = 'AND'): self {
 		if (is_array($whereValue) && ($key = key($whereValue)) != "0") {
 			$operator = $key;
 			$whereValue = $whereValue[$key];
@@ -2172,14 +2176,20 @@ class parenthesis{
 			$operator = 'LIKE';
 		}
 		$this->_where[] = array($cond, $whereProp, $operator, $whereValue);
+		return $this;
 	}
-	public function orWhere($whereProp, $whereValue = 'DBNULL', $operator = '='){
-		$this->where($whereProp, $whereValue, $operator, 'OR');
+
+
+	/**
+	 * @return $this
+	 */
+	public function orWhere($whereProp, $whereValue = 'DBNULL', $operator = '='): self {
+		return $this->where($whereProp, $whereValue, $operator, 'OR');
 	}
-	public function getWheres(){
+	public function getWheres(): array {
 		return $this->_where;
 	}
-	public function isEmpty() {
+	public function isEmpty(): bool {
 		return empty($this->_where);
 	}
 }
