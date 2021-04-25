@@ -60,9 +60,9 @@ class CellphoneValidator implements IValidator {
 				$parts = explode('.', $data);
 				$code = $parts[0];
 				// check if code is numeric, we find the related region code if just one region exists for the code
-				if (is_numeric($parts[0])) {
-					$relatedCountries = array_key_exists($parts[0], CountryCodeToRegionCodeMap::$CC2RMap);
-					if (count($relatedCountries) == 1) {
+				if (is_numeric($code)) {
+					$relatedCountries = CountryCodeToRegionCodeMap::$CC2RMap[$code] ?? [];
+					if ($relatedCountries and count($relatedCountries) == 1) {
 						$code = $relatedCountries[0];
 					}
 				}
