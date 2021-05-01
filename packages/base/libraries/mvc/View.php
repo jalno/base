@@ -84,7 +84,7 @@ class View {
 	 * @return string|array if glue wasn't empty it will keep titles togheter and return string, in otherwise return array of title parts.
 	 */
 	public function getTitle(?string $glue = ' | ') {
-		return $glue ? implode($glue, $this->title) : $title;
+		return $glue ? implode($glue, $this->title) : $this->title;
 	}
 
 	/**

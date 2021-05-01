@@ -74,7 +74,7 @@ class Autoloader {
 		try {
 			$stmts = $parser->parse($file->read());
 			$traverser->traverse($stmts);
-		} catch(\Expcetion $e) {}
+		} catch(\Exception $e) {}
 		return $visitor->getItems();
 	}
 

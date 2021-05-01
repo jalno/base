@@ -66,6 +66,8 @@ use packages\base\{loader, db, json, Validator, Validator\IValidator, InputValid
  * @method static string getLastError ()
  * @method string getLastQuery()
  * @method static string getLastQuery()
+ *
+ * @property int|null $totalCount
  **/
 class dbObject implements \Serializable, IValidator {
 	private $connection = 'default';
@@ -134,13 +136,13 @@ class dbObject implements \Serializable, IValidator {
 	/**
 	 * Primary key for an object. 'id' is a default value.
 	 *
-	 * @var stating
+	 * @var string
 	 */
 	protected $primaryKey = 'id';
 	/**
 	 * Table name for an object. Class name will be used by default
 	 *
-	 * @var stating
+	 * @var string
 	 */
 	protected $dbTable;
 	/**
@@ -349,14 +351,14 @@ class dbObject implements \Serializable, IValidator {
 	 * @param $id Primary Key
 	 * @param array|string $fields Array or coma separated list of fields to fetch
 	 *
-	 * @return dbObject|array
+	 * @return static|null
 	 */
-	protected function byId ($id, $fields = null) {
+	public function byId ($id, $fields = null) {
 		$this->db->where ($this->db->prefix . $this->dbTable . '.' . $this->primaryKey, $id);
 		return $this->getOne ($fields);
 	}
 
-	protected function getValue ($field) {
+	public function getValue ($field) {
 		$this->processHasOneWith ();
 		return $this->db->ArrayBuilder()->getValue ($this->dbTable, $field);
 	}
@@ -366,9 +368,9 @@ class dbObject implements \Serializable, IValidator {
 	 * @access public
 	 * @param array|string $fields Array or coma separated list of fields to fetch
 	 *
-	 * @return dbObject
+	 * @return static|null
 	 */
-	protected function getOne ($fields = null) {
+	public function getOne ($fields = null) {
 		$this->processHasOneWith ();
 		//echo($this->dbTable."\n");
 		$results = $this->db->ArrayBuilder()->getOne ($this->dbTable, $fields);
@@ -433,7 +435,7 @@ class dbObject implements \Serializable, IValidator {
 	 * @return dbObject
 	 */
 	private function with ($objectName) {
-		if (!property_exists ($this, 'relations') and !isset ($this->relations[$name]))
+		if (!property_exists ($this, 'relations') and !isset ($this->relations[$objectName]))
 			die ("No relation with name $objectName found");
 		$this->_with[$objectName] = $this->relations[$objectName];
 		return $this;

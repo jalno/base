@@ -379,7 +379,7 @@ class Router {
 			$process = null;
 			$processID = str_replace("/", "\\", $processID);
 			if (is_numeric($processID)) {
-				$process = Process::byId($processID);
+				$process = (new Process)->byId($processID);
 			} else if (preg_match('/^packages\\\\([a-zA-Z0-9_]+\\\\)+([a-zA-Z0-9_]+)\@([a-zA-Z0-9_]+)$/', $processID)) {
 				$parameters = CLI::$request["parameters"];
 				unset($parameters["process"]);

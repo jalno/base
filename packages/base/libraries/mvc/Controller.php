@@ -4,7 +4,7 @@ namespace packages\base;
 use packages\base\utility\safe;
 
 class Controller {
-	/** @var packages\base\response */
+	/** @var Response */
 	protected $response;
 
 	public function __construct(){
