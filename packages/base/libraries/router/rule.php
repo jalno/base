@@ -173,7 +173,7 @@ class rule implements \Serializable {
 			} elseif (isset($part['values'])) {
 				if (is_array($part['values']) and !empty($part['values'])) {
 					foreach ($part['values'] as $value) {
-						if (!is_string($value) and !is_number($value)) {
+						if (!is_string($value) and !is_numeric($value)) {
 							throw new RulePartValue($part);
 						}
 					}

@@ -27,7 +27,7 @@ class PackageConfigException extends Exception {
 	 * 
 	 * @return string
 	 */
-	public function getPackage(): stirng {
+	public function getPackage(): string {
 		return $this->package;
 	}
 }

@@ -435,7 +435,7 @@ class dbObject implements \Serializable, IValidator {
 	 * @return dbObject
 	 */
 	private function with ($objectName) {
-		if (!property_exists ($this, 'relations') and !isset ($this->relations[$name]))
+		if (!property_exists ($this, 'relations') and !isset ($this->relations[$objectName]))
 			die ("No relation with name $objectName found");
 		$this->_with[$objectName] = $this->relations[$objectName];
 		return $this;

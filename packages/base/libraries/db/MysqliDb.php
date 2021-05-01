@@ -1,6 +1,9 @@
 <?php
 namespace packages\base\db;
-use \packages\base\log;
+
+use StdClass;
+use packages\base\Log;
+
 /**
  * MysqliDb Class
  *
@@ -1981,7 +1984,6 @@ class MysqliDb
 	 * Begin a transaction
 	 *
 	 * @uses mysqli->autocommit(false)
-	 * @uses register_shutdown_function(array($this, "_transaction_shutdown_check"))
 	 */
 	public function startTransaction()
 	{
