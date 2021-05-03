@@ -105,14 +105,14 @@ class loader {
 		}
 		if ($cache) {
 			$md5 = $configFile->md5();
-			$package = cache::get("packages.base.loader.package.{$md5}");
+			$package = cache::get("packages.base.loader.package.{$name}.{$md5}");
 			if ($package) {
 				return $package;
 			}
 		}
 		$package = package::fromName($name);
 		if ($cache) {
-			cache::set("packages.base.loader.package.{$md5}", $package, 0);
+			cache::set("packages.base.loader.package.{$name}.{$md5}", $package, 0);
 		}
 		return $package;
 	}
@@ -132,12 +132,12 @@ class loader {
 		$rules = [];
 		if ($cache) {
 			$md5 = $routing->md5();
-			$rules = cache::get("packages.base.loader.routing.{$md5}");
+			$rules = cache::get("packages.base.loader.routing.{$package->getName()}.{$md5}");
 		}
 		if (!$rules) {
 			$rules = $package->getRoutingRules();
 			if ($cache) {
-				cache::set("packages.base.loader.routing.{$md5}", $rules, 0);
+				cache::set("packages.base.loader.routing.{$package->getName()}.{$md5}", $rules, 0);
 			}
 		}
 		foreach ($rules as $rule) {
@@ -161,7 +161,7 @@ class loader {
 		$items = [];
 		if ($cache) {
 			$md5 = is_array($autoload) ? $container->getConfigFile()->md5() : $autoload->md5();
-			$items = cache::get("packages.base.loader.autoload.{$md5}");
+			$items = cache::get("packages.base.loader.autoload.{$container->getName()}.{$md5}");
 			if (!$items) {
 				$items = [];
 			}
@@ -212,7 +212,7 @@ class loader {
 				}
 			}
 			if ($items and $cache) {
-				cache::set("packages.base.loader.autoload.{$md5}", $items, 0);
+				cache::set("packages.base.loader.autoload.{$container->getName()}.{$md5}", $items, 0);
 			}
 		}
 		foreach ($items as $class => $path) {
