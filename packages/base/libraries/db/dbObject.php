@@ -353,7 +353,7 @@ class dbObject implements \Serializable, IValidator {
 	 *
 	 * @return static|null
 	 */
-	public function byId ($id, $fields = null) {
+	protected function byId ($id, $fields = null) {
 		$this->db->where ($this->db->prefix . $this->dbTable . '.' . $this->primaryKey, $id);
 		return $this->getOne ($fields);
 	}
