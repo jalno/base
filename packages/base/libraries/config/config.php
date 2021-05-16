@@ -8,10 +8,6 @@ $options = array(
 		'pass' => getenv("JALNO_DB_PASSWORD") ?: "",
 		'dbname' => getenv("JALNO_DB_NAME") ?: "jalno"
 	) : null,
-	'packages.base.session' => array(
-		'handler' => 'php',//cache,DB,php
-		'ip' => true,
-	),
 	'packages.base.translator.defaultlang' => 'fa_IR',
 	'packages.base.translator.changelang' => 'uri',//uri,parameter
 	'packages.base.translator.changelang.type' => 'short',//short, complete
