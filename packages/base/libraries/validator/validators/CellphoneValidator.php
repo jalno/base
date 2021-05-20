@@ -20,35 +20,6 @@ class CellphoneValidator implements IValidator {
 	}
 
 	/**
-	 * convert format: 'IR.9387654321' or '+98.9387654321'
-	 * 		to format: '98.9387654321'
-	 * @return string is phone number with dialing code
-	 */
-	public static function getTelephoneWithDialingCode(string $phonenumber): string {
-		$code = null;
-		$number = null;
-		$dialingCode = null;
-		if (strpos($phonenumber, ".") !== false) {
-			$exploded = explode(".", $phonenumber);
-			$code = $exploded[0];
-			$number = $exploded[1];
-		} else {
-			$number = $phonenumber;
-		}
-		if (!$number) {
-			return "";
-		}
-		$code = $code ? ltrim($code, "+") : self::getDefaultCountryCode();
-		if (is_numeric($code)) {
-			$dialingCode = $code;
-		} else {
-			$r2c = CountryCodeToRegionCodeMap::regionCodeToCountryCode();
-			$dialingCode = isset($r2c[$code]) ? $r2c[$code] : "";
-		}
-		return $dialingCode . "." . $number;
-	}
-
-	/**
 	 * Get alias types
 	 * 
 	 * @return string[]
