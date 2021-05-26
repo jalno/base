@@ -1,13 +1,15 @@
 <?php
 namespace packages\base;
 
+use packages\base\Validator\IValidator;
+
 class Validator {
 	/**
 	 * Add a validator.
 	 * Do nothing if duplicate validator passed.
 	 * 
-	 * @param packages\base\Validator\IValidator|string validator object or validator class name
-	 * @throws packages\base\Exception if found duplicate alias
+	 * @param IValidator|string validator object or validator class name
+	 * @throws Exception if found duplicate alias
 	 * @throws TypeError if provided parameter was not string or an IValidator instance.
 	 * @return void
 	 */
@@ -20,7 +22,7 @@ class Validator {
 			$classname = $validator;
 			$validator = new $validator();
 		}
-		if (!($validator instanceof Validator\IValidator)){
+		if (!($validator instanceof IValidator)){
 			throw new \TypeError("argument 1 is not string nor an IValidator instance");
 		}
 		if (!$classname) {
@@ -38,6 +40,33 @@ class Validator {
 		}
 		self::$validators[$classname] = $validator;
 	}
+
+	/**
+	 * @return array<string,IValidator>
+	 */
+	public static function getAliases(): array {
+		return self::$aliases;
+	}
+
+	/**
+	 * @param callable|string|IValidator
+	 * @return callable|IValidator
+	 */
+	public static function resolve($validator) {
+		if (is_callable($validator) or $validator instanceof IValidator) {
+			return $validator;
+		}
+		if (!is_string($validator)) {
+			throw new \InvalidArgumentException("validator must be callable, string or instanceof IValidator");
+		}
+		if (isset(self::$aliases[$validator])) {
+			return self::$validators[self::$aliases[$validator]];
+		} elseif (is_subclass_of($validator, IValidator::class, true)) {
+			return new $validator();
+		} 
+		throw new Exception("{$validator} is unknown type");
+	}
+
 	/** @var array keys are class name and values are IValidator objects */
 	private static $validators = [];
 
@@ -62,6 +91,7 @@ class Validator {
 			Validator\FileValidator::class,
 			Validator\ImageValidator::class,
 			Validator\DateValidator::class,
+			Validator\ArrayValidator::class,
 		];
 		foreach ($classes as $classname) {
 			$validator = new $classname();
@@ -74,19 +104,21 @@ class Validator {
 	}
 	protected $rules;
 	protected $data;
+	protected ?string $input;
 	protected $newData = [];
-	public function __construct(array $rules, array $data) {
+	public function __construct(array $rules, array $data, ?string $input = null) {
 		if (empty(self::$validators)) {
 			self::addDefaultValidators();
 		}
 		$this->rules = $rules;
 		$this->data = $data;
+		$this->input = $input;
 	}
 	public function validate(): array {
 		foreach ($this->rules as $input => $rule) {
 			if (!isset($this->data[$input])) {
 				if (!isset($rule['optional']) or !$rule['optional']) {
-					throw new InputValidationException($input);
+					throw new InputValidationException($this->input . $input);
 				}
 				if(isset($rule['default'])) {
 					$this->newData[$input] = $rule['default'];
@@ -118,43 +150,30 @@ class Validator {
 	 * 
 	 * @param string $input input name
 	 * @param array $rule
-	 * @param packags\base\Validator\IValidator|Closure|string $type validator object or validator class name or validator alias
+	 * @param IValidator|Closure|string $type validator object or validator class name or validator alias
 	 * @param bool $doNotPassValidationException
-	 * @throws packages\base\Exception if $type argument is not IValidator instance
-	 * @throws packages\base\InputValidation if validation failed and value of $doNotPassValidationException was false
+	 * @throws Exception if $type argument is not IValidator instance
+	 * @throws InputValidation if validation failed and value of $doNotPassValidationException was false
 	 */
 	private function validateInput(string $input, array $rule, $type, bool $doNotPassValidationException): bool {
-		$validator = null;
-		if (is_string($type)) {
-			if (isset(self::$aliases[$type])) {
-				$validator = self::$validators[self::$aliases[$type]];
-			} elseif (is_subclass_of($type, Validator\IValidator::class, true)) {
-				$validator = new $type();
-			} else {
-				throw new Exception("{$type} is unkown type");
-			}
-		} elseif (is_a($type, Validator\IValidator::class) or is_a($type, \Closure::class)) {
-			$validator = $type;
-		} else {
-			throw new Exception("{$type} is not implementing " . Validator\IValidator::class);
-		}
+		$validator = self::resolve($type);
 		if ($doNotPassValidationException) {
 			try {
-				if ($type instanceof \Closure) {
-					$newData = $type($this->data[$input], $rule, $input);
+				if (is_callable($validator)) {
+					$newData = call_user_func($validator, $this->data[$input], $rule, $this->input . $input);
 				} else {
 					$rule['type'] = $type;
-					$newData = $validator->validate($input, $rule, $this->data[$input]);
+					$newData = $validator->validate($this->input . $input, $rule, $this->data[$input]);
 				}
 			} catch (InputValidationException $e) {
 				return false;
 			}
 		} else {
-			if ($type instanceof \Closure) {
-				$newData = $type($this->data[$input], $rule, $input);
+			if (is_callable($validator)) {
+				$newData = call_user_func($validator, $this->data[$input], $rule, $this->input . $input);
 			} else {
 				$rule['type'] = $type;
-				$newData = $validator->validate($input, $rule, $this->data[$input]);
+				$newData = $validator->validate($this->input . $input, $rule, $this->data[$input]);
 			}
 		}
 		if (is_object($newData) and $newData instanceof Validator\NullValue) {
