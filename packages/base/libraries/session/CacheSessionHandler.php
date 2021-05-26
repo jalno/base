@@ -47,7 +47,7 @@ class CacheSessionHandler implements ISessionHandler {
 		$this->options = array_replace_recursive(array(
 			'cookie' => array(
 				'name' => 'PHPSESSID',
-				'expire' => 3600,
+				'expire' => 0,
 				'path' => '/',
 				'domain' => '',
 				'sslonly' => false,
