@@ -7,6 +7,10 @@
 			{
 				"file": "libraries/io/io.php",
 				"function": true
+			},
+			{
+				"file": "libraries/utility/utility.php",
+				"function": true
 			}
 		]
 	},

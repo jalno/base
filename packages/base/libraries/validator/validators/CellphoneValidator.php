@@ -18,6 +18,7 @@ class CellphoneValidator implements IValidator {
 		}
 		return self::$defaultCountryCode;
 	}
+
 	/**
 	 * Get alias types
 	 * 
