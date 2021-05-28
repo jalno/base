@@ -35,7 +35,14 @@ class ArrayValidator implements IValidator {
 			if (isset($rule['convert-to-array']) and !$rule['convert-to-array']) {
 				throw new InputValidationException($input, "non-array");
 			}
-			$data = array($data);
+			if (isset($rule['explode'])) {
+				if (!is_string($data)){
+					throw new InputValidationException($input, "non-string");
+				}
+				$data = explode($rule['explode'], $data);
+			} else {
+				$data = array($data);
+			}
 		}
 		$mode = null;
 		if (isset($rule['assoc']) and $rule['assoc']) {
