@@ -53,18 +53,18 @@ class Validator {
 	 * @return callable|IValidator
 	 */
 	public static function resolve($validator) {
+		if (is_string($validator)) {
+			if (isset(self::$aliases[$validator])) {
+				return self::$validators[self::$aliases[$validator]];
+			} elseif (is_subclass_of($validator, IValidator::class, true)) {
+				return new $validator();
+			}
+			throw new Exception("{$validator} is unknown type");
+		}
 		if (is_callable($validator) or $validator instanceof IValidator) {
 			return $validator;
 		}
-		if (!is_string($validator)) {
-			throw new \InvalidArgumentException("validator must be callable, string or instanceof IValidator");
-		}
-		if (isset(self::$aliases[$validator])) {
-			return self::$validators[self::$aliases[$validator]];
-		} elseif (is_subclass_of($validator, IValidator::class, true)) {
-			return new $validator();
-		} 
-		throw new Exception("{$validator} is unknown type");
+		throw new \InvalidArgumentException("validator must be callable, string or instanceof IValidator");
 	}
 
 	/** @var array keys are class name and values are IValidator objects */
