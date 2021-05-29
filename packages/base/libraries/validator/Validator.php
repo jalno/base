@@ -126,6 +126,9 @@ class Validator {
 				continue;
 			}
 			if (is_string($this->data[$input]) and $this->data[$input] === "" and !isset($rule['empty']) and isset($rule['optional']) and $rule['optional']) {
+				if (isset($rule['default'])) {
+					$this->newData[$input] = $rule['default'];
+				}
 				continue;
 			}
 			if (!isset($rule['type'])) {
