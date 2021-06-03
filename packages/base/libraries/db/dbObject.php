@@ -573,6 +573,7 @@ class dbObject implements \Serializable, IValidator {
 		/** It's a dummy idea, but works! */
 		if (isset($data["userpanel_users"])) {
 			unset($data["userpanel_users"]["password"], $data["userpanel_users"]["remember_token"]);
+			trigger_error("DBObject:toArray: find 'userpanel_users' index! you should fix this!");
 		}
 
 		foreach ($data as $key => $d) {
