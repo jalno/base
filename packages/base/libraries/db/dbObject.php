@@ -434,10 +434,15 @@ class dbObject implements \Serializable, IValidator {
 	 *
 	 * @return dbObject
 	 */
-	private function with ($objectName) {
+	private function with ($objectName, string $type = 'LEFT') {
 		if (!property_exists ($this, 'relations') and !isset ($this->relations[$objectName]))
 			die ("No relation with name $objectName found");
-		$this->_with[$objectName] = $this->relations[$objectName];
+
+		$relation = $this->relations[$objectName];
+		if (strtolower($relation[0]) == "hasone") {
+			$relation[3] = $type;
+		}
+		$this->_with[$objectName] = $relation;
 		return $this;
 	}
 	/**
@@ -564,6 +569,12 @@ class dbObject implements \Serializable, IValidator {
 		if(!is_array($data)){
 			$data = array();
 		}
+
+		/** It's a dummy idea, but works! */
+		if (isset($data["userpanel_users"])) {
+			unset($data["userpanel_users"]["password"], $data["userpanel_users"]["remember_token"]);
+		}
+
 		foreach ($data as $key => $d) {
 			if(is_array($d)){
 				foreach($d as $key2 => $val2){
@@ -657,7 +668,7 @@ class dbObject implements \Serializable, IValidator {
 				$key = $opts[2];
 			if ($relationType == 'hasone') {
 				$this->db->setQueryOption ("MYSQLI_NESTJOIN");
-				$this->join ($modelName, $key);
+				$this->join ($modelName, $key, $opts[3] ?? 'LEFT');
 			}
 		}
 	}
