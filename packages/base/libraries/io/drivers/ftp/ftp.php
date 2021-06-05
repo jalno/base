@@ -50,6 +50,9 @@ class ftp{
 	}
 	private function login(){
 		if(ftp_login($this->connection, $this->options['username'], $this->options['password'])){
+			if ($this->options['passive']) {
+				ftp_pasv($this->connection, true);
+			}
 			return true;
 		}else{
 			throw new AuthException;
