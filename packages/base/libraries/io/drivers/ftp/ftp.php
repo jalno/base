@@ -27,8 +27,8 @@ class ftp{
 				if($this->options['username'] and $this->options['password']){
 					if($this->login()){
 						if($this->options['root']){
-							if(!$this->chdir($options['root'])){
-								throw new ChangeDirException($options['root']);
+							if(!$this->chdir($this->options['root'])){
+								throw new ChangeDirException($this->options['root']);
 							}
 						}
 						$this->ready = true;
