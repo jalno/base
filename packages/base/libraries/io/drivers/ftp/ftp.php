@@ -27,8 +27,8 @@ class ftp{
 				if($this->options['username'] and $this->options['password']){
 					if($this->login()){
 						if($this->options['root']){
-							if(!$this->chdir($options['root'])){
-								throw new ChangeDirException($options['root']);
+							if(!$this->chdir($this->options['root'])){
+								throw new ChangeDirException($this->options['root']);
 							}
 						}
 						$this->ready = true;
@@ -50,6 +50,9 @@ class ftp{
 	}
 	private function login(){
 		if(ftp_login($this->connection, $this->options['username'], $this->options['password'])){
+			if ($this->options['passive']) {
+				ftp_pasv($this->connection, true);
+			}
 			return true;
 		}else{
 			throw new AuthException;
