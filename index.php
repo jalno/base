@@ -8,40 +8,48 @@ if (!is_file("packages/base/libraries/config/config.php") or !is_readable("packa
 require_once("packages/base/libraries/config/config.php");
 require_once("packages/base/libraries/loader/loader.php");
 
-try{
-	Autoloader::setDefaultClassMap();
-	Autoloader::register();
+try {
+	AutoLoader::setDefaultClassMap();
+	AutoLoader::register();
 
-	$api = loader::sapi();
-	if($api == loader::cgi){
-		http::set();
-	}elseif($api == loader::cli){
-		cli::set();
+	throw new Exception("salam");
+	$api = Loader::sapi();
+	if ($api == Loader::cgi) {
+		Http::set();
+	} elseif ($api == Loader::cli) {
+		Cli::set();
 	}
 
-	loader::options();
-	log::setFile("packages/base/storage/protected/logs/".date("Y-m-d").".log");
-	if($level = options::get("packages.base.logging.level")){
-		log::setLevel($level);
+	Loader::options();
+	Log::setFile("packages/base/storage/protected/logs/".date("Y-m-d").".log");
+	if ($level = Options::get("packages.base.logging.level")) {
+		Log::setLevel($level);
 	}
-	log::debug("set 'root_directory' option to ", __DIR__);
-	options::set('root_directory', __DIR__);
-	log::info("loading packages");
-	loader::packages();
-	log::reply("Success");
+
+	Log::debug("set 'root_directory' option to ", __DIR__);
+	Options::set('root_directory', __DIR__);
+	Log::info("loading packages");
+	Loader::packages();
+	Log::reply("Success");
 
 	Session::autoStart();
 
-	if($api == loader::cgi){
-		log::info("loading themes");
-		loader::themes();
-		log::reply("Success");
+	if ($api == Loader::cgi) {
+		Log::info("loading themes");
+		Loader::themes();
+		Log::reply("Success");
 	}
-	log::info("routing");
-	router::routing();
-	log::reply("Success");
+	Log::info("routing");
+	Router::routing();
+	Log::reply("Success");
 
-}catch(Exception $e){
-	echo("exception: {$e}<br>\n");
-	print_r($e);
+
+} catch(\Throwable $e) {
+	header("HTTP/1.0 500 Internal Server Error");
+	if (Loader::isDebug()) {
+		echo("Throwable: {$e}\n");
+		print_r($e);
+	} else {
+		echo("An error occured, Please contact support team.");
+	}
 }

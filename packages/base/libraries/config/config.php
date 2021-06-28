@@ -1,6 +1,8 @@
 <?php
 namespace packages\base;
 $options = array(
+	'packages.base.env' => getenv("JALNO_ENV") ?: "debug",
+	'packages.base.debug-ip' => getenv("JALNO_DEBUG_IP") ? explode(",", getenv("JALNO_DEBUG_IP")): ["127.0.0.1", "cli"],
 	'packages.base.loader.db' => (getenv("JALNO_DB") != "disabled") ? array(
 		'type' => 'mysql',
 		'host' => getenv("JALNO_DB_HOST") ?: "localhost",
