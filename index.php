@@ -12,7 +12,6 @@ try {
 	AutoLoader::setDefaultClassMap();
 	AutoLoader::register();
 
-	throw new Exception("salam");
 	$api = Loader::sapi();
 	if ($api == Loader::cgi) {
 		Http::set();
