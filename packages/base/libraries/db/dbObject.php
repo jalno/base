@@ -358,7 +358,7 @@ class dbObject implements \Serializable, IValidator {
 		return $this->getOne ($fields);
 	}
 
-	public function getValue ($field) {
+	protected static function getValue ($field) {
 		$this->processHasOneWith ();
 		return $this->db->ArrayBuilder()->getValue ($this->dbTable, $field);
 	}
@@ -370,7 +370,7 @@ class dbObject implements \Serializable, IValidator {
 	 *
 	 * @return static|null
 	 */
-	public function getOne ($fields = null) {
+	protected function getOne ($fields = null) {
 		$this->processHasOneWith ();
 		//echo($this->dbTable."\n");
 		$results = $this->db->ArrayBuilder()->getOne ($this->dbTable, $fields);
