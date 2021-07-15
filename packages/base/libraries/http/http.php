@@ -55,9 +55,12 @@ class http{
 			} else {
 				self::$request['scheme'] = $_SERVER['REQUEST_SCHEME'];
 			}
-		} elseif(isset($_SERVER['SCRIPT_URI'])) {
+		} elseif (isset($_SERVER['SCRIPT_URI'])) {
 			self::$request['scheme'] = parse_url($_SERVER['SCRIPT_URI'], PHP_URL_SCHEME);
+		} elseif (isset($_SERVER['HTTPS'])) {
+			self::$request['scheme'] = ($_SERVER['HTTPS'] == "on") ? "https" : "http";
 		}
+
 		if(isset($_SERVER['HTTP_REFERER'])){
 			self::$request['referer'] = $_SERVER['HTTP_REFERER'];
 		}
