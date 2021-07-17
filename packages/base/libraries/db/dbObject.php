@@ -358,7 +358,7 @@ class dbObject implements \Serializable, IValidator {
 		return $this->getOne ($fields);
 	}
 
-	protected static function getValue ($field) {
+	protected function getValue ($field) {
 		$this->processHasOneWith ();
 		return $this->db->ArrayBuilder()->getValue ($this->dbTable, $field);
 	}
