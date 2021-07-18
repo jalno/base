@@ -173,7 +173,7 @@ class ftp{
 		$raw = $this->rawList($dir);
 		$list = [];
 		foreach ($raw as $line) {
-			if (!preg_match("/^([\-dbclps])([\-rwxs]{9})\\s+(\\d+)\\s+(\\w+)\\s+(\\w+)\\s+(\\d+)\\s+(\\w{3}\\s+\\d{1,2}\\s+(?:\\d{1,2}:\\d{1,2}|\\d{4}))\\s+(.+)$/", $line, $matches)) {
+			if (!preg_match("/^([\-dbclps])([\-rwxst]{9})\\s+(\\d+)\\s+(\\w+)\\s+(\\w+)\\s+(\\d+)\\s+(\\w{3}\\s+\\d{1,2}\\s+(?:\\d{1,2}:\\d{1,2}|\\d{4}))\\s+(.+)$/", $line, $matches)) {
 				throw new Exception("invalid line: {$line}");
 			}
 			$list[] = array(
