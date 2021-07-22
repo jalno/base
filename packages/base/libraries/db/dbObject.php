@@ -38,8 +38,8 @@ use packages\base\{loader, db, json, Validator, Validator\IValidator, InputValid
  * @method static[] static rawQuery($query, $bindParams, $sanitize)
  * @method static join(string $objectName, string $key = null, string $joinType = 'LEFT', string $primaryKey = null)
  * @method static static join(string $objectName, string $key = null, string $joinType = 'LEFT', string $primaryKey = null)
- * @method static with(string $objectName)
- * @method static static with(string $objectName)
+ * @method static with(string $objectName, string $type)
+ * @method static static with(string $objectName, string $type)
  * @method static groupBy(string $groupByField)
  * @method static static groupBy(string $groupByField)
  * @method static orderBy($orderByField, $orderbyDirection = "DESC", $customFields = null)
@@ -431,6 +431,7 @@ class dbObject implements \Serializable, IValidator {
 	 *
 	 * @access public
 	 * @param string $objectName Object Name
+	 * @param string $type that can be INNER, LEFT, RIGHT
 	 *
 	 * @return dbObject
 	 */
