@@ -106,6 +106,10 @@ class Date implements date_interface {
 			return call_user_func_array(array(__NAMESPACE__.'\\date\\'.self::$calendar, "mktime"), array($hour, $minute, $second, $month, $day, $year));
 		}
 	}
+
+	/**
+	 * @return int
+	 */
 	public static function time(){
 		return time();
 	}
