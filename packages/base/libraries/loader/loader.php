@@ -263,4 +263,22 @@ class loader {
 		}
 		return false;
 	}
+
+	public static function isDebug(): bool {
+		global $options;
+		$isProduction = (isset($options["packages.base.env"]) and $options["packages.base.env"] == "production");
+		if (!$isProduction) {
+			return true;
+		}
+		$debugIPs = isset($options["packages.base.debug-ip"]) ? $options["packages.base.debug-ip"] : null;
+		if (!$debugIPs) {
+			return false;
+		}
+		$debugIPs = is_array($debugIPs) ? $debugIPs : [$debugIPs];
+		if ($debugIPs) {
+			$requestIP = $_SERVER["HTTP_X_REAL_IP"] ?? $_SERVER["HTTP_X_FORWARDED_FOR"] ?? $_SERVER['REMOTE_ADDR'] ?? "cli";
+			return in_array($requestIP, $debugIPs);
+		}
+		return false;
+	}
 }

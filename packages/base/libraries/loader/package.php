@@ -336,17 +336,13 @@ class package implements \Serializable {
 	
 	/**
 	 * Get file
-	 * 
-	 * @return packages\base\IO\file
 	 */
-	public function getFile(string $path): IO\file {
+	public function getFile(string $path): IO\File {
 		return $this->home->file($path);
 	}
 
 	/**
 	 * Get home directory
-	 * 
-	 * @return packages\base\IO\directory
 	 */
 	public function getHome(): IO\directory {
 		return $this->home;
@@ -354,8 +350,6 @@ class package implements \Serializable {
 	
 	/**
 	 * Get package.json file
-	 * 
-	 * @return packages\base\IO\file
 	 */
 	public function getConfigFile(): IO\file {
 		return $this->getFile("package.json");

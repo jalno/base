@@ -16,52 +16,52 @@ use packages\base\{loader, db, json, Validator, Validator\IValidator, InputValid
  *
  * @method int count()
  * @method static int count()
- * @method dbObject ArrayBuilder()
- * @method static dbObject ArrayBuilder()
- * @method dbObject JsonBuilder()
- * @method static dbObject JsonBuilder()
- * @method dbObject ObjectBuilder()
- * @method static dbObject ObjectBuilder()
- * @method mixed byId(string $id, mixed $fields = null)
- * @method static mixed byId(string $id, mixed $fields = null)
- * @method mixed get(mixed $limit = null, mixed $fields = null)
- * @method static mixed get(mixed $limit = null, mixed $fields = null)
- * @method mixed getOne (mixed $fields = null)
- * @method static mixed getOne(mixed $fields = null)
+ * @method static ArrayBuilder()
+ * @method static static ArrayBuilder()
+ * @method static JsonBuilder()
+ * @method static static JsonBuilder()
+ * @method static ObjectBuilder()
+ * @method static static ObjectBuilder()
+ * @method static|null byId(string $id, mixed $fields = null)
+ * @method static static|null byId(string $id, mixed $fields = null)
+ * @method static[] get(mixed $limit = null, mixed $fields = null)
+ * @method static static[] get(mixed $limit = null, mixed $fields = null)
+ * @method static|null getOne (mixed $fields = null)
+ * @method static static|null getOne(mixed $fields = null)
  * @method mixed getValue (string $field)
  * @method static mixed getValue(string $field)
  * @method mixed paginate(int $page, array $fields = null)
  * @method static mixed paginate(int $page, array $fields = null)
- * @method dbObject query(string $query, $numRows = null)
- * @method static dbObject query(string $query, $numRows = null)
- * @method dbObject rawQuery($query, $bindParams, $sanitize)
- * @method static dbObject rawQuery($query, $bindParams, $sanitize)
- * @method dbObject join(string $objectName, string $key = null, string $joinType = 'LEFT', string $primaryKey = null)
- * @method static dbObject join(string $objectName, string $key = null, string $joinType = 'LEFT', string $primaryKey = null)
- * @method dbObject with(string $objectName)
- * @method static dbObject with(string $objectName)
- * @method dbObject groupBy(string $groupByField)
- * @method static dbObject groupBy(string $groupByField)
- * @method dbObject orderBy($orderByField, $orderbyDirection = "DESC", $customFields = null)
- * @method static dbObject orderBy($orderByField, $orderbyDirection = "DESC", $customFields = null)
- * @method dbObject where($whereProp, $whereValue = "DBNULL", $operator = "=")
- * @method static dbObject where($whereProp, $whereValue = "DBNULL", $operator = "=")
- * @method dbObject orWhere($whereProp, $whereValue = "DBNULL", $operator = "=")
- * @method static dbObject orWhere($whereProp, $whereValue = "DBNULL", $operator = "=")
- * @method dbObject setQueryOption($options)
- * @method static dbObject setQueryOption($options)
- * @method dbObject setTrace($enabled, $stripPrefix = null)
- * @method static dbObject setTrace($enabled, $stripPrefix = null)
- * @method dbObject withTotalCount()
- * @method static dbObject withTotalCount()
- * @method dbObject startTransaction()
- * @method static dbObject startTransaction()
- * @method dbObject commit()
- * @method static dbObject commit()
- * @method dbObject rollback()
- * @method static dbObject rollback()
- * @method dbObject ping()
- * @method static dbObject ping()
+ * @method static query(string $query, $numRows = null)
+ * @method static static query(string $query, $numRows = null)
+ * @method static[] rawQuery($query, $bindParams, $sanitize)
+ * @method static[] static rawQuery($query, $bindParams, $sanitize)
+ * @method static join(string $objectName, string $key = null, string $joinType = 'LEFT', string $primaryKey = null)
+ * @method static static join(string $objectName, string $key = null, string $joinType = 'LEFT', string $primaryKey = null)
+ * @method static with(string $objectName, string $type = 'LEFT')
+ * @method static static with(string $objectName, string $type = 'LEFT')
+ * @method static groupBy(string $groupByField)
+ * @method static static groupBy(string $groupByField)
+ * @method static orderBy($orderByField, $orderbyDirection = "DESC", $customFields = null)
+ * @method static static orderBy($orderByField, $orderbyDirection = "DESC", $customFields = null)
+ * @method static where($whereProp, $whereValue = "DBNULL", $operator = "=")
+ * @method static static where($whereProp, $whereValue = "DBNULL", $operator = "=")
+ * @method static orWhere($whereProp, $whereValue = "DBNULL", $operator = "=")
+ * @method static static orWhere($whereProp, $whereValue = "DBNULL", $operator = "=")
+ * @method static setQueryOption($options)
+ * @method static static setQueryOption($options)
+ * @method static setTrace($enabled, $stripPrefix = null)
+ * @method static static setTrace($enabled, $stripPrefix = null)
+ * @method static withTotalCount()
+ * @method static static withTotalCount()
+ * @method static startTransaction()
+ * @method static static startTransaction()
+ * @method static commit()
+ * @method static static commit()
+ * @method static rollback()
+ * @method static static rollback()
+ * @method static ping()
+ * @method static static ping()
  * @method string getLastError()
  * @method static string getLastError ()
  * @method string getLastQuery()
@@ -358,7 +358,7 @@ class dbObject implements \Serializable, IValidator {
 		return $this->getOne ($fields);
 	}
 
-	public function getValue ($field) {
+	protected function getValue ($field) {
 		$this->processHasOneWith ();
 		return $this->db->ArrayBuilder()->getValue ($this->dbTable, $field);
 	}
@@ -370,7 +370,7 @@ class dbObject implements \Serializable, IValidator {
 	 *
 	 * @return static|null
 	 */
-	public function getOne ($fields = null) {
+	protected function getOne ($fields = null) {
 		$this->processHasOneWith ();
 		//echo($this->dbTable."\n");
 		$results = $this->db->ArrayBuilder()->getOne ($this->dbTable, $fields);
@@ -400,7 +400,7 @@ class dbObject implements \Serializable, IValidator {
 	 *							 or only $count
 	 * @param array|string $fields Array or coma separated list of fields to fetch
 	 *
-	 * @return array Array of dbObjects
+	 * @return static[] Array of dbObjects
 	 */
 	protected function get ($limit = null, $fields = null) {
 		$objects = array();
@@ -431,13 +431,19 @@ class dbObject implements \Serializable, IValidator {
 	 *
 	 * @access public
 	 * @param string $objectName Object Name
+	 * @param string $type that can be INNER, LEFT, RIGHT
 	 *
 	 * @return dbObject
 	 */
-	private function with ($objectName) {
+	private function with ($objectName, string $type = 'LEFT') {
 		if (!property_exists ($this, 'relations') and !isset ($this->relations[$objectName]))
 			die ("No relation with name $objectName found");
-		$this->_with[$objectName] = $this->relations[$objectName];
+
+		$relation = $this->relations[$objectName];
+		if (strtolower($relation[0]) == "hasone") {
+			$relation[3] = $type;
+		}
+		$this->_with[$objectName] = $relation;
 		return $this;
 	}
 	/**
@@ -564,6 +570,13 @@ class dbObject implements \Serializable, IValidator {
 		if(!is_array($data)){
 			$data = array();
 		}
+
+		/** It's a dummy idea, but works! */
+		if (isset($data["userpanel_users"])) {
+			unset($data["userpanel_users"]["password"], $data["userpanel_users"]["remember_token"]);
+			trigger_error("DBObject:toArray: find 'userpanel_users' index! you should fix this!");
+		}
+
 		foreach ($data as $key => $d) {
 			if(is_array($d)){
 				foreach($d as $key2 => $val2){
@@ -657,7 +670,7 @@ class dbObject implements \Serializable, IValidator {
 				$key = $opts[2];
 			if ($relationType == 'hasone') {
 				$this->db->setQueryOption ("MYSQLI_NESTJOIN");
-				$this->join ($modelName, $key);
+				$this->join ($modelName, $key, $opts[3] ?? 'LEFT');
 			}
 		}
 	}

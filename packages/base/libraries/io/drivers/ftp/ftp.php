@@ -27,8 +27,8 @@ class ftp{
 				if($this->options['username'] and $this->options['password']){
 					if($this->login()){
 						if($this->options['root']){
-							if(!$this->chdir($options['root'])){
-								throw new ChangeDirException($options['root']);
+							if(!$this->chdir($this->options['root'])){
+								throw new ChangeDirException($this->options['root']);
 							}
 						}
 						$this->ready = true;
@@ -50,6 +50,9 @@ class ftp{
 	}
 	private function login(){
 		if(ftp_login($this->connection, $this->options['username'], $this->options['password'])){
+			if ($this->options['passive']) {
+				ftp_pasv($this->connection, true);
+			}
 			return true;
 		}else{
 			throw new AuthException;
@@ -170,7 +173,7 @@ class ftp{
 		$raw = $this->rawList($dir);
 		$list = [];
 		foreach ($raw as $line) {
-			if (!preg_match("/^([\-dbclps])([\-rwxs]{9})\\s+(\\d+)\\s+(\\w+)\\s+(\\w+)\\s+(\\d+)\\s+(\\w{3}\\s+\\d{1,2}\\s+(?:\\d{1,2}:\\d{1,2}|\\d{4}))\\s+(.+)$/", $line, $matches)) {
+			if (!preg_match("/^([\-dbclps])([\-rwxst]{9})\\s+(\\d+)\\s+(\\w+)\\s+(\\w+)\\s+(\\d+)\\s+(\\w{3}\\s+\\d{1,2}\\s+(?:\\d{1,2}:\\d{1,2}|\\d{4}))\\s+(.+)$/", $line, $matches)) {
 				throw new Exception("invalid line: {$line}");
 			}
 			$list[] = array(

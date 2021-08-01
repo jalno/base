@@ -48,10 +48,19 @@ class http{
 			self::$request['hostname'] = $_SERVER['HTTP_HOST'];
 		}
 		if (isset($_SERVER['REQUEST_SCHEME'])) {
-			self::$request['scheme'] = $_SERVER['REQUEST_SCHEME'];
-		} elseif(isset($_SERVER['SCRIPT_URI'])) {
+			if (isset($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+				self::$request['scheme'] = $_SERVER['HTTP_X_FORWARDED_PROTO'];
+			} elseif (isset($_SERVER['HTTP_X_FORWARDED_SSL'])) {
+				self::$request['scheme'] = $_SERVER['HTTP_X_FORWARDED_SSL'] == "on" ? "https" : "http";
+			} else {
+				self::$request['scheme'] = $_SERVER['REQUEST_SCHEME'];
+			}
+		} elseif (isset($_SERVER['SCRIPT_URI'])) {
 			self::$request['scheme'] = parse_url($_SERVER['SCRIPT_URI'], PHP_URL_SCHEME);
+		} elseif (isset($_SERVER['HTTPS'])) {
+			self::$request['scheme'] = ($_SERVER['HTTPS'] == "on") ? "https" : "http";
 		}
+
 		if(isset($_SERVER['HTTP_REFERER'])){
 			self::$request['referer'] = $_SERVER['HTTP_REFERER'];
 		}
