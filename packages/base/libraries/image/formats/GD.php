@@ -124,7 +124,7 @@ class GD extends Image {
 		}
 		$width = $image->getWidth();
 		$height = $image->getHeight();
-		if ($image instanceof PNG and $opacity < 1) {
+		if ($image instanceof PNG) {
 			$cut = imagecreatetruecolor($width, $height);
 			imagecopy($cut, $this->image, 0, 0, $x, $y, $width, $height);
 			imagecopy($cut, $image->image, 0, 0, 0, 0, $width, $height);
