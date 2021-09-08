@@ -4,7 +4,7 @@ abstract class directory implements \Serializable{
 	public $directory;
 	public $basename;
 	public function __construct(string $path = ''){
-		if($path){
+		if ($path !== '') {
 			$this->directory = dirname($path);
 			$this->basename = basename($path);
 		}
@@ -21,8 +21,14 @@ abstract class directory implements \Serializable{
 	abstract public function file(string $name);
 	abstract public function directory(string $name);
 	abstract public function getDirectory();
-	public function getPath():string {
-		return ($this->directory and $this->basename) ? $this->directory.'/'.$this->basename : '';
+	public function getPath(): string {
+		if (
+			($this->directory === null or $this->directory === '') and
+			($this->basename === null or $this->basename === '')
+		) {
+			return '';
+		}
+		return $this->directory . '/' . $this->basename;
 	}
 	public function copyTo(directory $dest):bool{
         $sourcePath = $this->getPath();
