@@ -4,9 +4,10 @@ abstract class file implements \Serializable{
 	public $directory;
 	public $basename;
 	public function __construct(string $path = ''){
-		if ($path !== '') {
-			$this->directory = dirname($path);
-			$this->basename = basename($path);
+		$this->basename = basename($path);
+		$this->directory = dirname($path);
+		if ($this->directory === '/') {
+			$this->directory = '';
 		}
 	}
 	abstract public function copyTo(file $dest): bool;
@@ -19,12 +20,6 @@ abstract class file implements \Serializable{
 	abstract public function exists(): bool;
 	abstract public function getDirectory();
 	public function getPath(): string {
-		if (
-			($this->directory === null or $this->directory === '') and
-			($this->basename === null or $this->basename === '')
-		) {
-			return '';
-		}
 		return $this->directory . '/' . $this->basename;
 	}
 	public function copyFrom(file $source): bool{
