@@ -160,23 +160,26 @@ class Validator {
 	 */
 	private function validateInput(string $input, array $rule, $type, bool $doNotPassValidationException): bool {
 		$validator = self::resolve($type);
+
+		$inputFieldName = $rule["field_name"] ?? $input;
+
 		if ($doNotPassValidationException) {
 			try {
 				if (is_callable($validator)) {
-					$newData = call_user_func($validator, $this->data[$input], $rule, $this->input . $input);
+					$newData = call_user_func($validator, $this->data[$input], $rule, $this->input . $inputFieldName);
 				} else {
 					$rule['type'] = $type;
-					$newData = $validator->validate($this->input . $input, $rule, $this->data[$input]);
+					$newData = $validator->validate($this->input . $inputFieldName, $rule, $this->data[$input]);
 				}
 			} catch (InputValidationException $e) {
 				return false;
 			}
 		} else {
 			if (is_callable($validator)) {
-				$newData = call_user_func($validator, $this->data[$input], $rule, $this->input . $input);
+				$newData = call_user_func($validator, $this->data[$input], $rule, $this->input . $inputFieldName);
 			} else {
 				$rule['type'] = $type;
-				$newData = $validator->validate($this->input . $input, $rule, $this->data[$input]);
+				$newData = $validator->validate($this->input . $inputFieldName, $rule, $this->data[$input]);
 			}
 		}
 		if (is_object($newData) and $newData instanceof Validator\NullValue) {
