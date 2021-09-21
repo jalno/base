@@ -118,7 +118,7 @@ class Validator {
 		foreach ($this->rules as $input => $rule) {
 			if (!isset($this->data[$input])) {
 				if (!isset($rule['optional']) or !$rule['optional']) {
-					throw new InputValidationException($this->input . $input);
+					throw new InputValidationException($this->input . ($rule["field_name"] ?? $input));
 				}
 				if(isset($rule['default'])) {
 					$this->newData[$input] = $rule['default'];
