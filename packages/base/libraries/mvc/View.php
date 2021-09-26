@@ -33,10 +33,10 @@ class View {
 	/** @var string */
 	protected $description = "";
 
-	/** @var string|packages\base\IO\file|null */
+	/** @var string|\packages\base\IO\file|null */
 	protected $file;
 
-	/** @var packages\base\frontend\Source */
+	/** @var \packages\base\frontend\Source */
 	protected $source;
 
 	/** @var array */
@@ -48,16 +48,16 @@ class View {
 	/** @var mixed */
 	protected $data = [];
 
-	/** @var packages\base\view\error[] */
+	/** @var \packages\base\view\error[] */
 	protected $errors = [];
 
-	/** @var packages\base\frontend\events\throwDynamicData */
+	/** @var \packages\base\frontend\events\throwDynamicData */
 	protected $dynamicData;
 
 	/**
 	 * Construct the view and assets by Its frontend source.
 	 * 
-	 * @param packages\base\frontend\Source $source
+	 * @param \packages\base\frontend\Source $source
 	 */
 	public function __construct() {
 		$this->dynamicData = new throwDynamicData();
@@ -242,7 +242,7 @@ class View {
 	/**
 	 * Getter for dynamic data.
 	 * 
-	 * @return packages\base\frontend\events\throwDynamicData
+	 * @return \packages\base\frontend\events\throwDynamicData
 	 */
 	public function dynamicData(): throwDynamicData {
 		if(!$this->dynamicData){
@@ -255,7 +255,7 @@ class View {
 	/**
 	 * Set html file.
 	 * 
-	 * @param packages\base\IO\file $file
+	 * @param \packages\base\IO\file $file
 	 * @return void
 	 */
 	public function setFile(IO\file $file): void {
@@ -265,7 +265,7 @@ class View {
 	/**
 	 * Get html file.
 	 * 
-	 * @return packages\base\IO\file|null
+	 * @return \packages\base\IO\file|null
 	 */
 	public function getFile(): ?IO\file {
 		if (is_string($this->file)) {
@@ -306,7 +306,7 @@ class View {
 	/**
 	 * Add a error to view.
 	 * 
-	 * @param packages\base\view\error $error
+	 * @param \packages\base\view\error $error
 	 * @return void
 	 */
 	public function addError(view\error $error): void {
@@ -316,7 +316,7 @@ class View {
 	/**
 	 * Return the first error.
 	 * 
-	 * @return packages\base\view\error|null
+	 * @return \packages\base\view\error|null
 	 */
 	public function getError() {
 		return ($this->errors ? $this->errors[0] : null);
@@ -325,7 +325,7 @@ class View {
 	/**
 	 * Getter for all errors.
 	 * 
-	 * @return packages\base\view\error[]
+	 * @return \packages\base\view\error[]
 	 */
 	public function getErrors(): array {
 		return $this->errors;
@@ -334,7 +334,7 @@ class View {
 	/**
 	 * Getter for source of view.
 	 * 
-	 * @return packages\base\frontend\Source
+	 * @return \packages\base\frontend\Source
 	 */
 	public function getSource(){
 		return $this->source;
@@ -343,7 +343,7 @@ class View {
 	/**
 	 * Setter for source
 	 * 
-	 * @param packages\base\frontend\Source $source
+	 * @param \packages\base\frontend\Source $source
 	 * @return void
 	 */
 	public function setSource(frontend\Source $source): void {
