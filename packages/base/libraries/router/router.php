@@ -53,7 +53,7 @@ class Router {
 	public static function CheckShortLang($lang, bool $throwError = true) {
 		$log = Log::getInstance();
 		$log->debug("looking for packages.base.translator.changelang.type option");
-		$type = Options::get('packages.base.translator.changelang.type');
+		$type = Options::get('packages.base.translator.changelang.type') ?: "short";
 		$log->reply($type);
 		if ($type == 'short') {
 			$log->debug("check", $lang);

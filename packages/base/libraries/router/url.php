@@ -5,7 +5,7 @@ use \packages\base\options;
 use \packages\base\IO;
 function url($page = '',$parameters = array(), $absolute = false){
 	$changelang = options::get('packages.base.translator.changelang');
-	$type = options::get('packages.base.translator.changelang.type');
+	$type = options::get('packages.base.translator.changelang.type') ?: "short";
 	if ($page == ".")  {
 		$page = http::$request["uri"];
 		if ($changelang == "uri") {

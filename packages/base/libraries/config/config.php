@@ -10,9 +10,6 @@ $options = array(
 		'pass' => getenv("JALNO_DB_PASSWORD") ?: "",
 		'dbname' => getenv("JALNO_DB_NAME") ?: "jalno"
 	) : null,
-	'packages.base.translator.defaultlang' => 'fa_IR',
-	'packages.base.translator.changelang' => 'uri',//uri,parameter
-	'packages.base.translator.changelang.type' => 'short',//short, complete
-	'packages.base.safe_referers' => array(),
+	'packages.base.translator.defaultlang' => getenv("JALNO_LANG") ?: "fa_IR",
 	"packages.base.router.defaultDomain" => "*"
 );
