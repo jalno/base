@@ -65,7 +65,7 @@ class response{
 	private $statusCode;
 	private $reasonPhrase;
 	private $primaryIP;
-	private $headers;
+	private $headers = [];
 	private $body;
 	private $file;
 	public function __construct(int $status = 200,array $headers = []){
@@ -96,7 +96,7 @@ class response{
 	public function setBody(string $body){
 		$this->body = $body;
 	}
-	public function getBody():string{
+	public function getBody(): ?string {
 		if($this->file){
 			return $this->file->read();
 		}
