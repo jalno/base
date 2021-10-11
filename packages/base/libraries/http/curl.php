@@ -31,6 +31,9 @@ class curl implements handler{
 			}
 
 		}
+		if ($request->getMethod() == 'HEAD') {
+			curl_setopt($ch, CURLOPT_NOBODY, 1);
+		}
 		if(isset($options['timeout']) and $options['timeout'] > 0){
 			curl_setopt($ch, CURLOPT_TIMEOUT, $options['timeout']);
 		}
@@ -94,6 +97,7 @@ class curl implements handler{
 				return strlen($data);
 			});
 		}
+
 		$result = curl_exec($ch);
 		$info = curl_getinfo($ch);
 		curl_close($ch);
