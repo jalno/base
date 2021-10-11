@@ -47,7 +47,7 @@ class Request {
 	/**
 	 * @var string|array<string,mixed>|File|null
 	 */
-	protected $body = "";
+	protected $body = null;
 
 	/**
 	 * @var array{"type": "http"|"https"|"socks4"|"socks5","hostname": string,"port": int,"username"?:string,"password"?:string}|null
