@@ -3,6 +3,7 @@ namespace packages\base;
 
 use packages\base\Loader;
 use packages\base\log\Instance;
+use packages\base\IO\File;
 
 class Log {
 	const debug = 1;
@@ -11,15 +12,16 @@ class Log {
 	const error = 4;
 	const fatal = 6;
 	const off = 0;
-	static protected $file;
-	static private $api;
-	static private $parent;
-	static private $generation = 0;
-	static private $indentation = "\t";
-	public static function newChild() {
+
+	protected static ?File\Local $file = null;
+	private static $api;
+	private static ?Instance $parent = null;
+	private static int $generation = 0;
+	private static string $indentation = "\t";
+	public static function newChild(): void  {
 		self::$generation++;
 	}
-	public static function dieChild() {
+	public static function dieChild(): void {
 		self::$generation--;
 	}
 	public static function getParent() {
@@ -38,7 +40,10 @@ class Log {
 		}
 		return new Instance($level);
 	}
-	public static function setFile($file) {
+	public static function setFile(File $file): void {
+		if (!method_exists($file, 'append')) {
+			throw new Exception("'" . get_class($file) . "' does not ability to append in a file");
+		}
 		self::$file = $file;
 	}
 	public static function setLevel($level) {
@@ -124,6 +129,20 @@ class Log {
 				echo $line;
 			}
 		}
-		file_put_contents(self::$file, $line, is_file(self::$file) ? FILE_APPEND : 0);
+		if (!self::$file) {
+			$file = Packages::package("base")
+				->getStorage("logs")
+				->file(Date\Gregorian::format("Y-m-d") . ".log");
+			self::setFile($file);
+		}
+		if (self::$file) {
+			/**
+			 * It's for preventing phpstan arguing about existance of 'append' method in file object.
+			 * We already checked existance of append method in Log::setFile. Double check is a huge overhead in such high frequently method like this.
+			 * @var mixed
+			 */
+			$file = self::$file;
+			$file->append($line);
+		}
 	}
 }

@@ -18,5 +18,12 @@
 	"languages":{
 		"fa_IR": "langs/fa_IR.json",
 		"en_US": "langs/en_US.json"
+	},
+	"storages": {
+		"logs": {
+			"@class": "local",
+			"type": "protected",
+			"root": "storage/protected/logs"
+		}
 	}
 }

@@ -20,7 +20,6 @@ try {
 	}
 
 	Loader::options();
-	Log::setFile("packages/base/storage/protected/logs/".date("Y-m-d").".log");
 	if ($level = Options::get("packages.base.logging.level")) {
 		Log::setLevel($level);
 	}
