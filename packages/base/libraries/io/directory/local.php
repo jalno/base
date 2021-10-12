@@ -1,8 +1,11 @@
 <?php
 namespace packages\base\IO\directory;
-use \packages\base\IO\file;
-use \packages\base\IO\directory;
-use \packages\base\IO\NotFoundException;
+
+use packages\base\IO\file;
+use packages\base\IO\directory;
+use packages\base\IO\NotFoundException;
+use packages\base\Exception;
+
 class local extends directory{
     public function size(): int{
         $size = 0;
@@ -117,6 +120,28 @@ class local extends directory{
     }
 	public function getRealPath():string{
 		return realpath($this->getPath());
+	}
+
+    public function isIn(Directory $parent): bool {
+		if ($parent === $this) {
+			return true;
+		}
+		if (!is_a($this->getDirectory(), get_class($parent), false)) {
+			return false;
+		}
+		if ($this->getRealPath() === $parent->getRealPath()) {
+			return false;
+		}
+		$base = $parent->getRealPath() . "/";
+		return substr($this->getRealPath(), 0, strlen($base)) == $base;
+	}
+
+
+	public function getRelativePath(Directory $parent): string {
+		if (!$this->isIn($parent)) {
+			throw new Exception("Currently cannot generate path for not nested nodes");
+		}
+		return substr($parent->realpath(), strlen($this->realpath()) + 1);
 	}
 
     public function serialize():string{

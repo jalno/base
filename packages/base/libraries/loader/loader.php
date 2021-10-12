@@ -11,33 +11,33 @@ require_once('packages/base/libraries/json/decode.php');
 require_once('packages/base/libraries/router/url.php');
 require_once('packages/base/libraries/translator/t.php');
 
-class loader {
+class Loader {
 	const cli = 1;
 	const cgi = 2;
 
 	public static function packages(){
-		$useCache = options::get("packages.base.env") == "production";
+		$useCache = Options::get("packages.base.env") == "production";
 		$alldependencies = array();
 		$loadeds = array();
 		$directories = scandir("packages/");
 		$allpackages = array();
 		foreach($directories as $directory){
 			if($directory != '.' and $directory != '..'){
-				events::trigger(new events\PackageLoad($directory));
+				Events::trigger(new events\PackageLoad($directory));
 				$package = self::package($directory, $useCache);
 				if(!$package){
 					continue;
 				}
-				events::trigger(new events\PackageLoaded($package));
+				Events::trigger(new events\PackageLoaded($package));
 				$dependencies = $package->getDependencies();
 				$alldependencies[$package->getName()] = $dependencies;
 				$allpackages[$package->getName()] = $package;
 			}
 		}
 
-		$getDefaultLang = translator::getDefaultLang();
-		translator::addLang($getDefaultLang);
-		translator::setLang($getDefaultLang);
+		$getDefaultLang = Translator::getDefaultLang();
+		Translator::addLang($getDefaultLang);
+		Translator::setLang($getDefaultLang);
 
 		$sapi = self::sapi();
 		do {
@@ -53,7 +53,9 @@ class loader {
 				if ($readytoload) {
 					$loadeds[] = $name;
 					$oneload = true;
-					packages::register($package);
+					self::loadStoragesForPackage($package);
+					Packages::register($package);
+					
 					self::registerAutoloader($package, $useCache);
 					if ($sapi == self::cgi) {
 						self::packageRouting($package, $useCache);
@@ -62,24 +64,24 @@ class loader {
 					$package->addLangs();
 					unset($allpackages[$name]);
 					$package->bootup();
-					events::trigger(new events\PackageRegistered($package));
+					Events::trigger(new events\PackageRegistered($package));
 				}
 			}
 		} while($oneload);
 		if ($allpackages) {
 			throw new Exception("could not register packages: " . implode(", ", array_keys($allpackages)));
 		}
-		events::trigger(new events\PackagesLoaded());
+		Events::trigger(new events\PackagesLoaded());
 	}
 	public static function themes() {
-		$useCache = options::get("packages.base.env") == "production";
-		foreach (packages::get() as $package) {
+		$useCache = Options::get("packages.base.env") == "production";
+		foreach (Packages::get() as $package) {
 			$frontends = $package->getFrontends();
 			foreach ($frontends as $dir) {
 				$source = frontend\Source::fromDirectory($dir);
 				$source->addLangs();
 				self::registerAutoloader($source, $useCache);
-				frontend\theme::addSource($source);
+				frontend\Theme::addSource($source);
 			}
 		}
 	}
@@ -96,23 +98,23 @@ class loader {
 	/**
 	 * @param string $name
 	 * @param bool $cache
-	 * @return packages\base\package|null
+	 * @return Package|null
 	 */
-	private static function package(string $name, bool $cache): ?package {
-		$configFile = new IO\file\local("packages/{$name}/package.json");
+	private static function package(string $name, bool $cache): ?Package {
+		$configFile = new IO\File\Local("packages/{$name}/package.json");
 		if(!$configFile->exists()){
 			return null;
 		}
 		if ($cache) {
 			$md5 = $configFile->md5();
-			$package = cache::get("packages.base.loader.package.{$name}.{$md5}");
+			$package = Cache::get("packages.base.loader.package.{$name}.{$md5}");
 			if ($package) {
 				return $package;
 			}
 		}
-		$package = package::fromName($name);
+		$package = Package::fromName($name);
 		if ($cache) {
-			cache::set("packages.base.loader.package.{$name}.{$md5}", $package, 0);
+			Cache::set("packages.base.loader.package.{$name}.{$md5}", $package, 0);
 		}
 		return $package;
 	}
@@ -120,7 +122,7 @@ class loader {
 	/**
 	 * load http routing of package and register it in the router.
 	 * 
-	 * @param packages\base\package $package
+	 * @param Package $package
 	 * @param bool $cache
 	 * @return void
 	 */
@@ -132,12 +134,12 @@ class loader {
 		$rules = [];
 		if ($cache) {
 			$md5 = $routing->md5();
-			$rules = cache::get("packages.base.loader.routing.{$package->getName()}.{$md5}");
+			$rules = Cache::get("packages.base.loader.routing.{$package->getName()}.{$md5}");
 		}
 		if (!$rules) {
 			$rules = $package->getRoutingRules();
 			if ($cache) {
-				cache::set("packages.base.loader.routing.{$package->getName()}.{$md5}", $rules, 0);
+				Cache::set("packages.base.loader.routing.{$package->getName()}.{$md5}", $rules, 0);
 			}
 		}
 		foreach ($rules as $rule) {
@@ -148,7 +150,7 @@ class loader {
 	/**
 	 * load autoload items of package and register it in the registery.
 	 * 
-	 * @param packages\base\package|packages\base\frontend\Source $container
+	 * @param Package|frontend\Source $container
 	 * @param bool $cache
 	 * @throws packags\base\IO\NotFoundException
 	 * @return void
@@ -161,7 +163,7 @@ class loader {
 		$items = [];
 		if ($cache) {
 			$md5 = is_array($autoload) ? $container->getConfigFile()->md5() : $autoload->md5();
-			$items = cache::get("packages.base.loader.autoload.{$container->getName()}.{$md5}");
+			$items = Cache::get("packages.base.loader.autoload.{$container->getName()}.{$md5}");
 			if (!$items) {
 				$items = [];
 			}
@@ -197,11 +199,11 @@ class loader {
 						continue;
 					}
 					$fileKey = $path. "." . filemtime($path);
-					$fileItems = cache::get("packages.base.loader.autoload.{$fileKey}");
+					$fileItems = Cache::get("packages.base.loader.autoload.{$fileKey}");
 					if (empty($fileItems)) {
 						$fileItems = Autoloader::getAutoloaderItemsFromFile($file);
 						if ($fileItems) {
-							cache::set("packages.base.loader.autoload.{$fileKey}", $fileItems, 0);
+							Cache::set("packages.base.loader.autoload.{$fileKey}", $fileItems, 0);
 						}
 					}
 					if ($fileItems) {
@@ -212,7 +214,7 @@ class loader {
 				}
 			}
 			if ($items and $cache) {
-				cache::set("packages.base.loader.autoload.{$container->getName()}.{$md5}", $items, 0);
+				Cache::set("packages.base.loader.autoload.{$container->getName()}.{$md5}", $items, 0);
 			}
 		}
 		foreach ($items as $class => $path) {
@@ -226,7 +228,7 @@ class loader {
 		}
 	}
 	public static function connectdb(): void{
-		$db = options::get('packages.base.loader.db', false);
+		$db = Options::get('packages.base.loader.db', false);
 		if (!$db) {
 			return;
 		}
@@ -242,7 +244,7 @@ class loader {
 			if (!isset($config['host'], $config['user'], $config['pass'],$config['dbname'])) {
 				throw new DatabaseConfigException("{$name} connection is invalid");
 			}
-			db::connect($name, $config['host'], $config['user'], $config['dbname'],$config['pass'],$config['port']);
+			DB::connect($name, $config['host'], $config['user'], $config['dbname'],$config['pass'],$config['port']);
 		}
 	}
 	public static function requiredb(){
@@ -251,13 +253,13 @@ class loader {
 		}
 	}
 	public static function canConnectDB() {
-		return options::get('packages.base.loader.db', false) != false;
+		return Options::get('packages.base.loader.db', false) != false;
 	}
 	public static function options(){
 		global $options;
 		if (isset($options) and is_array($options)){
 			foreach($options as $name => $value){
-				options::set($name, $value);
+				Options::set($name, $value);
 			}
 			return true;
 		}
@@ -280,5 +282,18 @@ class loader {
 			return in_array($requestIP, $debugIPs);
 		}
 		return false;
+	}
+
+	protected static function loadStoragesForPackage(Package $package): void {
+		$name = $package->getName();
+		$storages = Options::get("packages.{$name}.storages");
+		if (!$storages) {
+			return;
+		}
+		foreach($storages as $name => $storageArray){
+			$storageArray['@relative-to'] = $package->getHome()->getPath();
+			$storage = Storage::fromArray($storageArray);
+			$package->setStorage($name, $storage);
+		}
 	}
 }

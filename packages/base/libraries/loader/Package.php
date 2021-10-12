@@ -1,7 +1,9 @@
 <?php
 namespace packages\base;
 
-class package implements \Serializable {
+use packages\base\Storage\LocalStorage;
+
+class Package implements \Serializable {
 
 	use AutoloadContainerTrait;
 	use LanguageContainerTrait;
@@ -11,17 +13,16 @@ class package implements \Serializable {
 	 * construct a package from its package.json
 	 * 
 	 * @param string $name name of directory in packages directory.
-	 * @throws packages\base\IO\NotFoundException if cannot find package.json in package directory
-	 * @throws packages\base\json\JsonException {@see json\decode()}
-	 * @throws packages\base\IO\NotFoundException {@see package::addFrontend()}
-	 * @throws packages\base\IO\NotFoundException {@see package::addLang()}
-	 * @throws packages\base\translator\LangAlreadyExists {@see package::addLang()}
-	 * @throws packages\base\translator\InvalidLangCode {@see package::addLang()}
-	 * @throws packages\base\PackageConfigException if package.json file wasn't an array
-	 * @throws packages\base\PackageConfigException if event hasn't "name" or "listener" indexes.
-	 * @return packages\base\package
+	 * @throws IO\NotFoundException if cannot find package.json in package directory
+	 * @throws json\JsonException {@see json\decode()}
+	 * @throws IO\NotFoundException {@see package::addFrontend()}
+	 * @throws IO\NotFoundException {@see package::addLang()}
+	 * @throws translator\LangAlreadyExists {@see package::addLang()}
+	 * @throws translator\InvalidLangCode {@see package::addLang()}
+	 * @throws PackageConfigException if package.json file wasn't an array
+	 * @throws PackageConfigException if event hasn't "name" or "listener" indexes.
 	 */
-	public static function fromName(string $name): package {
+	public static function fromName(string $name): self {
 		$configFile = new IO\file\local("packages/{$name}/package.json");
 		if (!$configFile->exists()) {
 			throw new IO\NotFoundException($configFile);
@@ -66,6 +67,14 @@ class package implements \Serializable {
 				$package->addEvent($event['name'], $event['listener']);
 			}
 		}
+
+		if(isset($config['storages'])){
+			foreach($config['storages'] as $name => $storageArray){
+				$storageArray['@relative-to'] = $package->getHome()->getPath();
+				$storage = Storage::fromArray($storageArray);
+				$package->setStorage($name, $storage);
+			}
+		}
 		$ignores = ['permissions', 'dependencies', 'frontend', 'languages', 'bootstrap', 'autoload', 'events', 'routing'];
 		foreach ($config as $key => $value) {
 			if (!in_array($key, $ignores)) {
@@ -78,16 +87,16 @@ class package implements \Serializable {
 	/** @var string */
 	private $name;
 
-	/** @var packages\base\IO\directory */
+	/** @var IO\directory */
 	private $home;
 
-	/** @var packages\base\IO\directory[] */
+	/** @var IO\directory[] */
 	private $frontends = [];
 
-	/** @var packages\base\IO\file|null */
+	/** @var IO\file|null */
 	private $bootstrap;
 
-	/** @var packages\base\IO\file|null */
+	/** @var IO\file|null */
 	private $routing;
 
 	/** @var string[] */
@@ -95,6 +104,9 @@ class package implements \Serializable {
 
 	/** @var array */
 	private $options = [];
+
+	/** @var array<string,Storage> */
+	private $storages = [];
 
 	/**
 	 * Getter for name of package.
@@ -130,7 +142,7 @@ class package implements \Serializable {
 	 * Save anthor frontend source.
 	 * 
 	 * @param string $source shouldn't be empty.
-	 * @throws packages\base\IO\NotFoundException if source directory doesn't exists in package home.
+	 * @throws IO\NotFoundException if source directory doesn't exists in package home.
 	 * @return void 
 	 */
 	public function addFrontend(string $source): void {
@@ -144,7 +156,7 @@ class package implements \Serializable {
 	/**
 	 * Get frontends directory.
 	 * 
-	 * @return packages\base\IO\directory[]
+	 * @return IO\directory[]
 	 */
 	public function getFrontends(): array {
 		return $this->frontends;
@@ -154,7 +166,7 @@ class package implements \Serializable {
 	 * Set bootstrap file for the package.
 	 * 
 	 * @param string $bootstrap a file name in package home directory.
-	 * @throws packages\base\IO\NotFoundException if bootstrap file doesn't exists in package home.
+	 * @throws IO\NotFoundException if bootstrap file doesn't exists in package home.
 	 * @return void
 	 */
 	public function setBootstrap(string $bootstrap): void {
@@ -211,7 +223,7 @@ class package implements \Serializable {
 	 * return content of the file inside the directory.
 	 * 
 	 * @param string $file
-	 * @throws packages\base\IO\NotFoundException if the file doesn't exists.
+	 * @throws IO\NotFoundException if the file doesn't exists.
 	 * @return string
 	 */
 	public function getFileContents(string $file): string {
@@ -220,6 +232,42 @@ class package implements \Serializable {
 			throw new IO\NotFoundException($file);
 		}
 		return $file->read();
+	}
+
+	public function hasStorage(string $name): bool {
+		return isset($this->storages[$name]);
+	}
+
+	public function getStorage(string $name): Storage {
+		if (!isset($this->storages[$name])) {
+			throw new Exception("Undefined storage with name: {$name}");
+		}
+		return $this->storages[$name];
+	}
+
+	/**
+	 * @return array<string,Storage>
+	 */
+	public function getStorages(): array {
+		return $this->storages;
+	}
+
+	public function setStorage(string $name, Storage $storage): void {
+		if ($storage instanceof LocalStorage) {
+			$root = $storage->getRoot();
+			$storageDir = $this->home->directory("storage");
+			if ($root->isIn($storageDir)) {
+				$type = $storage->getType();
+				if (!$root->isIn($storageDir->directory($type))) {
+					throw new Exception("Storage's root (name: {$name}) is in not proper directory in relative to it's type ({$type})");
+				}
+			}
+		}
+		$this->storages[$name] = $storage;
+	}
+
+	public function removeStorage(string $name): void {
+		unset($this->storages[$name]);
 	}
 
 	/**
@@ -242,7 +290,7 @@ class package implements \Serializable {
 	 * Set routing file.
 	 * 
 	 * @param string $routing a filename in the package.
-	 * @throws packages\base\IO\NotFoundException if cannot find routing file in home directory of package.
+	 * @throws IO\NotFoundException if cannot find routing file in home directory of package.
 	 * @return void
 	 */
 	public function setRouting(string $routing): void {
@@ -256,7 +304,7 @@ class package implements \Serializable {
 	/**
 	 * Get routing file.
 	 * 
-	 * @return packages\base\IO\file|null
+	 * @return IO\file|null
 	 */
 	public function getRouting(): ?IO\file {
 		return $this->routing;
@@ -279,9 +327,9 @@ class package implements \Serializable {
 	/**
 	 * return list of routing rules.
 	 * 
-	 * @throws packages\base\PackageConfigException if routing file is not an array
-	 * @throws packages\base\PackageConfigException rule doesn't have any controller
-	 * @return packages\base\router\rule[]
+	 * @throws PackageConfigException if routing file is not an array
+	 * @throws PackageConfigException rule doesn't have any controller
+	 * @return router\rule[]
 	 */
 	public function getRoutingRules(): array {
 		if (!$this->routing) {
@@ -410,6 +458,7 @@ class package implements \Serializable {
 	 */
 	private function __construct(string $name) {
 		$this->setName($name);
+		$this->setDefaultStorages();
 	}
 
 	/**
@@ -421,5 +470,11 @@ class package implements \Serializable {
 	private function setName(string $name): void {
 		$this->name = $name;
 		$this->home = new IO\directory\local("packages/{$name}");
+	}
+
+	private function setDefaultStorages(): void {
+		$this->storages["public"] = new LocalStorage(Storage::TYPE_PUBLIC, $this->home->directory("storage/public"));
+		$this->storages["protected"] = new LocalStorage(Storage::TYPE_PROTECTED, $this->home->directory("storage/protected"));
+		$this->storages["private"] = new LocalStorage(Storage::TYPE_PRIVATE, $this->home->directory("storage/private"));
 	}
 }
