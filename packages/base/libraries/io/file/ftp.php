@@ -92,6 +92,11 @@ class ftp extends file {
 		if ($dest instanceof self) {
 			return $this->getDriver()->rename($this->getPath(), $dest->getPath());
 		}
+		if ($this->copyTo($dest)) {
+			$this->delete();
+			return true;
+		}
+		return false;
 	}
 
 	/**
@@ -129,6 +134,24 @@ class ftp extends file {
 				return $tmp->copyTo($dest);
 			}
 		}
+	}
+
+	/**
+	 * Copy content of a another file to current file
+	 *
+	 * @param \packages\base\IO\File $source
+	 * @return bool
+	 */
+	public function copyFrom(File $source): bool {
+		if ($source instanceof Local) {
+			$this->getDriver()->put($source->getPath(), $this->getPath());
+		} else {
+			$tmp = new TMP();
+			if ($source->copyTo($tmp)) {
+				return $this->copyFrom($tmp);
+			}
+		}
+		return false;
 	}
 
 	/**
