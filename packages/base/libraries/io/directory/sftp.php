@@ -1,11 +1,10 @@
 <?php
 namespace packages\base\IO\directory;
-use \packages\base\ssh;
-use \packages\base\IO\file;
-use \packages\base\IO\directory;
-use \packages\base\IO\drivers\sftp as driver;
-use \packages\base\IO\NotFoundException;
-class sftp extends directory{
+
+use packages\base\{Exception, ssh};
+use packages\base\IO\{Directory, drivers\sftp as Driver, File, NotFoundException};
+
+class sftp extends Directory {
     public $hostname;
 	public $port;
 	public $username;
@@ -20,7 +19,7 @@ class sftp extends directory{
 		}
 		$ssh = new ssh($this->hostname, $this->port);
 		if(!$ssh->AuthByPassword($this->username, $this->password)){
-			throw new Exeption();
+			throw new Exception();
 		}
 		$this->driver = new driver($ssh);
 		return $this->driver;
