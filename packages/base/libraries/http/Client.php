@@ -9,7 +9,7 @@ class Client {
 		'base_uri' => null,
 		'allow_redirects' => true,
 		'auth' => null,
-		'body' => '',
+		'body' => null,
 		'cookies' => true,
 		'connect_timeout' => 0,
 		'debug' => false,
