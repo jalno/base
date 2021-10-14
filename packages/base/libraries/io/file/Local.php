@@ -74,9 +74,9 @@ class Local extends File implements IStreamableFile {
 
 
     public function isIn(Directory $parent): bool {
-		if ($parent === $this) {
-			return true;
-		}
+        if (!$this->exists() or !$parent->exists()) {
+            return parent::isIn($parent);
+        }
 		if (!is_a($this->getDirectory(), get_class($parent), false)) {
 			return false;
 		}
@@ -89,10 +89,13 @@ class Local extends File implements IStreamableFile {
 
 
 	public function getRelativePath(Directory $parent): string {
+        if (!$this->exists() or !$parent->exists()) {
+            return parent::getRelativePath($parent);
+        }
 		if (!$this->isIn($parent)) {
 			throw new Exception("Currently cannot generate path for not nested nodes");
 		}
-		return substr($parent->getRealPath(), strlen($this->getRealPath()) + 1);
+		return substr($this->getRealPath(), strlen($parent->getRealPath()) + 1);
 	}
 
     public function serialize():string{

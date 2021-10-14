@@ -123,6 +123,9 @@ class local extends directory{
 	}
 
     public function isIn(Directory $parent): bool {
+        if (!$this->exists() or !$parent->exists()) {
+            return parent::isIn($parent);
+        }
 		if ($parent === $this) {
 			return true;
 		}
@@ -138,10 +141,13 @@ class local extends directory{
 
 
 	public function getRelativePath(Directory $parent): string {
+        if (!$this->exists() or !$parent->exists()) {
+            return parent::getRelativePath($parent);
+        }
 		if (!$this->isIn($parent)) {
 			throw new Exception("Currently cannot generate path for not nested nodes");
 		}
-		return substr($parent->getRealPath(), strlen($this->getRealPath()) + 1);
+		return substr($this->getRealPath(), strlen($parent->getRealPath()) + 1);
 	}
 
     public function serialize():string{

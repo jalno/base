@@ -43,7 +43,7 @@ abstract class Node {
 		if (!$this->isIn($parent)) {
 			throw new Exception("Currently cannot generate path for not nested nodes");
 		}
-		return substr($parent->getPath(), strlen($this->getPath()) + 1);
+		return substr($this->getPath(), strlen($parent->getPath()) + 1);
 	}
 
 	abstract public function exists(): bool;
