@@ -4,15 +4,14 @@ namespace packages\base\response;
 use packages\base\{IO, IO\Buffer, Exception};
 
 class File {
-	/** @var packages\base\IO\buffer|null */
-	private $stream;
 
-	/** @var packages\base\IO\File|null */
-	private $location;
+	private ?Buffer $stream = null;
 
-	private $mimeType;
-	private $size;
-	private $name;
+	private ?File $location = null;
+
+	private ?string $mimeType = null;
+	private int $size = 0;
+	private ?string $name = null;
 
 	/**
 	 * Set a resource for response.
@@ -38,13 +37,12 @@ class File {
 	 * @return packages\base\IO\Buffer|null
 	 */
 	public function getStream(): ?Buffer {
-		if ($this->stream) {
-			return $this->stream;
+
+		if (!$this->stream and $this->location and ($this->location instanceof IO\File\Local or $this->location instanceof IO\File\sftp)) {
+			$this->stream = $this->location->open('r');
 		}
-		if ($this->location and ($this->location instanceof IO\File\Local or $this->location instanceof IO\File\sftp)) {
-			return $this->stream = $this->location->open('r');
-			return $this->stream;
-		}
+
+		return $this->stream;
 	}
 
 	/**
@@ -92,15 +90,15 @@ class File {
 	/**
 	 * Get setted size or calculated size of file
 	 * 
-	 * @return int|null
+	 * @return int
 	 */
-	public function getSize(): ?int {
-		if ($this->size) {
-			return $this->size;
+	public function getSize(): int {
+
+		if (!$this->size and $this->location) {
+			$this->size = $this->location->size();
 		}
-		if ($this->location) {
-			return $this->location->size();
-		}
+
+		return $this->size;
 	}
 
 	/**
@@ -119,12 +117,12 @@ class File {
 	 * @return string|null
 	 */
 	public function getName(): ?string {
-		if ($this->name) {
-			return $this->name;
+
+		if (!$this->name and $this->location) {
+			$this->name = $this->location->basename;
 		}
-		if ($this->location) {
-			return $this->location->basename;
-		}
+
+		return $this->name;
 	}
 
 	/**
@@ -141,12 +139,12 @@ class File {
 	 * Get setted mime-type or dettected type of name
 	 */
 	public function getMimeType(): ?string {
-		if ($this->mimeType) {
-			return $this->mimeType;
+
+		if (!$this->mimeType and $this->getName()) {
+			$this->mimeType = IO\mime_type($this->getName());
 		}
-		if ($this->getName()) {
-			return IO\mime_type($this->getName());
-		}
+
+		return $this->mimeType;
 	}
 
 	/**
