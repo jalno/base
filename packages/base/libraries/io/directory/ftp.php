@@ -239,7 +239,7 @@ class ftp extends directory{
 	 * @return packages\base\IO\directory\ftp
 	 */
 	public function getDirectory(): directory\ftp {
-		$directory = new directory\ftp($this->dirname);
+		$directory = new directory\ftp($this->basename);
 		$directory->setDriver($this->getDriver());
 		return $directory;
 	}

@@ -125,15 +125,17 @@ class ftp extends file {
 	 * @return bool
 	 */
 	public function copyTo(file $dest): bool {
-		$driver = $this->getDriver();
+
 		if ($dest instanceof local) {
-			return $driver->get($this->getPath(), $dest->getPath());
+			return $this->getDriver()->get($this->getPath(), $dest->getPath());
 		} else {
 			$tmp = new tmp();
 			if($this->copyTo($tmp)){
 				return $tmp->copyTo($dest);
 			}
 		}
+
+		return false;
 	}
 
 	/**

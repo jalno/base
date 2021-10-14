@@ -159,7 +159,7 @@ class sftp extends directory{
 		return $directory;
 	}
 	public function getDirectory():directory\sftp{
-		$directory = new directory\sftp($this->dirname);
+		$directory = new directory\sftp($this->basename);
 		$directory->setDriver($this->getDriver());
 		return $directory;
 	}

@@ -72,6 +72,8 @@ class Sftp extends File {
 				return $tmp->copyTo($dest);
 			}
 		}
+
+		return false;
 	}
 
 	/**
