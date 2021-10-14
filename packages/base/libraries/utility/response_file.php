@@ -1,17 +1,25 @@
 <?php
 namespace packages\base\response;
 
-use packages\base\{IO, IO\Buffer, Exception};
+use packages\base\{IO, IO\Buffer, IO\IStreamableFile, Exception};
 
 class File {
-	/** @var packages\base\IO\buffer|null */
+
+	protected const OUTPUT_CHUNK_SIZE = 8192;
+
+	/** @var \packages\base\IO\buffer|null */
 	private $stream;
 
-	/** @var packages\base\IO\File|null */
+	/** @var \packages\base\IO\File|null */
 	private $location;
 
+	/** @var string */
 	private $mimeType;
+
+	/** @var int|null */
 	private $size;
+
+	/** @var string|null */
 	private $name;
 
 	/**
@@ -41,10 +49,19 @@ class File {
 		if ($this->stream) {
 			return $this->stream;
 		}
-		if ($this->location and ($this->location instanceof IO\File\Local or $this->location instanceof IO\File\sftp)) {
-			return $this->stream = $this->location->open('r');
-			return $this->stream;
+		if ($this->location) {
+			if ($this->location instanceof IStreamableFile) {
+				$this->stream = $this->location->open('r');
+			} else {
+				$tmp = new IO\File\TMP();
+				if (!$this->location->copyTo($tmp)) {
+					throw new IO\ReadException($this->location);
+				}
+				$this->stream = $tmp->open('r');
+			}
 		}
+
+		return $this->stream;
 	}
 
 	/**
@@ -101,6 +118,7 @@ class File {
 		if ($this->location) {
 			return $this->location->size();
 		}
+		return null;
 	}
 
 	/**
@@ -125,6 +143,7 @@ class File {
 		if ($this->location) {
 			return $this->location->basename;
 		}
+		return null;
 	}
 
 	/**
@@ -147,6 +166,7 @@ class File {
 		if ($this->getName()) {
 			return IO\mime_type($this->getName());
 		}
+		return null;
 	}
 
 	/**
@@ -159,16 +179,13 @@ class File {
 		if ($stream) {
 			$size = $this->getSize();
 			$read = 0;
-			$chunkSize = 8192;
-			$lastRead = $chunkSize;
+			$lastRead = self::OUTPUT_CHUNK_SIZE;
 			while ((!$size and $lastRead == $lastRead) or ($size and $read < $size)) {
-				$chunk = $stream->read($chunkSize);
+				$chunk = $stream->read(self::OUTPUT_CHUNK_SIZE);
 				$lastRead = strlen($chunk);
 				$read += $lastRead;
 				echo $chunk;
 			}
-		} elseif ($this->location) {
-			echo $this->location->read(); 
 		}
 	}
 }

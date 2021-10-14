@@ -1,10 +1,10 @@
 <?php
 namespace packages\base\IO\File;
 
-use packages\base\SSH;
-use packages\base\IO\{Buffer, File, Directory, drivers\Sftp as Driver, ReadException};
+use packages\base\{Exception, SSH};
+use packages\base\IO\{Buffer, File, Directory, drivers\Sftp as Driver, IStreamableFile, ReadException};
 
-class Sftp extends File {
+class Sftp extends File implements IStreamableFile {
 	public $hostname;
 	public $port;
 	public $username;
@@ -19,7 +19,7 @@ class Sftp extends File {
 		}
 		$ssh = new ssh($this->hostname, $this->port);
 		if(!$ssh->AuthByPassword($this->username, $this->password)){
-			throw new Exeption();
+			throw new Exception();
 		}
 		$this->driver = new driver($ssh);
 		return $this->driver;

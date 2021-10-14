@@ -1,20 +1,18 @@
 <?php
 namespace packages\base\IO\file;
-use packages\base\IO\file;
-use packages\base\IO\buffer;
-use packages\base\IO\directory;
-use packages\base\IO\NotFoundException;
-use packages\base\Exception;
 
-class Local extends File {
+use packages\base\Exception;
+use packages\base\IO\{Buffer, Directory, File, IStreamableFile, NotFoundException};
+
+class Local extends File implements IStreamableFile {
     const readOnly = 'r';
     const writeOnly = 'w';
     const append = 'a';
     public function touch() {
         touch($this->getPath());
     }
-    public function open(string $mode):buffer {
-        return new buffer(fopen($this->getPath(), $mode));
+    public function open(string $mode): Buffer {
+        return new Buffer(fopen($this->getPath(), $mode));
     }
     public function append(string $data):bool{
         return file_put_contents($this->getPath(), $data, FILE_APPEND);
