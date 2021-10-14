@@ -29,10 +29,15 @@ class Local extends File implements IStreamableFile {
     public function size(): int{
         return filesize($this->getPath());
     }
-    public function move(file $dest): bool{
-        if($dest instanceof self){
+    public function move(File $dest): bool {
+        if ($dest instanceof self) {
             return rename($this->getPath(), $dest->getPath());
         }
+        if ($this->copyTo($dest)) {
+            $this->delete();
+            return true;
+        }
+        return false;
     }
     public function rename(string $newName): bool{
         if(rename($this->getPath(), $this->directory.'/'.$newName)){
@@ -50,13 +55,11 @@ class Local extends File implements IStreamableFile {
     public function sha1(): string{
         return sha1_file($this->getPath());
     }
-    public function copyTo(file $dest): bool{
-        if($dest instanceof self){
+    public function copyTo(File $dest): bool {
+        if ($dest instanceof self) {
             return copy($this->getPath(), $dest->getPath());
-        }elseif($dest instanceof file\ftp){
-            return $dest->getDriver()->put($this->getPath(), $dest->getPath());
-        }elseif($dest instanceof file\sftp){
-            return $dest->getDriver()->upload($this->getPath(), $dest->getPath());
+        } else {
+            return $dest->copyFrom($this);
         }
     }
     public function getDirectory():directory\local{
@@ -89,7 +92,7 @@ class Local extends File implements IStreamableFile {
 		if (!$this->isIn($parent)) {
 			throw new Exception("Currently cannot generate path for not nested nodes");
 		}
-		return substr($parent->realpath(), strlen($this->realpath()) + 1);
+		return substr($parent->getRealPath(), strlen($this->getRealPath()) + 1);
 	}
 
     public function serialize():string{

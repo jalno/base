@@ -7,20 +7,13 @@ class File {
 
 	protected const OUTPUT_CHUNK_SIZE = 8192;
 
-	/** @var \packages\base\IO\buffer|null */
-	private $stream;
+	private ?Buffer $stream = null;
 
-	/** @var \packages\base\IO\File|null */
-	private $location;
+	private ?File $location = null;
 
-	/** @var string */
-	private $mimeType;
-
-	/** @var int|null */
-	private $size;
-
-	/** @var string|null */
-	private $name;
+	private ?string $mimeType = null;
+	private int $size = 0;
+	private ?string $name = null;
 
 	/**
 	 * Set a resource for response.
@@ -46,10 +39,8 @@ class File {
 	 * @return packages\base\IO\Buffer|null
 	 */
 	public function getStream(): ?Buffer {
-		if ($this->stream) {
-			return $this->stream;
-		}
-		if ($this->location) {
+
+		if (!$this->stream and $this->location) {
 			if ($this->location instanceof IStreamableFile) {
 				$this->stream = $this->location->open('r');
 			} else {
@@ -109,16 +100,15 @@ class File {
 	/**
 	 * Get setted size or calculated size of file
 	 * 
-	 * @return int|null
+	 * @return int
 	 */
-	public function getSize(): ?int {
-		if ($this->size) {
-			return $this->size;
+	public function getSize(): int {
+
+		if (!$this->size and $this->location) {
+			$this->size = $this->location->size();
 		}
-		if ($this->location) {
-			return $this->location->size();
-		}
-		return null;
+
+		return $this->size;
 	}
 
 	/**
@@ -137,13 +127,12 @@ class File {
 	 * @return string|null
 	 */
 	public function getName(): ?string {
-		if ($this->name) {
-			return $this->name;
+
+		if (!$this->name and $this->location) {
+			$this->name = $this->location->basename;
 		}
-		if ($this->location) {
-			return $this->location->basename;
-		}
-		return null;
+
+		return $this->name;
 	}
 
 	/**
@@ -160,13 +149,12 @@ class File {
 	 * Get setted mime-type or dettected type of name
 	 */
 	public function getMimeType(): ?string {
-		if ($this->mimeType) {
-			return $this->mimeType;
+
+		if (!$this->mimeType and $this->getName()) {
+			$this->mimeType = IO\mime_type($this->getName());
 		}
-		if ($this->getName()) {
-			return IO\mime_type($this->getName());
-		}
-		return null;
+
+		return $this->mimeType;
 	}
 
 	/**

@@ -141,7 +141,7 @@ class local extends directory{
 		if (!$this->isIn($parent)) {
 			throw new Exception("Currently cannot generate path for not nested nodes");
 		}
-		return substr($parent->realpath(), strlen($this->realpath()) + 1);
+		return substr($parent->getRealPath(), strlen($this->getRealPath()) + 1);
 	}
 
     public function serialize():string{

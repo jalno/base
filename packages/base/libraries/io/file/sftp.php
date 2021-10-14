@@ -40,10 +40,15 @@ class Sftp extends File implements IStreamableFile {
 	public function size(): int{
 		return $this->getDriver()->size($this->getPath());
 	}
-	public function move(file $dest): bool{
-		if($dest instanceof self){
+	public function move(File $dest): bool {
+		if ($dest instanceof self) {
 			return $this->getDriver()->rename($this->getPath(), $dest->getPath());
 		}
+		if ($this->copyTo($dest)) {
+			$this->delete();
+			return true;
+		}
+		return false;
 	}
 	public function rename(string $newName): bool{
 		return $this->getDriver()->rename($this->getPath(), $this->directory.'/'.$newName);
@@ -67,6 +72,26 @@ class Sftp extends File implements IStreamableFile {
 				return $tmp->copyTo($dest);
 			}
 		}
+
+		return false;
+	}
+
+	/**
+	 * Copy content of a another file to current file
+	 *
+	 * @param \packages\base\IO\File $source
+	 * @return bool
+	 */
+	public function copyFrom(File $source): bool {
+		if ($source instanceof Local) {
+			return $this->getDriver()->upload($source->getPath(), $this->getPath());
+		} else {
+			$tmp = new TMP();
+			if ($source->copyTo($tmp)) {
+				return $this->copyFrom($tmp);
+			}
+		}
+		return false;
 	}
 	public function getDirectory():directory\sftp{
 		$directory = new directory\sftp($this->directory);
