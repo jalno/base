@@ -31,29 +31,42 @@ abstract class Image {
 	/**
 	 * identify and construct an image from its file content.
 	 * 
-	 * @throws packages\base\Image\UnsupportedFormatException if the format was not supported.
-	 * @return packages\base\Image
+	 * @throws Image\UnsupportedFormatException if the format was not supported.
+	 * @return Image
 	 */
 	public static function fromContent(File $file): Image {
-		$info = @getimagesize($file->getPath());
+		$localFile = File::insureLocal($file);
+		$info = @getimagesize($localFile->getPath());
 		if (!$info) {
 			throw new Image\UnsupportedFormatException("");
 		}
+		$image = null;
 		switch ($info[2]) {
 			case(IMAGETYPE_JPEG):
-				return new Image\JPEG($file);
+				$image = new Image\JPEG($localFile);
+				break;
 			case(IMAGETYPE_PNG):
-				return new Image\PNG($file);
+				$image = new Image\PNG($localFile);
+				break;
 			case(IMAGETYPE_GIF):
-				return new Image\GIF($file);
+				$image = new Image\GIF($localFile);
+				break;
 			case(IMAGETYPE_WEBP):
-				return new Image\WEBP($file);
+				$image = new Image\WEBP($localFile);
+				break;
 			default:
 				throw new Image\UnsupportedFormatException($info[2]);
 		}
+
+		// It's kind of messy but it's because we want to getFile() always return the truth not a tmp file.
+		// And besides that our tmp file have no extension and that may cause a problem.
+		// Also we could send $file to constructors but it's cause double downloading of remote files.
+		$image->file = $file;
+
+		return $image;
 	}
 
-	/** @var packages\base\IO\File constructor file */
+	/** @var File constructor file */
 	protected $file;
 
 	/**
@@ -62,10 +75,10 @@ abstract class Image {
 	 * 	2. pass other image to {$param}
 	 * 	3. pass new image width to {$param}
 	 * 
-	 * @param packages\base\IO\File|packages\base\Image|int
+	 * @param File|Image|int
 	 * @param int|null $height height of new image in third method
-	 * @param packages\base\Image\Color $bg background color of new image in third method
-	 * @throws packages\base\IO\NotFoundException if passed file cannot be found.
+	 * @param Image\Color $bg background color of new image in third method
+	 * @throws NotFoundException if passed file cannot be found.
 	 * @throws Images\InvalidImageFileException if file content was corrupted
 	 */
 	public function __construct($param = null, ?int $height = null, ?Image\Color $bg = null){
@@ -85,7 +98,7 @@ abstract class Image {
 	/**
 	 * If image was constructed by a file, this method will return the file.
 	 * 
-	 * @return packages\base\IO\File|null
+	 * @return File|null
 	 */
 	public function getFile(): ?File {
 		return $this->file;
@@ -105,7 +118,7 @@ abstract class Image {
 	 * Width will scaled based on height.
 	 * 
 	 * @param int $height new height in px
-	 * @return packages\base\Image resized image
+	 * @return Image resized image
 	 */
 	public function resizeToHeight(int $height): Image {
 		$ratio = $height / $this->getHeight();
@@ -118,7 +131,7 @@ abstract class Image {
 	 * Height will scaled based on width.
 	 * 
 	 * @param int $width new width in px
-	 * @return packages\base\Image resized image
+	 * @return Image resized image
 	 */
 	public function resizeToWidth(int $width): Image {
 		$ratio = $width / $this->getWidth();
@@ -137,7 +150,7 @@ abstract class Image {
 	 * 
 	 * @param int $x
 	 * @param int $y
-	 * @return packages\base\Image\Color
+	 * @return Image\Color
 	 */
 	abstract public function colorAt(int $x, int $y): Image\Color;
 
@@ -146,7 +159,7 @@ abstract class Image {
 	 * 
 	 * @param int $x
 	 * @param int $y
-	 * @param packages\base\Image\Color $color
+	 * @param Image\Color $color
 	 * @return void
 	 */
 	abstract public function setColorAt(int $x, int $y, Image\Color $color): void;
@@ -156,7 +169,7 @@ abstract class Image {
 	 * 
 	 * @param int $width in px
 	 * @param int $height in px
-	 * @return packages\base\Image resized image
+	 * @return Image resized image
 	 */
 	abstract public function resize(int $width, int $height): Image;
 
@@ -214,7 +227,7 @@ abstract class Image {
 	/**
 	 * Save the image to a file.
 	 * 
-	 * @param packages\base\IO\File $file
+	 * @param File $file
 	 * @param int $quality
 	 * @return void
 	 */
@@ -223,7 +236,7 @@ abstract class Image {
 	/**
 	 * Copy anthor image to current image;
 	 * 
-	 * @param packages\base\Image $other source image
+	 * @param Image $other source image
 	 * @return void
 	 */
 	protected function fromImage(Image $other): void {
@@ -252,7 +265,7 @@ abstract class Image {
 	 * 
 	 * @param int $width
 	 * @param int $height
-	 * @param packages\base\Image\Color $bg
+	 * @param Image\Color $bg
 	 * @return void
 	 */
 	abstract protected function createBlank(int $width, int $height, Image\Color $bg);

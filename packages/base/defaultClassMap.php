@@ -62,7 +62,7 @@ return array(
 	'packages\base\io\directory\sftp' => 'packages/base/libraries/io/directory/sftp.php',
 	'packages\base\io\directory\tmp' => 'packages/base/libraries/io/directory/tmp.php',
 	'packages\base\io\exception' => 'packages/base/libraries/io/exceptions.php',
-	'packages\base\io\file' => 'packages/base/libraries/io/file.php',
+	'packages\base\io\file' => 'packages/base/libraries/io/File.php',
 	'packages\base\io\file\local' => 'packages/base/libraries/io/file/Local.php',
 	'packages\base\io\istreamablefile' => 'packages/base/libraries/io/IStreamableFile.php',
 	'packages\base\io\listensocketexception' => 'packages/base/libraries/io/exceptions.php',

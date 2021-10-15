@@ -1,10 +1,11 @@
 <?php
 namespace packages\base\Image;
 
+use GdImage;
 use packages\base\{Image, IO\File};
 
 class GD extends Image {
-	/** @var resource image GD resource */
+	/** @var resource|GdImage|null image GD resource */
 	protected $image;
 
 	/**
@@ -14,13 +15,15 @@ class GD extends Image {
 	 * 	3. pass new image width to {$param}
 	 *  4. pass a GD image resouce.
 	 * 
-	 * @param packages\base\IO\File|packages\base\Image|int|resouce
+	 * @param File|Image|int|resouce|GdImage
 	 * @param int|null $height height of new image in third method
-	 * @param packages\base\Image\Color $bg background color of new image in third method
-	 * @throws packages\base\IO\NotFoundException if passed file cannot be found.
+	 * @param Image\Color $bg background color of new image in third method
+	 * @throws \packages\base\IO\NotFoundException if passed file cannot be found.
 	 */
 	public function __construct($param = null, ?int $height = null, ?Image\Color $bg = null){
-		if (is_resource($param)) {
+		// GdImage is undefined and php7.4 and this way we dodge the phpstan errors.
+		// There is no diffrence in runtime in php 7.x or 8.x
+		if (is_resource($param) or (is_object($param) and get_class($param) === "GdImage")) {
 			$this->fromGDImage($param);
 		} else {
 			parent::__construct($param, $height, $bg);
@@ -29,13 +32,11 @@ class GD extends Image {
 
 	/**
 	 * Save the image to a file.
-	 * 
-	 * @param packages\base\IO\File $file
-	 * @param int $quality
-	 * @return void
 	 */
 	public function saveToFile(File $file, int $quality = 75): void {
-		imagegd($this->image, $file->getPath());
+		File::insureLocal($file, function(File\Local $local) {
+			imagegd($this->image, $local->getPath());
+		});
 	}
 
 	/**
@@ -61,7 +62,7 @@ class GD extends Image {
 	 * 
 	 * @param int $width in px
 	 * @param int $height in px
-	 * @return packages\base\Image resized image
+	 * @return Image resized image
 	 */
 	public function resize(int $width, int $height): Image {
 		$color = Color::fromRGBA(0,0,0,0);
@@ -75,7 +76,6 @@ class GD extends Image {
 	 * 
 	 * @param int $x
 	 * @param int $y
-	 * @return packages\base\Image\Color
 	 */
 	public function colorAt(int $x , int $y): Color {
 		$rgb = imagecolorat($this->image, $x, $y);
@@ -86,11 +86,6 @@ class GD extends Image {
 
 	/**
 	 * Set color of specified pixel.
-	 * 
-	 * @param int $x
-	 * @param int $y
-	 * @param packages\base\Image\Color $color
-	 * @return void
 	 */
 	public function setColorAt(int $x, int $y, Color $color): void {
 		$colors = $color->toRGBA();
@@ -100,11 +95,7 @@ class GD extends Image {
 	}
 	
 	/**
-	 * Save the image to a file.
-	 * 
-	 * @param packages\base\IO\File $file
-	 * @param int $quality
-	 * @return void
+	 * Get format of current image.
 	 */
 	public function getExtension(): string {
 		return 'gd';
@@ -116,11 +107,10 @@ class GD extends Image {
 	 * @param int $x x-coordinate of destination point.
 	 * @param int $y y-coordinate of destination point. 
 	 * @param float $opacity alpha between 0-1
-	 * @return void
 	 */
 	public function paste(Image $image, int $x, int $y, float $opacity = 1): void {
 		if (!($image instanceof GD)) {
-			throw new Exception("non-GD images not supported");
+			throw new Image\UnsupportedFormatException("non-GD images not supported");
 		}
 		$width = $image->getWidth();
 		$height = $image->getHeight();
@@ -139,9 +129,6 @@ class GD extends Image {
 	 * 
 	 * @param int $x x-coordinate of point.
 	 * @param int $y y-coordinate of point.
-	 * @param int $width
-	 * @param int $height
-	 * @return Image
 	 */
 	public function copy(int $x, int $y, int $width, $height): Image {
 		$new = new static($width, $height, Color::fromRGBA(0, 0, 0, 0));
@@ -154,10 +141,10 @@ class GD extends Image {
 	 * The center of rotation is the center of the image, and the rotated image may have different dimensions than the original image.
 	 * 
 	 * @param float $angle Rotation angle, in degrees. The rotation angle is interpreted as the number of degrees to rotate the image anticlockwise.
-	 * @param Image\Color $bg Specifies the color of the uncovered zone after the rotation.
+	 * @param Color $bg Specifies the color of the uncovered zone after the rotation.
 	 * @return Image Rotated image
 	 */
-	public function rotate(float $angle, Image\Color $bg): Image {
+	public function rotate(float $angle, Color $bg): Image {
 		$colors = $bg->toRGBA();
 		$colors[3] = round(127 - ($colors[3] * 127));
 		$rgba = imagecolorallocatealpha($this->image, $colors[0], $colors[1], $colors[2], $colors[3]);
@@ -167,12 +154,11 @@ class GD extends Image {
 
 	/**
 	 * release the GD resource
-	 * 
-	 * @return void
 	 */
 	public function __destruct() {
-		if (is_resource($this->image)) {
+		if ($this->image !== null) {
 			imagedestroy($this->image);
+			$this->image = null;
 		}
 	}
 
@@ -180,22 +166,18 @@ class GD extends Image {
 	 * Read the image from constructor file.
 	 * 
 	 * @throws InvalidImageFileException if gd library was unable to load image from the file.
-	 * @return void
 	 */
 	protected function fromFile(): void {
-		$this->image = imagecreatefromgd($this->file->getPath());
-		if (!is_resource($this->image)) {
-			throw new InvalidImageFileException($this->file);
+		$local = File::insureLocal($this->file);
+		$image = imagecreatefromgd($local->getPath());
+		if ($image === false) {
+			throw new InvalidImageFileException($local);
 		}
+		$this->image = $image;
 	}
 
 	/**
 	 * Create new image with provided background color
-	 * 
-	 * @param int $width
-	 * @param int $height
-	 * @param packages\base\Image\Color $bg
-	 * @return void
 	 */
 	protected function createBlank(int $width, int $height, Image\Color $bg): void {
 		$this->image = imagecreatetruecolor($width, $height);
@@ -208,10 +190,9 @@ class GD extends Image {
 	/**
 	 * Copy anthor image to current image;
 	 * 
-	 * @param packages\base\Image $other source image
-	 * @return void
+	 * @param Image $other source image
 	 */
-	protected function fromImage(image $other): void {
+	protected function fromImage(Image $other): void {
 		if ($other instanceof self) {
 			$this->image = $other->image;
 		} else {
@@ -222,8 +203,7 @@ class GD extends Image {
 	/**
 	 * Construct a image from GD image resouce.
 	 * 
-	 * @param resource $image resource image
-	 * @return void
+	 * @param resource|GdImage $image resource image
 	 */
 	protected function fromGDImage($image): void {
 		$this->image = $image;
