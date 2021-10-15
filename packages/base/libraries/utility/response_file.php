@@ -9,7 +9,7 @@ class File {
 
 	private ?Buffer $stream = null;
 
-	private ?File $location = null;
+	private ?IO\File $location = null;
 
 	private ?string $mimeType = null;
 	private int $size = 0;
@@ -18,9 +18,8 @@ class File {
 	/**
 	 * Set a resource for response.
 	 * 
-	 * @param packages\base\IO\buffer|resource|null $stream
-	 * @throws packages\base\Exception if passed argument was not resource nor null
-	 * @return void
+	 * @param Buffer|resource|null $stream
+	 * @throws Exception if passed argument was not resource nor null
 	 */
 	public function setStream($stream): void {
 		if (is_resource($stream)) {
@@ -35,8 +34,6 @@ class File {
 
 	/**
 	 * Get setted buffer or new read-only buffer of file.
-	 * 
-	 * @return packages\base\IO\Buffer|null
 	 */
 	public function getStream(): ?Buffer {
 
@@ -58,10 +55,9 @@ class File {
 	/**
 	 * Set a file location or file object for response
 	 * 
-	 * @param packages\base\IO\File|string|null $location
-	 * @throws packages\base\Exception for unkonwn arguments
-	 * @throws packages\base\IO\NotFoundException if file wasn't exist.
-	 * @return void
+	 * @param IO\File|string|null $location
+	 * @throws Exception for unkonwn arguments
+	 * @throws IO\NotFoundException if file wasn't exist.
 	 */
 	public function setLocation($location): void {
 		if (is_string($location)) {
@@ -80,8 +76,6 @@ class File {
 
 	/**
 	 * Getter for file object
-	 * 
-	 * @return packages\base\IO\File|null
 	 */
 	public function getLocation(): ?IO\File {
 		return $this->location;
@@ -89,9 +83,6 @@ class File {
 
 	/**
 	 * Set original size of stream or file
-	 * 
-	 * @param int|null $size
-	 * @return void
 	 */
 	public function setSize(?int $size): void {
 		$this->size = $size;
@@ -99,8 +90,6 @@ class File {
 
 	/**
 	 * Get setted size or calculated size of file
-	 * 
-	 * @return int
 	 */
 	public function getSize(): int {
 
@@ -113,9 +102,6 @@ class File {
 
 	/**
 	 * Set original name of stream or file
-	 * 
-	 * @param string|null $name
-	 * @return void
 	 */
 	public function setName(?string $name): void {
 		$this->name = $name;
@@ -123,8 +109,6 @@ class File {
 
 	/**
 	 * Get setted name or original name of file
-	 * 
-	 * @return string|null
 	 */
 	public function getName(): ?string {
 
@@ -137,9 +121,6 @@ class File {
 
 	/**
 	 * Set mime-type of stream or file
-	 * 
-	 * @param string $type
-	 * @return void
 	 */
 	public function setMimeType(string $type): void {
 		$this->mimeType = $type;
@@ -159,8 +140,6 @@ class File {
 
 	/**
 	 * Echo output of stream or file.
-	 * 
-	 * @return void
 	 */
 	public function output(): void {
 		$stream = $this->getStream();
