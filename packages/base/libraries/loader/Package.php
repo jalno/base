@@ -419,6 +419,7 @@ class Package implements \Serializable {
 			'frontends' => [],
 			'langs' => [],
 			'autoload' => ($this->autoload instanceof IO\file) ? $this->autoload->getPath() : $this->autoload,
+			'storages' => $this->storages,
 		);
 		foreach ($this->frontends as $frontend) {
 			$data['frontends'][] = $frontend->getPath();
@@ -426,7 +427,7 @@ class Package implements \Serializable {
 		foreach ($this->langs as $lang => $file) {
 			$data['langs'][$lang] = $file->getPath();
 		}
-        return serialize($data);
+		return serialize($data);
 	}
 	
 	/**
@@ -450,6 +451,7 @@ class Package implements \Serializable {
 		foreach ($data['langs'] as $lang => $file) {
 			$this->langs[$lang] = new IO\file\local($file);
 		}
+		$this->storages = $data['storages'] ?? [];
 		$this->autoload = is_string($data['autoload']) ? (new IO\file\local($data['autoload'])) : $data['autoload'];
 	}
 
