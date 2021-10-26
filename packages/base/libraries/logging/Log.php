@@ -129,7 +129,7 @@ class Log {
 				echo $line;
 			}
 		}
-		if (!self::$file) {
+		if (!self::$file and Packages::package("base")) {
 			$file = Packages::package("base")
 				->getStorage("logs")
 				->file(Date\Gregorian::format("Y-m-d") . ".log");
