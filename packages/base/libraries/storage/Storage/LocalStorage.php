@@ -48,7 +48,7 @@ class LocalStorage extends Storage implements \Serializable {
 	}
 
 	public function serialize(): string {
-        return serialize(array(
+		return serialize(array(
 			"type" => $this->type,
 			"root" => $this->root->getPath(),
 		));
