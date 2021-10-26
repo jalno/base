@@ -16,13 +16,13 @@ class ftp extends directory{
 	/** @var string|null */
 	public $password;
 
-	/** @var packages\base\IO\drivers\ftp|null */
+	/** @var \packages\base\IO\drivers\ftp|null */
 	private $driver;
 
 	/**
 	 * Setter for FTP driver
 	 *
-	 * @param packages\base\IO\drivers\ftp $driver
+	 * @param \packages\base\IO\drivers\ftp $driver
 	 * @return void
 	 */
 	public function setDriver(driver $driver): void {
@@ -32,7 +32,7 @@ class ftp extends directory{
 	/**
 	 * Getter for FTP driver
 	 *
-	 * @return packages\base\IO\drivers\ftp
+	 * @return \packages\base\IO\drivers\ftp
 	 */
 	public function getDriver(): driver {
 		if($this->driver){
@@ -63,7 +63,7 @@ class ftp extends directory{
 	/**
 	 * Move a file to anthor directory.
 	 *
-	 * @param packages\base\IO\directory $dest destination path
+	 * @param \packages\base\IO\directory $dest destination path
 	 * @return bool
 	 */
 	public function move(directory $dest): bool {
@@ -117,7 +117,7 @@ class ftp extends directory{
 	 * Return files in this directory.
 	 *
 	 * @param bool $recursively search subdirectories or not. default: false
-	 * @return packages\base\IO\file\ftp[]
+	 * @return \packages\base\IO\file\ftp[]
 	 */
 	public function files(bool $recursively = false): array {
 		$driver = $this->getDriver();
@@ -144,7 +144,7 @@ class ftp extends directory{
 	 * Return subdirectories in this directory.
 	 *
 	 * @param bool $recursively search subdirectories or not. default: false
-	 * @return packages\base\IO\directory\ftp[]
+	 * @return \packages\base\IO\directory\ftp[]
 	 */
 	public function directories(bool $recursively = true): array {
 		$driver = $this->getDriver();
@@ -172,7 +172,7 @@ class ftp extends directory{
 	 * Return subdirectories and files in this directory.
 	 *
 	 * @param bool $recursively search subdirectories or not. default: false
-	 * @return array<packages\base\IO\file\ftp|packages\base\IO\directory\ftp>
+	 * @return array<\packages\base\IO\file\ftp|\packages\base\IO\directory\ftp>
 	 */
 	public function items(bool $recursively = true): array {
 		$driver = $this->getDriver();
@@ -213,7 +213,7 @@ class ftp extends directory{
 	 * Retrun file object.
 	 *
 	 * @param string $name
-	 * @return packages\base\IO\file\ftp
+	 * @return \packages\base\IO\file\ftp
 	 */
 	public function file(string $name): file\ftp {
 		$file = new file\ftp($this->getPath().'/'.$name);
@@ -225,7 +225,7 @@ class ftp extends directory{
 	 * Retrun directory object.
 	 *
 	 * @param string $name
-	 * @return packages\base\IO\directory\ftp
+	 * @return \packages\base\IO\directory\ftp
 	 */
 	public function directory(string $name): directory\ftp{ 
 		$directory = new directory\ftp($this->getPath().'/'.$name);
@@ -236,7 +236,7 @@ class ftp extends directory{
 	/**
 	 * Return parent directory
 	 *
-	 * @return packages\base\IO\directory\ftp
+	 * @return \packages\base\IO\directory\ftp
 	 */
 	public function getDirectory(): directory\ftp {
 		$directory = new directory\ftp($this->basename);

@@ -16,13 +16,13 @@ class ftp extends file {
 	/** @var string|null */
 	public $password;
 
-	/** @var packages\base\IO\drivers\ftp|null */
+	/** @var \packages\base\IO\drivers\ftp|null */
 	private $driver;
 
 	/**
 	 * Setter for FTP driver
 	 *
-	 * @param packages\base\IO\drivers\ftp $driver
+	 * @param \packages\base\IO\drivers\ftp $driver
 	 * @return void
 	 */
 	public function setDriver(driver $driver): void {
@@ -32,7 +32,7 @@ class ftp extends file {
 	/**
 	 * Getter for FTP driver
 	 *
-	 * @return packages\base\IO\drivers\ftp
+	 * @return \packages\base\IO\drivers\ftp
 	 */
 	public function getDriver(): driver {
 		if($this->driver){
@@ -85,7 +85,7 @@ class ftp extends file {
 	/**
 	 * move file to anthor destination
 	 *
-	 * @param packages\base\IO\file $dest
+	 * @param \packages\base\IO\file $dest
 	 * @return bool
 	 */
 	public function move(file $dest): bool {
@@ -121,7 +121,7 @@ class ftp extends file {
 	/**
 	 * Copy content of the file to anthor
 	 *
-	 * @param packages\base\IO\file $dest
+	 * @param \packages\base\IO\file $dest
 	 * @return bool
 	 */
 	public function copyTo(file $dest): bool {
@@ -168,7 +168,7 @@ class ftp extends file {
 	/**
 	* Return parent directory
 	*
-	* @return packages\base\IO\directory\ftp
+	* @return \packages\base\IO\directory\ftp
 	*/
 	public function getDirectory(): directory\ftp {
 		$directory = new directory\ftp($this->directory);
