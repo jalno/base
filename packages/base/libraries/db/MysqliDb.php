@@ -2128,6 +2128,14 @@ class MysqliDb
 		$this->totalPages = ceil($this->totalCount / $this->pageLimit);
 		return $res;
 	}
+
+	public function getWheres(): array {
+		return $this->_where;
+	}
+
+	public function resetWheres(): void {
+		$this->_where = [];
+	}
 	
 	/**
 	 * Excectue a sql statement and watch for deadlock.
