@@ -1,12 +1,11 @@
 <?php
 namespace packages\base;
-chdir(__DIR__);
-if (!is_file("packages/base/libraries/config/config.php") or !is_readable("packages/base/libraries/config/config.php")){
+if (!is_file("config/config.php") or !is_readable("config/config.php")){
 	echo("FATAL ERROR\n");
 }
 
-require_once("packages/base/libraries/config/config.php");
-require_once("packages/base/libraries/loader/loader.php");
+require_once("config/config.php");
+require_once(__DIR__ . "/libraries/loader/loader.php");
 
 try {
 	AutoLoader::setDefaultClassMap();
@@ -24,8 +23,8 @@ try {
 		Log::setLevel($level);
 	}
 
-	Log::debug("set 'root_directory' option to ", __DIR__);
-	Options::set('root_directory', __DIR__);
+	Log::debug("set 'root_directory' option to ", getcwd());
+	Options::set('root_directory', getcwd());
 	Log::info("loading packages");
 	Loader::packages();
 	Log::reply("Success");

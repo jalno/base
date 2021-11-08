@@ -3,13 +3,13 @@ namespace packages\base;
 
 
 // Autoloader
-require_once('packages/base/libraries/autoloader/Autoloader.php');
+require_once(__DIR__ . '/../autoloader/Autoloader.php');
 
 // functions
-require_once('packages/base/libraries/json/encode.php');
-require_once('packages/base/libraries/json/decode.php');
-require_once('packages/base/libraries/router/url.php');
-require_once('packages/base/libraries/translator/t.php');
+require_once(__DIR__ . '/../json/encode.php');
+require_once(__DIR__ . '/../json/decode.php');
+require_once(__DIR__ . '/../router/url.php');
+require_once(__DIR__ . '/../translator/t.php');
 
 class Loader {
 	const cli = 1;
@@ -19,25 +19,40 @@ class Loader {
 		$useCache = Options::get("packages.base.env") == "production";
 		$alldependencies = array();
 		$loadeds = array();
-		$directories = scandir("packages/");
-		$allpackages = array();
-		foreach($directories as $directory){
-			if($directory != '.' and $directory != '..'){
-				Events::trigger(new events\PackageLoad($directory));
-				$package = self::package($directory, $useCache);
-				if(!$package){
-					continue;
+		$vendor = Options::get("root_directory") . "/vendor";
+		$packageDirs = [
+			Options::get("root_directory"),
+		];
+		foreach (scandir($vendor) as $namespace) {
+			$nsPath = "{$vendor}/{$namespace}";
+			if($namespace != '.' and $namespace != '..' and is_dir($nsPath)){
+				foreach (scandir($nsPath) as $package) {
+					$packagePath = "{$nsPath}/{$package}";
+					if ($package != '.' and $package != '..' and is_dir($packagePath)){
+						$packageDirs[] = $packagePath;
+					}
 				}
-				Events::trigger(new events\PackageLoaded($package));
-				$dependencies = $package->getDependencies();
-				$alldependencies[$package->getName()] = $dependencies;
-				$allpackages[$package->getName()] = $package;
 			}
+		}
+		$allpackages = array();
+		foreach ($packageDirs as $path) {
+			$basename = basename($path);
+			Events::trigger(new events\PackageLoad($basename));
+			$package = self::package($path, $useCache);
+			if(!$package){
+				continue;
+			}
+			Events::trigger(new events\PackageLoaded($package));
+			$dependencies = $package->getDependencies();
+			$alldependencies[$package->getName()] = $dependencies;
+			$allpackages[$package->getName()] = $package;
 		}
 
 		$getDefaultLang = Translator::getDefaultLang();
-		Translator::addLang($getDefaultLang);
-		Translator::setLang($getDefaultLang);
+		if ($getDefaultLang) {
+			Translator::addLang($getDefaultLang);
+			Translator::setLang($getDefaultLang);
+		}
 
 		$sapi = self::sapi();
 		do {
@@ -87,8 +102,7 @@ class Loader {
 	}
 
 	public static function sapi(){
-		$sapi_type = php_sapi_name();
-		if (substr($sapi_type, 0, 3) == 'cli') {
+		if (isset($_SERVER['argv'])) {
 			return self::cli;
 		}else{
 			return self::cgi;
@@ -100,8 +114,9 @@ class Loader {
 	 * @param bool $cache
 	 * @return Package|null
 	 */
-	private static function package(string $name, bool $cache): ?Package {
-		$configFile = new IO\File\Local("packages/{$name}/package.json");
+	private static function package(string $path, bool $cache): ?Package {
+		$name = basename($path);
+		$configFile = new IO\File\Local("{$path}/package.json");
 		if(!$configFile->exists()){
 			return null;
 		}
@@ -112,7 +127,7 @@ class Loader {
 				return $package;
 			}
 		}
-		$package = Package::fromName($name);
+		$package = Package::fromName($configFile);
 		if ($cache) {
 			Cache::set("packages.base.loader.package.{$name}.{$md5}", $package, 0);
 		}

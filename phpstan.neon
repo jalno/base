@@ -1,7 +1,9 @@
 parameters:
   level: 0
-  scanDirectories:
-    - ../..
+  paths:
+    - libraries
+    - bootstrap.php
+    - defaultClassMap.php
   ignoreErrors:
     - "/(Class|Interface|Trait) .+ referenced with incorrect case/"
     - "/Unsafe usage of new static/"

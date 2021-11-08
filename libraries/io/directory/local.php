@@ -121,6 +121,9 @@ class local extends directory{
 	public function getRealPath():string{
 		return realpath($this->getPath());
 	}
+	public function hasAbsoultePath(): bool {
+		return substr($this->getPath(), 0, 1) == "/";
+	}
 
     public function isIn(Directory $parent): bool {
         if (!$this->exists() or !$parent->exists()) {
@@ -135,8 +138,9 @@ class local extends directory{
 		if ($this->getRealPath() === $parent->getRealPath()) {
 			return false;
 		}
-		$base = $parent->getRealPath() . "/";
-		return substr($this->getRealPath(), 0, strlen($base)) == $base;
+		$base = ($parent->hasAbsoultePath() ? $parent->getPath() : $parent->getRealPath()) . "/";
+        $me = $this->hasAbsoultePath() ? $this->getPath() : $this->getRealPath();
+		return substr($me, 0, strlen($base)) == $base;
 	}
 
 
@@ -147,7 +151,9 @@ class local extends directory{
 		if (!$this->isIn($parent)) {
 			throw new Exception("Currently cannot generate path for not nested nodes");
 		}
-		return substr($this->getRealPath(), strlen($parent->getRealPath()) + 1);
+		$base = ($parent->hasAbsoultePath() ? $parent->getPath() : $parent->getRealPath()) . "/";
+        $me = $this->hasAbsoultePath() ? $this->getPath() : $this->getRealPath();
+		return substr($me, strlen($base));
 	}
 
     public function serialize():string{

@@ -12,7 +12,6 @@ class Package implements \Serializable {
 	/**
 	 * construct a package from its package.json
 	 * 
-	 * @param string $name name of directory in packages directory.
 	 * @throws IO\NotFoundException if cannot find package.json in package directory
 	 * @throws json\JsonException {@see json\decode()}
 	 * @throws IO\NotFoundException {@see package::addFrontend()}
@@ -22,16 +21,12 @@ class Package implements \Serializable {
 	 * @throws PackageConfigException if package.json file wasn't an array
 	 * @throws PackageConfigException if event hasn't "name" or "listener" indexes.
 	 */
-	public static function fromName(string $name): self {
-		$configFile = new IO\file\local("packages/{$name}/package.json");
-		if (!$configFile->exists()) {
-			throw new IO\NotFoundException($configFile);
-		}
+	public static function fromName(IO\File\Local $configFile): self {
 		$config = json\decode($configFile->read());
 		if (!is_array($config)) {
-			throw new PackageConfigException($name, "config file is not an array");
+			throw new PackageConfigException($configFile->basename, "config file is not an array");
 		}
-		$package = new static($name);
+		$package = new static($configFile->getDirectory());
 		if(isset($config['dependencies'])){
 			foreach($config['dependencies'] as $dependency){
 				$package->addDependency($dependency);
@@ -458,20 +453,10 @@ class Package implements \Serializable {
 	/**
 	 * Class constructor which should called by method
 	 */
-	private function __construct(string $name) {
-		$this->setName($name);
+	private function __construct(IO\Directory\Local $home) {
+		$this->home = $home;
+		$this->name = $home->basename;
 		$this->setDefaultStorages();
-	}
-
-	/**
-	 * Setter for name and home directory of the package.
-	 * 
-	 * @param string $name
-	 * @return void
-	 */
-	private function setName(string $name): void {
-		$this->name = $name;
-		$this->home = new IO\directory\local("packages/{$name}");
 	}
 
 	private function setDefaultStorages(): void {

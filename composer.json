@@ -1,0 +1,11 @@
+{
+	"name": "jalno/base",
+	"license": "MIT",
+	"require": {
+		"php": ">=7.4",
+		"nikic/php-parser": "^4.13"
+	},
+	"bin": [
+		"bin/make-primary"
+	]
+}

@@ -1,6 +1,6 @@
 <?php
 namespace packages\base\frontend;
-use packages\base\{options, router, view, IO, Autoloader, Packages, Cache};
+use packages\base\{options, router, view, IO, Autoloader, Packages, Cache, Exception};
 
 class theme {
 
@@ -218,9 +218,12 @@ class theme {
 		return $tree;
 	}
 	private static function getPackage(string $file): string {
-		if (!preg_match("/^packages\/([^\/]+)\//", $file, $matches)) {
-			throw new Exception("the file does not belong to no package");
+		foreach (Packages::get() as $package) {
+			$dir = $package->getHome()->getPath() . "/";
+			if (substr($file, 0, strlen($dir)) === $dir) {
+				return $package->getName();
+			}
 		}
-		return $matches[1];
+		throw new Exception("the file does not belong to no package");
 	}
 }

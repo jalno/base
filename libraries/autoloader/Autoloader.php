@@ -1,7 +1,7 @@
 <?php
 namespace packages\base;
 
-use packages\PhpParser\{ParserFactory, NodeTraverser, Node, NodeVisitorAbstract};
+use PhpParser\{ParserFactory, NodeTraverser, Node, NodeVisitorAbstract};
 
 class Autoloader {
 	private static $classes = [];
@@ -12,7 +12,7 @@ class Autoloader {
 	 * @return void
 	 */
 	public static function setDefaultClassMap(): void {
-		self::$classes = require_once("packages/base/defaultClassMap.php");
+		self::$classes = require_once(__DIR__ . "/../../defaultClassMap.php");
 	}
 
 	/**
@@ -44,7 +44,7 @@ class Autoloader {
 			/**
 			 * Called after enter into every node and if it was a class or trait or interface we member it so later we able to generate a autoloader record.
 			 * 
-			 * @param packages\PhpParser\Node $node
+			 * @param PhpParser\Node $node
 			 * @return void
 			 */
 			public function enterNode(Node $node) {
@@ -182,6 +182,6 @@ class Autoloader {
 	 * @return bool
 	 */
 	public static function canParsePHP(): bool {
-		return class_exists("packages\\PhpParser\\ParserFactory");
+		return class_exists("PhpParser\\ParserFactory");
 	}
 }

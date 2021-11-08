@@ -1,6 +1,4 @@
 {
-	"permissions": "*",
-	"routing": "routing.json",
 	"autoload": {
 		"directories": ["libraries"],
 		"files": [
@@ -14,7 +12,6 @@
 			}
 		]
 	},
-	"dependencies": ["PhpParser"],
 	"languages":{
 		"fa_IR": "langs/fa_IR.json",
 		"en_US": "langs/en_US.json"

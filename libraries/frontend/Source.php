@@ -1,7 +1,7 @@
 <?php
 namespace packages\base\frontend;
 
-use packages\base\{json, router, IO, EventInterface, AutoloadContainerTrait, LanguageContainerTrait, ListenerContainerTrait};
+use packages\base\{json, Router, IO, Options, EventInterface, AutoloadContainerTrait, LanguageContainerTrait, ListenerContainerTrait};
 
 class Source {
 
@@ -12,13 +12,13 @@ class Source {
 	/**
 	 * construct a theme from its package.json
 	 * 
-	 * @param packages\base\IO\directory $home
-	 * @throws packages\base\IO\NotFoundException if cannot find theme.json in the home directory
-	 * @throws packages\base\IO\SourceConfigException if source doesn't have name
-	 * @throws packages\base\IO\SourceConfigException if event listener was invalid
-	 * @return packages\base\frontend\Source
+	 * @param IO\directory $home
+	 * @throws IO\NotFoundException if cannot find theme.json in the home directory
+	 * @throws IO\SourceConfigException if source doesn't have name
+	 * @throws IO\SourceConfigException if event listener was invalid
+	 * @return self
 	 */
-	public static function fromDirectory(IO\directory $home): Source {
+	public static function fromDirectory(IO\directory $home): self {
 		$config = $home->file("theme.json");
 		if (!$config->exists()) {
 			throw new IO\NotFoundException($config);
@@ -66,7 +66,7 @@ class Source {
 		return $source;
 	}
 
-	/** @var packages\base\IO\directory */
+	/** @var IO\directory */
 	private $home;
 
 	/** @var string */
@@ -75,7 +75,7 @@ class Source {
 	/** @var string|null */
 	private $parent;
 
-	/** @var packages\base\IO\file|null */
+	/** @var IO\file|null */
 	private $bootstrap;
 
 	/** @var array */
@@ -86,8 +86,6 @@ class Source {
 	
 	/**
 	 * Get home directory of source.
-	 * 
-	 * @return IO\directory
 	 */
 	public function getHome(): IO\directory{
 		return $this->home;
@@ -103,8 +101,6 @@ class Source {
 	}
 	/**
 	 * Get file
-	 * 
-	 * @return packages\base\IO\file
 	 */
 	public function getFile(string $path): IO\file {
 		return $this->home->file($path);
@@ -112,8 +108,6 @@ class Source {
 
 	/**
 	 * Get theme.json file
-	 * 
-	 * @return packages\base\IO\file
 	 */
 	public function getConfigFile(): IO\file {
 		return $this->getFile("theme.json");
@@ -151,7 +145,7 @@ class Source {
 	 * Add new asset
 	 * 
 	 * @param array $asset should contain "type" index within these values: "js", "css", "less", "scss", "sass", "ts", "package"
-	 * @throws packages\base\frontend\SourceAssetException if type was invalid.
+	 * @throws SourceAssetException if type was invalid.
 	 * @return void
 	 */
 	public function addAsset(array $asset): void {
@@ -178,8 +172,8 @@ class Source {
 	 * 
 	 * @param array $asset should contain "type" index within these values: "js", "css", "less", "scss", "sass", "ts", "package"
 	 * 					   also every asset could have a "name" and "file" and "inline" block code.
-	 * @throws packages\base\frontend\SourceAssetFileException if file does not exist.
-	 * @throws packages\base\frontend\SourceAssetFileException if there no file and no Code for asset.
+	 * @throws SourceAssetFileException if file does not exist.
+	 * @throws SourceAssetFileException if there no file and no Code for asset.
 	 * @return void
 	 */
 	private function addCodeAsset(array $asset): void {
@@ -208,8 +202,8 @@ class Source {
 	 * Add npm package to source.
 	 * 
 	 * @param array $asset should contain "name" index, and could have a "version" index.
-	 * @throws packages\base\frontend\SourceAssetException if asset doesn't have "name" index.
-	 * @throws packages\base\frontend\SourceAssetException if "version" was invalid.
+	 * @throws SourceAssetException if asset doesn't have "name" index.
+	 * @throws SourceAssetException if "version" was invalid.
 	 * @return void
 	 */
 	private function addNodePackageAsset(array $asset): void {
@@ -271,13 +265,14 @@ class Source {
 	public function url(string $file, bool $absolute = false): string {
 		$url = "";
 		if ($absolute) {
-			$hostname = router::gethostname();
-			if (!$hostname and $defaultHostnames = router::getDefaultDomains()) {
+			$hostname = Router::gethostname();
+			if (!$hostname and $defaultHostnames = Router::getDefaultDomains()) {
 				$hostname = $defaultHostnames[0];
 			}
-			$url .= router::getscheme().'://'.$hostname;
+			$url .= Router::getscheme().'://'.$hostname;
 		}
-		return $url . "/" . $this->home->file($file)->getPath();
+		$rootDir = new IO\Directory\Local(Options::get("root_directory"));
+		return $url . "/" . $this->home->file($file)->getRelativePath($rootDir);
 	}
 
 	/**3 */
@@ -314,7 +309,7 @@ class Source {
 	 * 
 	 * @param string $view
 	 * @param string $file relative file path to home directory.
-	 * @throws packages\base\IO\NotFoundException if cannot find file in the home directory
+	 * @throws IO\NotFoundException if cannot find file in the home directory
 	 * @return void
 	 */
 	public function addHTMLFile(string $view, string $path): void {
@@ -330,7 +325,7 @@ class Source {
 	 * Get html file using view class name.
 	 * 
 	 * @param string $view Full Qualified Class Name
-	 * @return packages\base\IO\file|null
+	 * @return IO\file|null
 	 */
 	public function getHTMLFile(string $view) {
 		return $this->htmlFiles[strtolower($view)] ?? null;
@@ -351,7 +346,7 @@ class Source {
 	}
 
 	/**
-	 * @param packages\base\IO\directory $home
+	 * @param IO\directory $home
 	 * @param string $name
 	 */
 	private function __construct(IO\directory $home, string $name) {
