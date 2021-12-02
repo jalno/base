@@ -129,7 +129,7 @@ class local extends directory{
 		if ($parent === $this) {
 			return true;
 		}
-		if (!is_a($this->getDirectory(), get_class($parent), false)) {
+		if (!$parent instanceof self) {
 			return false;
 		}
 		if ($this->getRealPath() === $parent->getRealPath()) {
@@ -145,7 +145,9 @@ class local extends directory{
             return parent::getRelativePath($parent);
         }
 		if (!$this->isIn($parent)) {
-			throw new Exception("Currently cannot generate path for not nested nodes");
+			throw new Exception(
+				"Currently cannot generate path for not nested nodes, parentPath: [{$parent->getPath()}], thisPath: [{$this->getPath()}]"
+			);
 		}
 		return substr($this->getRealPath(), strlen($parent->getRealPath()) + 1);
 	}
