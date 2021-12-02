@@ -41,7 +41,9 @@ abstract class Node {
 
 	public function getRelativePath(Directory $parent): string {
 		if (!$this->isIn($parent)) {
-			throw new Exception("Currently cannot generate path for not nested nodes");
+			throw new Exception(
+				"Currently cannot generate path for not nested nodes, parentPath: {$parent->getPath()} , thisPath: {$this->getPath()}"
+			);
 		}
 		return substr($this->getPath(), strlen($parent->getPath()) + 1);
 	}

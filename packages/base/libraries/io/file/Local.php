@@ -73,14 +73,11 @@ class Local extends File implements IStreamableFile {
 	}
 
 
-    public function isIn(Directory $parent): bool {
-        if (!$this->exists() or !$parent->exists()) {
-            return parent::isIn($parent);
-        }
-		if (!is_a($this->getDirectory(), get_class($parent), false)) {
-			return false;
+	public function isIn(Directory $parent): bool {
+		if (!$this->exists() or !$parent->exists()) {
+			return parent::isIn($parent);
 		}
-		if ($this->getRealPath() === $parent->getRealPath()) {
+		if (!$parent instanceof Directory\Local) {
 			return false;
 		}
 		$base = $parent->getRealPath() . "/";
@@ -93,7 +90,9 @@ class Local extends File implements IStreamableFile {
             return parent::getRelativePath($parent);
         }
 		if (!$this->isIn($parent)) {
-			throw new Exception("Currently cannot generate path for not nested nodes");
+			throw new Exception(
+				"Currently cannot generate path for not nested nodes, parentPath: [{$parent->getPath()}] thisPath: [{$this->getPath()}]"
+			);
 		}
 		return substr($this->getRealPath(), strlen($parent->getRealPath()) + 1);
 	}
