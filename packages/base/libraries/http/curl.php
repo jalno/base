@@ -2,7 +2,7 @@
 namespace packages\base\http;
 
 use CURLFile;
-use packages\base\{IO, IO\File, Packages};
+use packages\base\{IO, Exception, IO\File, Packages};
 use packages\base\http\{ClientException, Handler, ServerException};
 
 class Curl implements Handler {
