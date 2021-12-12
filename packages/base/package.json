@@ -24,6 +24,11 @@
 			"@class": "local",
 			"type": "protected",
 			"root": "storage/protected/logs"
+		},
+		"http_client_cookies": {
+			"@class": "local",
+			"type": "private",
+			"root": "storage/private/http_client_cookies"
 		}
 	}
 }
