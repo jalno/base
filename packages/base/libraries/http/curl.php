@@ -52,6 +52,18 @@ class curl implements handler{
 			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST,$options['ssl_verify'] ? 2 : 0);
 		}
 		if(isset($options['proxy'])){
+			if (isset($options['proxy']['type'])) {
+				switch ($options['proxy']['type']) {
+					case 'socks4':
+						curl_setopt($ch, CURLOPT_PROXYTYPE, CURLPROXY_SOCKS4);
+						break;
+					case 'socks5':
+						curl_setopt($ch, CURLOPT_PROXYTYPE, CURLPROXY_SOCKS5);
+						break;
+					case 'http':
+					case 'https':
+				}
+			}
 			curl_setopt($ch, CURLOPT_PROXY, $options['proxy']['hostname'].":".$options['proxy']['port']);
 			if(isset($options['proxy']['username'], $options['proxy']['password']) and $options['proxy']['username']){
 				curl_setopt($ch, CURLOPT_PROXYUSERPWD, $options['proxy']['username'].':'.$options['proxy']['password']);
