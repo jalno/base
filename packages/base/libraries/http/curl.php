@@ -62,6 +62,7 @@ class curl implements handler{
 						break;
 					case 'http':
 					case 'https':
+						break;
 				}
 			}
 			curl_setopt($ch, CURLOPT_PROXY, $options['proxy']['hostname'].":".$options['proxy']['port']);
