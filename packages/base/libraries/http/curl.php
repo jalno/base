@@ -1,12 +1,11 @@
 <?php
 namespace packages\base\http;
-use \CURLFile;
-use \packages\base\http\handler;
-use \packages\base\http\serverException;
-use \packages\base\http\clientException;
-use \packages\base\IO;
-use \packages\base\IO\file;
-class curl implements handler{
+
+use CURLFile;
+use packages\base\{IO, Exception, IO\File, Packages};
+use packages\base\http\{ClientException, Handler, ServerException};
+
+class Curl implements Handler {
 	public function fire(request $request, array $options):response{
 		$ch = curl_init( $request->getURL());
 		$fh = null;
@@ -44,8 +43,16 @@ class curl implements handler{
 			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, $options['allow_redirects']);
 		}
 		if(isset($options['cookies'])){
-			curl_setopt($ch, CURLOPT_COOKIEFILE, $options['cookies']);
-			curl_setopt($ch, CURLOPT_COOKIEJAR, $options['cookies']);
+			$cookieFilePath = null;
+			if (is_string($options['cookies'])) {
+				$cookieFilePath = $options['cookies'];
+			} else {
+				/** @var \packages\base\Package $package */
+				$package = Packages::package('base');
+				$cookieFilePath = $package->getStorage('http_client_cookies')->file('curl-default-cookies.txt')->getPath();
+			}
+			curl_setopt($ch, CURLOPT_COOKIEFILE, $cookieFilePath);
+			curl_setopt($ch, CURLOPT_COOKIEJAR, $cookieFilePath);
 		}
 		if(isset($options['ssl_verify'])){
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER,$options['ssl_verify']);
