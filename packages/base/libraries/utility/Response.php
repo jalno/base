@@ -19,19 +19,18 @@ class Response implements \Serializable {
 	protected $headers = array();
 	protected $httpcode;
 	protected $isAttachment = false;
-	function __construct($status = null, $data = array()){
+
+	public function __construct($status = null, $data = array()) {
+
 		$this->status = $status;
 		$this->data = $data;
-		$this->ajax = (isset(http::$request['get']['ajax']) and http::$request['get']['ajax']);
-		$this->api  = (isset(http::$request['get']['api'])  and http::$request['get']['api']);
-		if($this->ajax or $this->api){
-			$this->json = true;
-			if(isset(http::$request['get']['json']) and !http::$request['get']['json']) {
-				$this->json = false;
-			}
-			if(isset(http::$request['get']['xml']) and http::$request['get']['xml']) {
-				$this->xml = true;
-			}
+
+		$this->setAjax((isset(http::$request['get']['ajax']) and http::$request['get']['ajax']));
+		$this->setAPI((isset(http::$request['get']['api']) and http::$request['get']['api']));
+
+		if ($this->is_ajax() or $this->is_api()) {
+			$this->setJSON(!isset(http::$request['get']['json']) or http::$request['get']['json']);
+			$this->setXML(isset(http::$request['get']['xml']) and http::$request['get']['xml']);
 		}
 
 	}
@@ -201,5 +200,20 @@ class Response implements \Serializable {
 		$data = unserialize($data);
 		$this->setStatus($data['status']);
 		$this->setData($data['data']);
+	}
+	public function setAjax(bool $status = true): void {
+		$this->ajax = $status;
+		$this->setJSON($status);
+	}
+	public function setAPI(bool $status = true): void {
+		$this->api = $status;
+		$this->setJSON($status);
+	}
+
+	public function setJSON(bool $status = true): void {
+		$this->json = $status;
+	}
+	public function setXML(bool $status = true): void {
+		$this->xml = $status;
 	}
 }
