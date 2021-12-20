@@ -65,6 +65,24 @@ class Client {
 			}
 		}
 		if(isset($thisOptions['proxy'])){
+			if (is_string($thisOptions['proxy'])) {
+				$proxy = parse_url($thisOptions['proxy']);
+				if ($proxy === false) {
+					throw new Exception("cannot parse proxy");
+				}
+				if (!isset($proxy['host'])) {
+					throw new Exception("host is not present in proxy url");
+				}
+				if (!isset($proxy['port'])) {
+					throw new Exception("port is not present in proxy url");
+				}
+				$proxyAsArray = [
+					'type' => $proxy['scheme'] ?? "http",
+					'hostname' => $proxy['host'],
+					'port' => $proxy['port'],
+				];
+				$thisOptions['proxy'] = $proxyAsArray;
+			}
 			if(is_array($thisOptions['proxy'])){
 				if(!isset($thisOptions['proxy']['type']) or !is_string($thisOptions['proxy']['type']) or !in_array($thisOptions['proxy']['type'], ['http', 'https', 'socks4', 'socks5'])){
 					throw new TypeError("proxy type is invalid");
