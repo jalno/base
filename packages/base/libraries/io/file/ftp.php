@@ -146,7 +146,7 @@ class ftp extends file {
 	 */
 	public function copyFrom(File $source): bool {
 		if ($source instanceof Local) {
-			$this->getDriver()->put($source->getPath(), $this->getPath());
+			return $this->getDriver()->put($source->getPath(), $this->getPath());
 		} else {
 			$tmp = new TMP();
 			if ($source->copyTo($tmp)) {
