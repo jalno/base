@@ -166,7 +166,7 @@ class Curl implements Handler {
 		return $request;
 	}
 	private function getParts(string $result):array{
-		if(strpos($result, "\r\n\r\n") === false and !preg_match("/^HTTP\/\d+\.\d+ \d+ .*/i", $result)){
+		if(strpos($result, "\r\n\r\n") === false or !preg_match("/^HTTP\/\d+\.\d+ \d+ .*/i", $result)){
 			return ['', $result];
 		}
 		$parts = explode("\r\n\r\n", $result, 2);
