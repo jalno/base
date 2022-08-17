@@ -192,7 +192,7 @@ class Router {
 			return $b->parts() - $a->parts();
 		});
 	}
-	static function checkRules(&$rules, $uri = null){
+	static function checkRules(&$rules, $uri = null, ?\Throwable $exception = null){
 		$log = log::getInstance();
 		if($uri === null){
 			$uri = http::$request['uri'];
@@ -221,7 +221,11 @@ class Router {
 				$log->info("call",$controller.'@'.$method);
 				$controllerClass = new $controller();
 				try {
-					$response = $controllerClass->$method($data);
+					$args = [$data];
+					if ($exception) {
+						$args[] = $exception;
+					}
+					$response = $controllerClass->$method(...$args);
 				} catch(InputValidationException $e) {
 					$response = $controllerClass->getResponse();
 					if (!$response) {
@@ -367,7 +371,7 @@ class Router {
 						}
 					}
 				}
-			} catch(\Exception $e) {
+			} catch(\Throwable $e) {
 				self::routingExceptions($e);
 			}
 		} else {
@@ -401,7 +405,7 @@ class Router {
 	public static function getRules(): array {
 		return self::$rules;
 	}
-	private static function routingExceptions(\Exception $e){
+	private static function routingExceptions(\Throwable $e){
 		$api = loader::sapi();
 		if($api != loader::cgi){
 			return;
@@ -430,17 +434,17 @@ class Router {
 			}
 		}
 		self::sortRules($absoluteRules);
-		$found = self::checkRules($absoluteRules);
+		$found = self::checkRules($absoluteRules, null, $e);
 		if(!$found){
 			$uri = rtrim(http::$request['uri'], "/");
 			try{
 				self::sortRules($normalRules);
-				$found = self::checkRules($normalRules,$uri);
+				$found = self::checkRules($normalRules,$uri, $e);
 			}catch(InvalidLangCode $ee){}
 
 		}
 		if(!$found){
-			$found = self::checkRules($regexRules);
+			$found = self::checkRules($regexRules, null, $e);
 		}
 		if(!$found){
 			throw $e;

@@ -317,11 +317,13 @@ class Package implements \Serializable {
 	 * @return string
 	 */
 	public function prependNamespaceIfNeeded(string $namespace) {
-		$namespace =  ltrim(str_replace("/", "\\", $namespace), "\\");
-		if(!preg_match('/^(packages|themes)(?:\\\\[a-zA-Z0-9-\\_]+)+/', $namespace)){
-			$namespace = "packages\\{$this->name}\\".$namespace;
+		$namespace =  str_replace("/", "\\", $namespace);
+		if (substr($namespace, 0, 1) != '\\') {
+			if(!preg_match('/^(packages|themes)(?:\\\\[a-zA-Z0-9-\\_]+)+/', $namespace)){
+				$namespace = "packages\\{$this->name}\\".$namespace;
+			}
 		}
-		return strtolower($namespace);
+		return ltrim(strtolower($namespace), '\\');
 	}
 
 	/**
