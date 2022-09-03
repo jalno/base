@@ -18,7 +18,8 @@ class Curl implements Handler {
 			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $request->getMethod());
 			$reqBody = $request->getBody();
 			if (is_string($reqBody) or is_array($reqBody)) {
-				curl_setopt($ch, CURLOPT_POSTFIELDS, $this->replaceFiles($request->getBody()));
+				$reqBody = $this->arrayMultiDemToFlat($this->replaceFiles($reqBody));
+				curl_setopt($ch, CURLOPT_POSTFIELDS, $reqBody);
 			} elseif ($reqBody instanceof File) {
 				if (!($reqBody instanceof File\Local)) {
 					throw new Exception("Cannot open stream for non-local files");
@@ -147,6 +148,25 @@ class Curl implements Handler {
 		}
 		return $response;
 	}
+
+	/**
+	 * @param array<string,mixed>
+	 * @return array<string,mixed>
+	 */
+	protected function arrayMultiDemToFlat(array $data, ?string $prefix = null): array
+	{
+		$result = [];
+		foreach ($data as $key => $value) {
+			$itemKey = ($prefix !== null) ? "{$prefix}[{$key}]" : $key;
+			if (is_array($value)) {
+				$result = array_merge($result, $this->arrayMultiDemToFlat($value, $itemKey));
+			} else {
+				$result[$itemKey] = $value;
+			}
+		}
+		return $result;
+	}
+
 	protected function replaceFiles($request) {
 		if (is_array($request)) {
 			foreach($request as $key => $value) {
