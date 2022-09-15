@@ -3,7 +3,7 @@ namespace packages\base\http;
 
 use CURLFile;
 use packages\base\{IO, Exception, IO\File, Packages};
-use packages\base\http\{ClientException, Handler, ServerException};
+use packages\base\http\Handler;
 
 class Curl implements Handler {
 	public function fire(request $request, array $options):response{
@@ -17,8 +17,10 @@ class Curl implements Handler {
 		if ($request->getMethod() != "GET") {
 			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $request->getMethod());
 			$reqBody = $request->getBody();
-			if (is_string($reqBody) or is_array($reqBody)) {
+			if (is_array($reqBody)) {
 				$reqBody = $this->arrayMultiDemToFlat($this->replaceFiles($reqBody));
+			}
+			if (is_string($reqBody) or is_array($reqBody)) {
 				curl_setopt($ch, CURLOPT_POSTFIELDS, $reqBody);
 			} elseif ($reqBody instanceof File) {
 				if (!($reqBody instanceof File\Local)) {
