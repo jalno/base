@@ -95,7 +95,7 @@ class Safe {
 			switch ($sub4) {
 				case('0910'):case('0911'):case('0912'):case('0913'):case('0914'):case('0915'):case('0916'):case('0917'):case('0918'):case('0919'):case('0990'):case('0991'):case('0992'):case('0993'):case('0994'):case('0996'): // TCI
 				case('0930'):case('0933'):case('0935'):case('0936'):case('0937'):case('0938'):case('0939'): // IranCell
-				case('0901'):case('0902'):case('0903'):case('0904'):case('0905'):case('0941'): // IranCell - ISim
+				case('0900'):case('0901'):case('0902'):case('0903'):case('0904'):case('0905'):case('0941'): // IranCell - ISim
 				case('0920'):case('0921'):case('0922'):case('0923'): // RighTel
 				case('0931'): // Spadan
 				case('0932'): // Taliya
