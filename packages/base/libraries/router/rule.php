@@ -299,7 +299,7 @@ class rule implements \Serializable {
 	/**
 	 * @return array of arrays that each array has 'type' and 'name' indexes
 	 */
-	public function getPath(): array {
+	public function getPath(): ?array {
 		return $this->path;
 	}
 
