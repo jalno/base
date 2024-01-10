@@ -25,6 +25,11 @@
 			"type": "protected",
 			"root": "storage/protected/logs"
 		},
+		"sessions": {
+			"@class": "local",
+			"type": "private",
+			"root": "storage/private/sessions"
+		},
 		"http_client_cookies": {
 			"@class": "local",
 			"type": "private",
