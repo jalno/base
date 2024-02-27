@@ -4,6 +4,7 @@ namespace packages\base\session;
 use packages\base\Http;
 use packages\base\Packages;
 use packages\base\IO\Directory;
+use stdClass;
 
 class PHPSessionHandler implements ISessionHandler {
 
@@ -35,9 +36,7 @@ class PHPSessionHandler implements ISessionHandler {
 				'sslonly' => false,
 				'httponly' => false,
 			),
-			'save_dir' => Packages::package('base')
-				->getStorage('sessions')
-				->getRoot(),
+			'save_dir' => dirname(__DIR__, 2).'/storage/private/sessions',
 			'ip' => false,
 		), $options);
 	}
@@ -51,13 +50,12 @@ class PHPSessionHandler implements ISessionHandler {
 	public function start(): void {
 		if (session_status() != PHP_SESSION_ACTIVE) {
 			if (isset($this->options['save_dir']) and $this->options['save_dir']) {
-				if (!is_string($this->options['save_dir']) and !$this->options['save_dir'] instanceof Directory\Local) {
+				if (!is_string($this->options['save_dir'])) {
 					throw new \InvalidArgumentException(
-						sprintf('sessions directory should be string or local directory, %s given', $this->options['save_dir'])
+						sprintf('sessions directory should be string, %s given', gettype($this->options['save_dir']))
 					);
 				}
-				$path = is_string($this->options['save_dir']) ? $this->options['save_dir'] : $this->options['save_dir']->getPath();
-				session_save_path($path);
+				session_save_path($this->options['save_dir']);
 			}
 			session_set_cookie_params($this->options['cookie']['expire'], $this->options['cookie']['path'], $this->options['cookie']['domain'], $this->options['cookie']['sslonly'], $this->options['cookie']['httponly']);
 			session_name($this->options['cookie']['name']);

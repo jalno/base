@@ -26,6 +26,7 @@
 			"root": "storage/protected/logs"
 		},
 		"sessions": {
+			"@comment": "DO NOT CHANGE THIS AT ALL! We Highly rely on this.",
 			"@class": "local",
 			"type": "private",
 			"root": "storage/private/sessions"
