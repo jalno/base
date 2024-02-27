@@ -5,7 +5,9 @@
 /packages/base/storage/protected/logs/*
 /packages/base/storage/public/frontend/*
 /packages/base/storage/private/frontend/*
+/packages/base/storage/private/sessions/*
 !/packages/base/storage/private/cache/.gitkeep
+!/packages/base/storage/private/sessions/.gitkeep
 !/packages/base/storage/protected/logs/.gitkeep
 !/packages/base/storage/public/frontend/.gitkeep
 !/packages/base/storage/private/frontend/webpack.config.js
