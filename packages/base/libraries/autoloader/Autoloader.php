@@ -51,11 +51,12 @@ class Autoloader {
 				if(
 					$node instanceof Node\Stmt\Class_ or
 					$node instanceof Node\Stmt\Trait_ or
+					node instanceof Node\Stmt\Enum_ or
 					$node instanceof Node\Stmt\Interface_
 				) {
 					$this->items[] = ($this->namespace ? $this->namespace."\\" : "").$node->name;
 				} elseif ($node instanceof Node\Stmt\Namespace_) {
-					$this->namespace = implode("\\", $node->name->parts);
+					$this->namespace = implode("\\", $node->name->getParts());
 				}
 			}
 			
