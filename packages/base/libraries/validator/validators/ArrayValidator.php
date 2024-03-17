@@ -81,7 +81,7 @@ class ArrayValidator implements IValidator {
 				$processed[] = $value;
 			}
 			unset($processed);
-		} elseif ($rule['duplicate'] == "remove") {
+		} elseif ($rule['duplicate'] === "remove") {
 			$data = array_unique($data);
 		}
 
