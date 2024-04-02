@@ -1,4 +1,7 @@
 <?php
+
 namespace packages\base;
-interface EventInterface {
+
+interface EventInterface
+{
 }

@@ -1,5 +1,7 @@
 <?php
+
 namespace packages\base\events;
-class listener extends \Exception{
-	
+
+class listener extends \Exception
+{
 }

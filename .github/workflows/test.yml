@@ -50,3 +50,9 @@ jobs:
           php_version: ${{ matrix.php }}
           path: ./
           configuration: packages/base/phpstan.neon
+
+      - name: Install PHP CodeStyle Fixer
+        run: composer global require friendsofphp/php-cs-fixer:v3.22.0
+
+      - name: PHP CodeStyle Fixer
+        run: php-cs-fixer fix --config packages/base/.php-cs-fixer.php --using-cache=no --dry-run -v

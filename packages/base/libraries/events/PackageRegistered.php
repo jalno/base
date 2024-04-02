@@ -1,13 +1,21 @@
 <?php
+
 namespace packages\base\events;
-use \packages\base\event;
-use \packages\base\package;
-class PackageRegistered extends event{
-	private $package;
-	public function __construct(package $package){
-		$this->package = $package;
-	}
-	public function getPackage():package{
-		return $this->package;
-	}
+
+use packages\base\event;
+use packages\base\package;
+
+class PackageRegistered extends event
+{
+    private $package;
+
+    public function __construct(package $package)
+    {
+        $this->package = $package;
+    }
+
+    public function getPackage(): package
+    {
+        return $this->package;
+    }
 }

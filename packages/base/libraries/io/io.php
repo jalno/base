@@ -1,40 +1,52 @@
 <?php
+
 namespace packages\base\IO;
-require_once('directories.php');
-function get_absolute_path($path) {
-    $path = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $path);
+
+require_once 'directories.php';
+function get_absolute_path($path)
+{
+    $path = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $path);
     $parts = array_filter(explode(DIRECTORY_SEPARATOR, $path), 'strlen');
-    $absolutes = array();
+    $absolutes = [];
     foreach ($parts as $part) {
-        if ('.' == $part) continue;
+        if ('.' == $part) {
+            continue;
+        }
         if ('..' == $part) {
             array_pop($absolutes);
         } else {
             $absolutes[] = $part;
         }
     }
+
     return implode(DIRECTORY_SEPARATOR, $absolutes);
 }
-function md5($file){
-	return md5_file($file);
+function md5($file)
+{
+    return md5_file($file);
 }
-function filesize($file){
-	return \filesize($file);
+function filesize($file)
+{
+    return \filesize($file);
 }
-function unlink($filename, $context = null){
-	return \unlink($filename);
+function unlink($filename, $context = null)
+{
+    return \unlink($filename);
 }
-function copy($source,$dest){
-    return \copy($source,$dest);
+function copy($source, $dest)
+{
+    return \copy($source, $dest);
 }
-function realpath($path){
+function realpath($path)
+{
     return \realpath($path);
 }
-function mime_type($filename) {
-	if(is_file($filename) and function_exists('mime_content_type')) {
-		return mime_content_type($filename);
-	}
-    $mime_types = array(
+function mime_type($filename)
+{
+    if (is_file($filename) and function_exists('mime_content_type')) {
+        return mime_content_type($filename);
+    }
+    $mime_types = [
         'txt' => 'text/plain',
         'htm' => 'text/html',
         'html' => 'text/html',
@@ -87,17 +99,18 @@ function mime_type($filename) {
         // open office
         'odt' => 'application/vnd.oasis.opendocument.text',
         'ods' => 'application/vnd.oasis.opendocument.spreadsheet',
-    );
-	$explode = explode('.',$filename);
+    ];
+    $explode = explode('.', $filename);
     $ext = strtolower(array_pop($explode));
     if (array_key_exists($ext, $mime_types)) {
         return $mime_types[$ext];
-    }elseif (file_exists($filename) and function_exists('finfo_open')) {
+    } elseif (file_exists($filename) and function_exists('finfo_open')) {
         $finfo = finfo_open(FILEINFO_MIME);
         $mimetype = finfo_file($finfo, $filename);
         finfo_close($finfo);
+
         return $mimetype;
-    }else {
+    } else {
         return 'application/octet-stream';
     }
 }
