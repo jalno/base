@@ -1,52 +1,56 @@
 <?php
+
 namespace packages\base;
 
-class packages {
-	/** @var package[] */
-	static private $actives = [];
-	
-	/**
-	 * Register a new package
-	 * 
-	 * @param package
-	 * @return void
-	 */
-	static function register(package $package): void {
-		self::$actives[$package->getName()] = $package;
-	}
+class packages
+{
+    /** @var package[] */
+    private static $actives = [];
 
-	/**
-	 * Return package by search its name
-	 * 
-	 * @param string $name
-	 * @return package|null
-	 */
-	static function package(string $name): ?package {
-		return self::$actives[$name] ?? null;
-	}
+    /**
+     * Register a new package.
+     *
+     * @param package
+     */
+    public static function register(package $package): void
+    {
+        self::$actives[$package->getName()] = $package;
+    }
 
-	/**
-	 * get list of active packages.
-	 * 
-	 * @param string[] $names
-	 * @return Package[]
-	 */
-	static function get($names = []): array {
-		if (empty($names)) {
-			return self::$actives;
-		}
-		$return = array();
-		foreach(self::$actives as $name => $package){
-			if(in_array($name, $names)){
-				$return[] = $package;
-			}
-		}
-		return $return;
-	}
+    /**
+     * Return package by search its name.
+     */
+    public static function package(string $name): ?package
+    {
+        return self::$actives[$name] ?? null;
+    }
 
-	public static function registerTranslates(string $code) {
-		foreach (self::$actives as $package) {
-			$package->registerTranslates($code);
-		}
-	}
+    /**
+     * get list of active packages.
+     *
+     * @param string[] $names
+     *
+     * @return Package[]
+     */
+    public static function get($names = []): array
+    {
+        if (empty($names)) {
+            return self::$actives;
+        }
+        $return = [];
+        foreach (self::$actives as $name => $package) {
+            if (in_array($name, $names)) {
+                $return[] = $package;
+            }
+        }
+
+        return $return;
+    }
+
+    public static function registerTranslates(string $code)
+    {
+        foreach (self::$actives as $package) {
+            $package->registerTranslates($code);
+        }
+    }
 }

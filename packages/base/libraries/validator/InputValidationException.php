@@ -1,7 +1,7 @@
 <?php
+
 namespace packages\base;
 
-class InputValidationException extends InputValidation {
-	
+class InputValidationException extends InputValidation
+{
 }
-

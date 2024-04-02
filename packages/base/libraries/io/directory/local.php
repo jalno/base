@@ -1,164 +1,206 @@
 <?php
+
 namespace packages\base\IO\directory;
 
 use packages\base\Exception;
 use packages\base\IO\Directory;
 use packages\base\IO\File;
 
-class Local extends Directory {
-    public function size(): int{
+class Local extends Directory
+{
+    public function size(): int
+    {
         $size = 0;
-        foreach($this->files(true) as $file){
+        foreach ($this->files(true) as $file) {
             $size += $file->size();
         }
+
         return $size;
     }
-    public function move(directory $dest): bool{
-        if(!$dest->exists()){
+
+    public function move(directory $dest): bool
+    {
+        if (!$dest->exists()) {
             $dest->make(true);
         }
-        if(rename($this->getPath(), $dest->getPath().'/'.$this->basename)){
+        if (rename($this->getPath(), $dest->getPath().'/'.$this->basename)) {
             $this->directory = $dest->getPath();
+
             return true;
         }
+
         return false;
     }
-    public function rename(string $newName): bool{
-        if(rename($this->getPath(), $this->directory.'/'.$newName)){
+
+    public function rename(string $newName): bool
+    {
+        if (rename($this->getPath(), $this->directory.'/'.$newName)) {
             $this->basename = $newName;
+
             return true;
         }
+
         return false;
     }
-    public function delete(){
-		foreach($this->items(false) as $item){
-			$item->delete();
-		}
-		rmdir($this->getPath());
+
+    public function delete()
+    {
+        foreach ($this->items(false) as $item) {
+            $item->delete();
+        }
+        rmdir($this->getPath());
     }
-    public function make(bool $recursive = false):bool{
-        if($recursive){
+
+    public function make(bool $recursive = false): bool
+    {
+        if ($recursive) {
             $dirs = explode('/', $this->getPath());
-            $dir='';
+            $dir = '';
             foreach ($dirs as $part) {
                 $dir .= $part.'/';
-                if ($dir and !is_dir($dir)){
-                    if(!mkdir($dir)){
+                if ($dir and !is_dir($dir)) {
+                    if (!mkdir($dir)) {
                         return false;
                     }
                 }
             }
+
             return true;
-        }else{
+        } else {
             return mkdir($this->getPath());
         }
     }
-    public function files(bool $recursively = true):array{
-        $scanner = function($dir) use($recursively, &$scanner){
+
+    public function files(bool $recursively = true): array
+    {
+        $scanner = function ($dir) use ($recursively, &$scanner) {
             $files = [];
-            foreach(scandir($dir) as $item){
-                if($item != '.' and $item != '..'){
-                    if(is_file($dir.'/'.$item)){
+            foreach (scandir($dir) as $item) {
+                if ('.' != $item and '..' != $item) {
+                    if (is_file($dir.'/'.$item)) {
                         $files[] = new file\local($dir.'/'.$item);
-                    }elseif($recursively){
+                    } elseif ($recursively) {
                         $files = array_merge($files, $scanner($dir.'/'.$item));
                     }
                 }
             }
+
             return $files;
         };
+
         return $scanner($this->getPath());
     }
-    public function directories(bool $recursively = true):array{
-        $scanner = function($dir) use($recursively, &$scanner){
+
+    public function directories(bool $recursively = true): array
+    {
+        $scanner = function ($dir) use ($recursively, &$scanner) {
             $items = [];
-            foreach(scandir($dir) as $item){
-                if($item != '.' and $item != '..'){
-                    if(is_dir($dir.'/'.$item)){
+            foreach (scandir($dir) as $item) {
+                if ('.' != $item and '..' != $item) {
+                    if (is_dir($dir.'/'.$item)) {
                         $items[] = new directory\local($dir.'/'.$item);
-                        if($recursively){
+                        if ($recursively) {
                             $items = array_merge($items, $scanner($dir.'/'.$item));
                         }
                     }
                 }
             }
+
             return $items;
         };
+
         return $scanner($this->getPath());
     }
-    public function items(bool $recursively = true):array{
-        $scanner = function($dir) use($recursively, &$scanner){
+
+    public function items(bool $recursively = true): array
+    {
+        $scanner = function ($dir) use ($recursively, &$scanner) {
             $items = [];
-            foreach(scandir($dir) as $item){
-                if($item != '.' and $item != '..'){
-                    if(is_file($dir.'/'.$item)){
+            foreach (scandir($dir) as $item) {
+                if ('.' != $item and '..' != $item) {
+                    if (is_file($dir.'/'.$item)) {
                         $items[] = new file\local($dir.'/'.$item);
-                    }else{
+                    } else {
                         $items[] = new directory\local($dir.'/'.$item);
-                        if($recursively){
+                        if ($recursively) {
                             $items = array_merge($items, $scanner($dir.'/'.$item));
                         }
                     }
                 }
             }
+
             return $items;
         };
+
         return $scanner($this->getPath());
     }
-    public function exists():bool{
+
+    public function exists(): bool
+    {
         return is_dir($this->getPath());
     }
-    public function file(string $name):file\local{
+
+    public function file(string $name): file\local
+    {
         return new file\local($this->getPath().'/'.$name);
     }
-    public function directory(string $name):directory\local{
+
+    public function directory(string $name): directory\local
+    {
         return new directory\local($this->getPath().'/'.$name);
     }
-    public function getDirectory():directory\local{
+
+    public function getDirectory(): directory\local
+    {
         return new directory\local($this->directory);
     }
-	public function getRealPath():string{
-		return realpath($this->getPath());
-	}
 
-    public function isIn(Directory $parent): bool {
+    public function getRealPath(): string
+    {
+        return realpath($this->getPath());
+    }
+
+    public function isIn(Directory $parent): bool
+    {
         if (!$this->exists() or !$parent->exists()) {
             return parent::isIn($parent);
         }
-		if ($parent === $this) {
-			return true;
-		}
-		if (!$parent instanceof self) {
-			return false;
-		}
-		if ($this->getRealPath() === $parent->getRealPath()) {
-			return false;
-		}
-		$base = $parent->getRealPath() . "/";
-		return substr($this->getRealPath(), 0, strlen($base)) == $base;
-	}
+        if ($parent === $this) {
+            return true;
+        }
+        if (!$parent instanceof self) {
+            return false;
+        }
+        if ($this->getRealPath() === $parent->getRealPath()) {
+            return false;
+        }
+        $base = $parent->getRealPath().'/';
 
+        return substr($this->getRealPath(), 0, strlen($base)) == $base;
+    }
 
-	public function getRelativePath(Directory $parent): string {
+    public function getRelativePath(Directory $parent): string
+    {
         if (!$this->exists() or !$parent->exists()) {
             return parent::getRelativePath($parent);
         }
-		if (!$this->isIn($parent)) {
-			throw new Exception(
-				"Currently cannot generate path for not nested nodes, parentPath: [{$parent->getPath()}], thisPath: [{$this->getPath()}]"
-			);
-		}
-		return substr($this->getRealPath(), strlen($parent->getRealPath()) + 1);
-	}
+        if (!$this->isIn($parent)) {
+            throw new Exception("Currently cannot generate path for not nested nodes, parentPath: [{$parent->getPath()}], thisPath: [{$this->getPath()}]");
+        }
 
-    public function __serialize(): array {
-        return array(
-            'directory' => $this->directory,
-            'basename' => $this->basename
-        );
+        return substr($this->getRealPath(), strlen($parent->getRealPath()) + 1);
     }
 
-    public function __unserialize(array $data): void {
+    public function __serialize(): array
+    {
+        return [
+            'directory' => $this->directory,
+            'basename' => $this->basename,
+        ];
+    }
+
+    public function __unserialize(array $data): void
+    {
         $this->directory = $data['directory'] ?? null;
         $this->basename = $data['basename'] ?? null;
     }
