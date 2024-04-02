@@ -2,7 +2,7 @@
 namespace packages\base\router;
 use packages\base\{router, options};
 
-class rule implements \Serializable {
+class Rule {
 	const post = 'post';
 	const get = 'get';
 	const put = 'put';
@@ -615,27 +615,15 @@ class rule implements \Serializable {
 		return $this->exceptions;
 	}
 
-	/**
-	 * make serializable 
-	 * 
-	 * @return string
-	 */
-	public function serialize(): string {
+	public function __serialize(): array {
 		$data = [];
 		foreach (['name', 'controller', 'methods', 'path', 'regex', 'domains', 'permissions', 'middlewares', 'absolute', 'schemes', 'exceptions', 'wildcards', 'dynamics'] as $key) {
 			$data[$key] = $this->{$key};
 		}
-        return serialize($data);
+		return $data;
 	}
-	
-	/**
-	 * make unserializable
-	 * 
-	 * @param string $serialized The string representation of the object.
-	 * @return void
-	 */
-    public function unserialize($serialized) {
-		$data = unserialize($serialized);
+
+	public function __unserialize(array $data): void {
 		foreach (['name', 'controller', 'methods', 'path', 'regex', 'domains', 'permissions', 'middlewares', 'absolute', 'schemes', 'exceptions', 'wildcards', 'dynamics'] as $key) {
 			$this->{$key} = $data[$key];
 		}

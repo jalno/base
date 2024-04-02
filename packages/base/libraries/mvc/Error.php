@@ -3,7 +3,7 @@ namespace packages\base\view;
 
 use packages\base\Exception;
 
-class Error extends Exception implements \Serializable, \JsonSerializable {
+class Error extends Exception implements \JsonSerializable {
 	const SUCCESS = 'success';
 	const WARNING = 'warning';
 	const FATAL = 'fatal';
@@ -58,11 +58,10 @@ class Error extends Exception implements \Serializable, \JsonSerializable {
 	public function getTraceMode(): int {
 		return $this->traceMode;
 	}
-	public function serialize(): string {
-        return serialize($this->jsonSerialize());
+	public function __serialize(): array {
+		return $this->jsonSerialize();
 	}
-	public function unserialize($serialized): void {
-		$data = unserialize($serialized);
+	public function unserialize(array $data): void {
 		$this->type = $data["type"];
 		$this->traceMode = $data["traceMode"] ?? self::NO_TRACE;
 		$this->code = $data["code"] ?? null;
@@ -75,10 +74,9 @@ class Error extends Exception implements \Serializable, \JsonSerializable {
 
 	/**
 	 * Serializes the object to a value that can be serialized natively by json_encode().
-	 * 
-	 * @return mixed
+	 *
 	 */
-	public function jsonSerialize() {
+	public function jsonSerialize(): array {
 		$data = array(
 			"type" => $this->type,
 		);
