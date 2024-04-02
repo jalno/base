@@ -5,8 +5,11 @@ use packages\base\Exception;
 use packages\base\Process;
 
 class NotStartedProcessException extends Exception {
-	public function __construct(public readonly Process $process, string $message = "process does not started") {
+	protected Process $process;
+
+	public function __construct(Process $process, string $message = "process does not started") {
 		parent::__construct($message);
+		$this->process = $process;
 	}
 
 	public function getProcess(): Process

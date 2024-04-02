@@ -1,10 +1,10 @@
 <?php
 namespace packages\base;
-use \packages\base\frontend;
 use \packages\base\IO\directory;
 use \packages\base\IO\file;
 use \packages\base\json;
 use \packages\base\frontend\source;
+
 class frontend{
 	private static function getWebpackResult():array{
 		$base = packages::package('base');
