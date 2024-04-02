@@ -3,7 +3,7 @@ namespace packages\base;
 
 use packages\base\Storage\LocalStorage;
 
-class Package implements \Serializable {
+class Package {
 
 	use AutoloadContainerTrait;
 	use LanguageContainerTrait;
@@ -406,11 +406,9 @@ class Package implements \Serializable {
 	}
 	
 	/**
-	 * make serializable 
-	 * 
-	 * @return string
+	 * make serializable
 	 */
-	public function serialize(): string {
+	public function __serialize(): array {
 		$data = array(
 			'name' => $this->name,
 			'bootstrap' => $this->bootstrap ? $this->bootstrap->getPath() : null,
@@ -429,17 +427,16 @@ class Package implements \Serializable {
 		foreach ($this->langs as $lang => $file) {
 			$data['langs'][$lang] = $file->getPath();
 		}
-		return serialize($data);
+		return $data;
 	}
 	
 	/**
 	 * make unserializable
 	 * 
-	 * @param string $serialized The string representation of the object.
+	 * @param array $data The representation of the object.
 	 * @return void
 	 */
-    public function unserialize($serialized) {
-		$data = unserialize($serialized);
+    public function unserialize(array $data): void {
 		$this->name = $data['name'];
 		$this->home = new IO\directory\local("packages/{$data['name']}");
 		$this->bootstrap = $data['bootstrap'] ? new IO\file\local($data['bootstrap']) : null;

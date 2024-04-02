@@ -734,9 +734,8 @@ class MysqliDb
 	 *
 	 * @param string  $tableName The name of the database table to work with.
 	 *
-	 * @return array Contains the returned rows from the select query.
 	 */
-	public function has($tableName)
+	public function has($tableName): bool
 	{
 		$this->getOne($tableName, '1');
 		return $this->count >= 1;
