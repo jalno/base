@@ -1,6 +1,7 @@
 /packages/*
 !/packages/base/
 /packages/base/storage/session/*
+/packages/base/.php-cs-fixer.cache
 /packages/base/storage/private/cache/*
 /packages/base/storage/protected/logs/*
 /packages/base/storage/public/frontend/*
