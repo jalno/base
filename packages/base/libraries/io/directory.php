@@ -1,6 +1,7 @@
 <?php
 namespace packages\base\IO;
-abstract class Directory extends Node implements \Serializable {
+
+abstract class Directory extends Node {
 	abstract public function move(directory $dest):bool;
 	abstract public function size():int;
 	abstract public function make():bool;
@@ -9,6 +10,10 @@ abstract class Directory extends Node implements \Serializable {
 	abstract public function directories(bool $recursively):array;
 	abstract public function file(string $name);
 	abstract public function directory(string $name);
+
+	abstract public function __serialize(): array;
+	abstract public function __unserialize(array $data): void;
+
 	public function copyTo(directory $dest):bool{
         $sourcePath = $this->getPath();
 		if(!$dest->exists()){
