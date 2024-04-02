@@ -87,12 +87,11 @@ abstract class Storage implements \JsonSerializable {
 	 * 
 	 * @return mixed
 	 */
-	public function jsonSerialize() {
-		$data = array(
+	public function jsonSerialize(): array {
+		return array(
 			"@class" => get_class($this),
 			"type" => $this->type,
 			"root" => $this->root,
 		);
-        return $data;
     }
 }
