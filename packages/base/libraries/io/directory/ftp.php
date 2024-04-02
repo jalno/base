@@ -3,7 +3,7 @@ namespace packages\base\IO\directory;
 
 use packages\base\IO\{file, directory, drivers\ftp as driver, NotFoundException};
 
-class ftp extends directory{
+class ftp extends Directory {
 	/** @var string|null */
 	public $hostname;
 
@@ -244,7 +244,7 @@ class ftp extends directory{
 		return $directory;
 	}
 
-	public function serialize(){
+	public function __serialize(): array {
 		if(!$this->hostname){
 			$this->hostname = $this->getDriver()->getHostname();
 		}
@@ -257,7 +257,7 @@ class ftp extends directory{
 		if(!$this->password){
 			$this->password = $this->getDriver()->getPassword();
 		}
-		$data = array(
+		return array(
 			'directory' => $this->directory,
 			'basename' => $this->basename,
 			'hostname' => $this->hostname,
@@ -265,15 +265,13 @@ class ftp extends directory{
 			'username' => $this->username,
 			'password' => $this->password
 		);
-        return serialize($data);
-    }
-	public function unserialize($data){
-		$data = unserialize($data);
-		$this->directory = isset($data['directory']) ? $data['directory'] : null;
-		$this->basename = isset($data['basename']) ? $data['basename'] : null;
-		$this->hostname = isset($data['hostname']) ? $data['hostname'] : null;
-		$this->port = isset($data['port']) ? $data['port'] : 21;
-		$this->username = isset($data['username']) ? $data['username'] : null;
-		$this->password = isset($data['password']) ? $data['password'] : null;
+	}
+	public function __unserialize(array $data): void {
+		$this->directory = $data['directory'] ?? null;
+		$this->basename = $data['basename'] ?? null;
+		$this->hostname = $data['hostname'] ?? null;
+		$this->port = $data['port'] ?? 21;
+		$this->username = $data['username'] ?? null;
+		$this->password = $data['password'] ?? null;
 	}
 }

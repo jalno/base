@@ -136,7 +136,7 @@ class jdate implements date_interface {
     			case "w":$result1=date("w",$need);if($transnumber==1) $result.=self::Convertnumber2farsi($result1);else $result.=$result1;break;
     			case "y":$result1=substr($jyear,2,4);if($transnumber==1) $result.=self::Convertnumber2farsi($result1);else $result.=$result1;break;
     			case "Y":$result1=$jyear;if($transnumber==1) $result.=self::Convertnumber2farsi($result1);else $result.=$result1;break;
-    			case "U" :$result.=mktime();break;
+    			case "U" :$result.=mktime(date('H', $need), date('i', $need), date('s', $need), date('m', $need), date('d', $need), date('Y',$need));break;
     			case "Z" :$result.=self::days_of_year($jmonth,$jday,$jyear);break;
     			case "L" :list( $tmp_year, $tmp_month, $tmp_day ) = self::jalali_to_gregorian(1384, 12, 1);echo $tmp_day;break;
     			default:$result.=$subtype;
@@ -288,25 +288,6 @@ class jdate implements date_interface {
     		if(self::is_kabise($year) && $j_days_in_month[$month-1]==31)return 1;
     	}
     	return 0;
-    }
-    static function jtime(){
-    	return mktime()	;
-    }
-    static function jgetdate($timestamp=""){
-    	if($timestamp=="")$timestamp=mktime();
-    	return array(
-    		0=>$timestamp,
-    		"seconds"=>self::format("s",$timestamp),
-    		"minutes"=>self::format("i",$timestamp),
-    		"hours"=>self::format("G",$timestamp),
-    		"mday"=>self::format("j",$timestamp),
-    		"wday"=>self::format("w",$timestamp),
-    		"mon"=>self::format("n",$timestamp),
-    		"year"=>self::format("Y",$timestamp),
-    		"yday"=>self::days_of_year(self::format("m",$timestamp),self::format("d",$timestamp),self::format("Y",$timestamp)),
-    		"weekday"=>self::format("l",$timestamp),
-            "month"=>self::format("F",$timestamp),
-    	);
     }
     static function div($a,$b) {return (int) ($a / $b);}
     static function jalali_to_gregorian($j_y, $j_m, $j_d){

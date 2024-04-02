@@ -1,9 +1,10 @@
 <?php
 namespace packages\base;
-use packages\base;
-use packages\base\db\dbObject;
 
-class Process extends dbObject{
+use packages\base\db\DBObject;
+use packages\base\view\Error;
+
+class Process extends DBObject {
 	const SIGHUP = 1;
 	const SIGINT = 2;
 	const SIGQUIT = 3;
@@ -68,15 +69,15 @@ class Process extends dbObject{
      * Runs the command in a background process.
      *
      */
-	public function background_run(){
+	public function background_run() {
 		if(!$this->checkOS()){
-			throw new notShellAccess();
+			throw new Process\Exceptions\NotShellAccessException();
 		}
 		if(!function_exists('shell_exec')){
-			throw new notShellAccess();
+			throw new Process\Exceptions\NotShellAccessException();
 		}
 		if(!$this->id){
-			throw new notSavedProcess();
+			throw new Process\Exceptions\NotSavedProcessException();
 		}
 		$root_directory = options::get('root_directory');
 		$php = options::get('packages.base.process.php-bin');
@@ -90,7 +91,7 @@ class Process extends dbObject{
 			$this->save();
 			return true;
 		}else{
-			throw new cannotStartProcess();
+			throw new Process\Exceptions\CannotStartProcessException($this);
 		}
 	}
 	public function setPID(){
@@ -180,9 +181,10 @@ class Process extends dbObject{
 			if($this->pid){
 	            return file_exists('/proc/'.$this->pid);
 			}else{
-				throw new notStartedProcess();
+				throw new Process\Exceptions\NotStartedProcessException($this);
 			}
 		}
+		return false;
 	}
 	/**
 	 * Returns if the process interrupted by anthor process.
@@ -191,7 +193,7 @@ class Process extends dbObject{
 	 */
 	protected function isInterrupted(): bool {
 		if (!$this->pid) {
-			throw new notStartedProcess();
+			throw new Process\Exceptions\NotStartedProcessException($this);
 		}
 		return cache::get("packages.base.process.".$this->pid.".interrupt") == 1;
 	}
@@ -203,7 +205,7 @@ class Process extends dbObject{
 	 */
 	protected function checkInterruption() {
 		if ($this->isInterrupted()) {
-			throw new InterruptedException();
+			throw new Process\Exceptions\InterruptedException();
 		}
 	}
 	/**
@@ -213,7 +215,7 @@ class Process extends dbObject{
 	 */
 	public function interrupt() {
 		if (!$this->pid) {
-			throw new notStartedProcess();
+			throw new Process\Exceptions\NotStartedProcessException($this);
 		}
 		cache::set("packages.base.process.".$this->pid.".interrupt", 1);
 	}
@@ -231,13 +233,13 @@ class Process extends dbObject{
 				return !$this->isRunning();
 		    }
         }else{
-			throw new notStartedProcess();
+			throw new Process\Exceptions\NotStartedProcessException($this);
 		}
         return false;
     }
 	protected function checkOS(){
 		if(self::getOS() != self::OS_NIX){
-			throw new OSSupport();
+			throw new Process\Exceptions\NotShellAccessException();
 		}
 		return true;
 	}

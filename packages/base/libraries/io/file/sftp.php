@@ -104,44 +104,45 @@ class Sftp extends File implements IStreamableFile {
 	public function getStat() {
 		return $this->getDriver()->stat($this->getPath());
 	}
-    public function serialize(){
+
+	public function __serialize(): array {
 		$driver = $this->getDriver();
 		$data = array(
 			'directory' => $this->directory,
 			'basename' => $this->basename
 		);
-		if($this->hostname){
+		if ($this->hostname) {
 			$data['hostname'] = $this->hostname;
-		}elseif($driver){
+		} elseif ($driver) {
 			$data['hostname'] = $driver->getSSH()->getHost();
 		}
 
-		if($this->port){
+		if ($this->port) {
 			$data['port'] = $this->port;
-		}elseif($driver){
+		} elseif ($driver) {
 			$data['port'] = $driver->getSSH()->getPort();
 		}
 
-		if($this->username){
+		if ($this->username) {
 			$data['username'] = $this->username;
-		}elseif($driver){
+		} elseif ($driver) {
 			$data['username'] = $driver->getSSH()->getUsername();
 		}
 
-		if($this->password){
+		if ($this->password) {
 			$data['password'] = $this->password;
-		}elseif($driver){
+		} elseif ($driver) {
 			$data['password'] = $driver->getSSH()->getPassword();
 		}
-        return serialize($data);
-    }
-    public function unserialize($data){
-		$data = unserialize($data);
-		$this->username = isset($data['username']) ? $data['username'] : null;
-		$this->password = isset($data['password']) ? $data['password'] : null;
-		$this->port = isset($data['port']) ? $data['port'] : null;
-		$this->hostname = isset($data['hostname']) ? $data['hostname'] : null;
-		$this->directory = isset($data['directory']) ? $data['directory'] : null;
-		$this->basename = isset($data['basename']) ? $data['basename'] : null;
-    }
+		return $data;
+	}
+
+	public function __unserialize(array $data): void {
+		$this->directory = $data['directory'] ?? null;
+		$this->basename = $data['basename'] ?? null;
+		$this->hostname = $data['hostname'] ?? null;
+		$this->port = $data['port'] ?? 21;
+		$this->username = $data['username'] ?? null;
+		$this->password = $data['password'] ?? null;
+	}
 }

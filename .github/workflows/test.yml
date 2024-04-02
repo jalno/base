@@ -1,0 +1,52 @@
+name: Test Jalno Base
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: true
+      matrix:
+        php: ['8.0', '8.1', '8.2']
+
+    name: PHP ${{ matrix.php }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Checkout jalno/PhpParser
+        uses: actions/checkout@v4
+        with:
+          repository: jalno/PhpParser
+          path: packages/PhpParser
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+
+      - name: Validate defaultClassMap.php
+        run: php -l packages/base/defaultClassMap.php
+
+      - name: Validate package.json
+        run: php -r 'json_decode(file_get_contents("packages/base/package.json"), false, 512, JSON_THROW_ON_ERROR);'
+
+      - name: Validate lang file langs/en_US.json
+        run: php -r 'json_decode(file_get_contents("packages/base/langs/en_US.json"), false, 512, JSON_THROW_ON_ERROR);'
+
+      - name: Validate lang file langs/fa_IR.json
+        run: php -r 'json_decode(file_get_contents("packages/base/langs/fa_IR.json"), false, 512, JSON_THROW_ON_ERROR);'
+
+      - name: PHPStan
+        uses: php-actions/phpstan@v3
+        with:
+          php_version: ${{ matrix.php }}
+          path: ./
+          configuration: packages/base/phpstan.neon

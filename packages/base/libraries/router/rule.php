@@ -2,7 +2,7 @@
 namespace packages\base\router;
 use packages\base\{router, options};
 
-class rule implements \Serializable {
+class Rule {
 	const post = 'post';
 	const get = 'get';
 	const put = 'put';
@@ -277,7 +277,7 @@ class rule implements \Serializable {
 		if (is_string($path)){
 			$path = explode("/", $path);
 		} elseif (!is_array($path)) {
-			throw new PathException($path);
+			throw new PathException($this, $path, 'path must be string or array');
 		}
 		$this->path = array();
 		$this->wildcards = 0;
@@ -382,7 +382,7 @@ class rule implements \Serializable {
 			return;
 		}
 		if (!in_array($scheme, array(self::http, self::https))) {
-			throw new SchemeException();
+			throw new SchemeException($this);
 		}
 		$this->schemes[] = $scheme;
 	}
@@ -397,7 +397,7 @@ class rule implements \Serializable {
 	public function addDomain(string $domain): void {
 		if (substr($domain, 1) == "/" and substr($domain, -1) == "/") {
 			if (@preg_match($domain, null) === false) {
-				throw new DomainException();
+				throw new DomainException($this);
 			}
 		} elseif(substr($domain, 0, 4) == 'www.'){
 			$domain = substr($domain, 4);
@@ -615,27 +615,15 @@ class rule implements \Serializable {
 		return $this->exceptions;
 	}
 
-	/**
-	 * make serializable 
-	 * 
-	 * @return string
-	 */
-	public function serialize(): string {
+	public function __serialize(): array {
 		$data = [];
 		foreach (['name', 'controller', 'methods', 'path', 'regex', 'domains', 'permissions', 'middlewares', 'absolute', 'schemes', 'exceptions', 'wildcards', 'dynamics'] as $key) {
 			$data[$key] = $this->{$key};
 		}
-        return serialize($data);
+		return $data;
 	}
-	
-	/**
-	 * make unserializable
-	 * 
-	 * @param string $serialized The string representation of the object.
-	 * @return void
-	 */
-    public function unserialize($serialized) {
-		$data = unserialize($serialized);
+
+	public function __unserialize(array $data): void {
 		foreach (['name', 'controller', 'methods', 'path', 'regex', 'domains', 'permissions', 'middlewares', 'absolute', 'schemes', 'exceptions', 'wildcards', 'dynamics'] as $key) {
 			$this->{$key} = $data[$key];
 		}

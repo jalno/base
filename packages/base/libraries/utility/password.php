@@ -1,12 +1,8 @@
 <?php
 namespace packages\base\utility;
 class password{
-	static function hash($string, $algo = PASSWORD_DEFAULT){
-		if(function_exists('password_hash')){
-			return password_hash($string, $algo);
-		}else{
-			return crypt($string);
-		}
+	public static function hash($string, $algo = PASSWORD_DEFAULT): string {
+        return password_hash($string, $algo);
 	}
 	static function verify($string, $hash){
 		if(function_exists('password_verify')){

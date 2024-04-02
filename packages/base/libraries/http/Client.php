@@ -3,6 +3,7 @@ namespace packages\base\http;
 
 use TypeError;
 use packages\base\{Json, IO\File};
+use packages\base\Exception;
 
 class Client {
 	private static $defaultOptions = array(

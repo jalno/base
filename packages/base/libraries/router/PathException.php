@@ -2,16 +2,8 @@
 namespace packages\base\router;
 
 class PathException extends RouterRuleException {
-	/** @var mixed wrong path */
-	private $path;
-
-	/**
-	 * @param mixed $path
-	 * @param string $message
-	 */
-	public function __construct($path, string $message){
-		$this->path = $path;
-		parent::__construct($message);
+	public function __construct(Rule $rule, private mixed $path, string $message) {
+		parent::__construct($rule, $message);
 	}
 
 	/**

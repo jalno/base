@@ -1,12 +1,11 @@
 <?php
 namespace packages\base\IO\directory;
 
-use packages\base\IO\file;
-use packages\base\IO\directory;
-use packages\base\IO\NotFoundException;
 use packages\base\Exception;
+use packages\base\IO\Directory;
+use packages\base\IO\File;
 
-class local extends directory{
+class Local extends Directory {
     public function size(): int{
         $size = 0;
         foreach($this->files(true) as $file){
@@ -152,15 +151,15 @@ class local extends directory{
 		return substr($this->getRealPath(), strlen($parent->getRealPath()) + 1);
 	}
 
-    public function serialize():string{
-		return serialize(array(
-			'directory' => $this->directory,
-			'basename' => $this->basename
-		));
+    public function __serialize(): array {
+        return array(
+            'directory' => $this->directory,
+            'basename' => $this->basename
+        );
     }
-    public function unserialize($data){
-		$data = unserialize($data);
-		$this->directory = isset($data['directory']) ? $data['directory'] : null;
-		$this->basename = isset($data['basename']) ? $data['basename'] : null;
+
+    public function __unserialize(array $data): void {
+        $this->directory = $data['directory'] ?? null;
+        $this->basename = $data['basename'] ?? null;
     }
 }

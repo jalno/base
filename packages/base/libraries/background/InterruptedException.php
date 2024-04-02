@@ -1,4 +1,8 @@
 <?php
 namespace packages\base;
-class InterruptedException extends \Exception {
+
+/**
+ * @deprecated use packages\base\Process\Exceptions\InterruptedException instead!
+ */
+class InterruptedException extends Exception {
 }

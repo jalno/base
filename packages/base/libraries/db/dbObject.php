@@ -69,7 +69,7 @@ use packages\base\{loader, db, json, Validator, Validator\IValidator, InputValid
  *
  * @property int|null $totalCount
  **/
-class dbObject implements \Serializable, IValidator {
+class DBObject implements IValidator {
 	private $connection = 'default';
 	/**
 	 * Working instance of MysqliDb created earlier
@@ -229,10 +229,13 @@ class dbObject implements \Serializable, IValidator {
 		}
 	}
 	public function __isset ($name) {
-		if (isset ($this->data[$name]))
+		if (isset ($this->data[$name])) {
 			return isset ($this->data[$name]);
-		if (property_exists ($this->db, $name))
+		}
+		if (property_exists ($this->db, $name)) {
 			return isset ($this->db->$name);
+		}
+		return false;
 	}
 	public function __unset ($name) {
 		unset ($this->data[$name]);
@@ -856,30 +859,29 @@ class dbObject implements \Serializable, IValidator {
 	public function getRelations(){
 		return(property_exists($this,'relations') ? $this->relations : array());
 	}
-	public function serialize() {
+	public function __serialize(): array {
 		$result = [];
-		if($this->connection != 'default'){
+		if ($this->connection != 'default') {
 			$result['@connection'] = $this->connection;
 		}
-		if(self::$recursivelySerialize){
+		if (self::$recursivelySerialize) {
 			$fields = $this->getFields();
 			$relations = $this->getRelations();
 			$jsonFields = property_exists($this, 'jsonFields') ? $this->jsonFields : [];
 			$arrayFields = property_exists($this, 'arrayFields') ? $this->arrayFields : [];
 			$serializeFields = property_exists($this, 'serializeFields') ? $this->serializeFields : [];
 			$arrayFields = array_merge($arrayFields,$jsonFields, $serializeFields );
-			foreach($this->data as $key => $value){
+			foreach ($this->data as $key => $value) {
 				if(!is_array($value) or (isset($fields[$key]) and in_array($key, $arrayFields)) or (isset($relations[$key]) and strtolower($relations[$key][0]) == 'hasone')){
 					$result[$key] = $value;
 				}
 			}
-		}else{
+		} else {
 			$result = array_merge($result, $this->toArray(false));
 		}
-		return serialize($result);
+		return $result;
     }
-    public function unserialize($data) {
-        $data = unserialize($data);
+    public function __unserialize(array $data): void {
 		$this->connection = isset($data['@connection']) ? $data['@connection'] : 'default';
 		if($this->connection == 'default'){
     		loader::requiredb();

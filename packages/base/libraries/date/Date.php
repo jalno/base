@@ -46,7 +46,7 @@ class Date implements date_interface {
 		$log->debug("check given timezone (" . $timezone . ") is valid?");
 		if (!in_array($timezone, DateTimeZone::listIdentifiers(DateTimeZone::ALL))) {
 			$log->reply()->fatal("is not valid");
-			throw new TimeZoneInvalidException($timezone);
+			throw new Date\TimeZoneNotValid($timezone);
 		} else {
 			$log->reply("is valid");
 		}
@@ -131,8 +131,8 @@ class Date implements date_interface {
 			if (($option = options::load('packages.base.date')) !== false) {
 				$log->reply($option);
 				$defaultOption = array_replace_recursive($defaultOption, $option);
-				$log->debug("set calendar to",$foption['calendar']);
-				self::setCanlenderName($foption['calendar']);
+				$log->debug("set calendar to",$defaultOption['calendar']);
+				self::setCanlenderName($defaultOption['calendar']);
 			} else{
 				$log->reply("Not defined");
 			}
@@ -213,7 +213,7 @@ class Date implements date_interface {
 			self::setDefaultcalendar();
 		}
 		if(!self::$calendar){
-			throw new NoCalendarException();
+			throw new Date\NoCalendarException();
 		}
 		self::$inited = true;
 	}

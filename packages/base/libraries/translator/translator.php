@@ -98,7 +98,7 @@ class translator{
 				foreach($phrases as $key => $phrase){
 					self::$langs[$code]->addPhrase($key, $phrase);
 				}
-			}catch(PhraseAlreadyExists $e){
+			}catch(translator\PhraseAlreadyExists $e){
 
 			}
 		}

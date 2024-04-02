@@ -1,6 +1,7 @@
 <?php
 namespace packages\base\IO;
-abstract class File extends Node implements \Serializable {
+
+abstract class File extends Node {
 	/**
 	 * @param callable(File\Local):mixed $callback
 	 */
@@ -35,6 +36,10 @@ abstract class File extends Node implements \Serializable {
 	abstract public function read(int $length = 0): string;
 	abstract public function write(string $data): bool;
 	abstract public function size(): int;
+
+	abstract public function __serialize(): array;
+	abstract public function __unserialize(array $data): void;
+
 	public function copyFrom(file $source): bool{
 		return $source->copyTo($this);
 	}

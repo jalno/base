@@ -13,14 +13,14 @@ class ruleMiddlewareException extends \Exception {
 }
 
 class RouterRuleException extends Exception {
-	/** @var packages\base\router\rule */
+	/** @var \packages\base\router\Rule */
 	private $rule;
 
 	/**
-	 * @param packages\base\router\rule $rule
+	 * @param \packages\base\router\Rule $rule
 	 * @param string $message
 	 */
-	public function __construct(rule $rule, string $message = ""){
+	public function __construct(Rule $rule, string $message = ""){
 		parent::__construct($message);
 		$this->rule = $rule;
 	}
@@ -28,9 +28,9 @@ class RouterRuleException extends Exception {
 	/**
 	 * Getter for rule
 	 * 
-	 * @return packages\base\router\rule 
+	 * @return \packages\base\router\rule 
 	 */
-	public function getRule(): rule {
+	public function getRule(): Rule {
 		return $this->rule;
 	}
 }

@@ -2,10 +2,9 @@
 namespace packages\base;
 
 use packages\base\views\form;
-use packages\base\views\FormError;
 use packages\base\response\file;
 
-class Response implements \Serializable {
+class Response {
 	protected $status;
 	protected $data;
 	protected $view;
@@ -189,15 +188,13 @@ class Response implements \Serializable {
 	public function forceDownload() {
 		$this->isAttachment = true;
 	}
-	public function serialize():string{
-		$result = [
+	public function __serialize(): array {
+		return [
 			'status' => $this->getStatus(),
 			'data' => $this->getData()
 		];
-		return serialize($result);
 	}
-	public function unserialize($data){
-		$data = unserialize($data);
+	public function __unserialize(array $data): void {
 		$this->setStatus($data['status']);
 		$this->setData($data['data']);
 	}
