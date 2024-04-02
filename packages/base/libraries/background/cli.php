@@ -18,6 +18,7 @@ class cli{
 	 * @return array
 	 */
     public static function getParameters($params){
+        $params = $params ?? [];
         $return = array();
         for($x = 0;$x!=count($params);$x++){
             if($x == 0)continue;

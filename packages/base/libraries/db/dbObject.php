@@ -69,7 +69,7 @@ use packages\base\{loader, db, json, Validator, Validator\IValidator, InputValid
  *
  * @property int|null $totalCount
  **/
-class dbObject implements IValidator {
+class DBObject implements IValidator {
 	private $connection = 'default';
 	/**
 	 * Working instance of MysqliDb created earlier
@@ -229,10 +229,13 @@ class dbObject implements IValidator {
 		}
 	}
 	public function __isset ($name) {
-		if (isset ($this->data[$name]))
+		if (isset ($this->data[$name])) {
 			return isset ($this->data[$name]);
-		if (property_exists ($this->db, $name))
+		}
+		if (property_exists ($this->db, $name)) {
 			return isset ($this->db->$name);
+		}
+		return false;
 	}
 	public function __unset ($name) {
 		unset ($this->data[$name]);

@@ -1,6 +1,7 @@
 <?php
 namespace packages\base\date;
 
+use packages\base\Exception;
 use packages\base\utility\safe;
 
 class hdate implements date_interface {
@@ -211,7 +212,7 @@ class hdate implements date_interface {
 					else $result .= $result1;
 					break;
 				case "U":
-					$result .= mktime();
+					$result .= mktime(date('H', $need), date('i', $need), date('s', $need), date('m', $need), date('d', $need), date('Y',$need));
 					break;
 				case "Z":
 					$result .= self::daysOfYear($hmonth, $hday, $hyear);
@@ -238,6 +239,7 @@ class hdate implements date_interface {
 		if (self::$umalqura && $julianday > self::umstartjd && $julianday < self::umendjd) {
 			$i = (int) (($julianday - 1948438) / 29.53056) - ((self::umstartyear - 1) * 12);
 			$mjd = $julianday - self::mjd_factor;
+			$umdata = self::getUmalquradata();
 			$umdata_count = count($umdata);
 			
 			for ($i = max(0, $i); $i < $umdata_count; $i++) {
@@ -335,7 +337,7 @@ class hdate implements date_interface {
 		list($year, $month, $day, $dayinyear) = self::gregorianToHijri($year, $month, $day);
 		return $dayinyear;
 	}
-	public static function monthname($month): string {
+	public static function monthname(string $month): string {
 		switch($month) {
 			case('01'):return('محرم');break;
 			case('02'):return('صفر');break;
@@ -350,6 +352,7 @@ class hdate implements date_interface {
 			case('11'):return('ذیقعده');break;
 			case('12'):return('ذیحجه');break;
 		}
+		throw new Exception('The given month is not valid!');
 	}
 	public static function mstart($month, $day, $year): string {
 		list( $hyear, $hmonth, $hday ) = self::gregorianToHijri($year, $month, $day);
@@ -357,7 +360,7 @@ class hdate implements date_interface {
 		$timestamp = mktime(0, 0, 0, $month, $day, $year);
 		return date("w", $timestamp);
 	}
-	public static function short_monthname($month): string {
+	public static function short_monthname(string $month): string {
 		switch($month) {
 			case('01'):return('مح');break;
 			case('02'):return('صف');break;
@@ -372,6 +375,7 @@ class hdate implements date_interface {
 			case('11'):return('ذق');break;
 			case('12'):return('ذح');break;
 		}
+		throw new Exception('The given month is not valid!');
 	}
 	public static function mktime($hour = null, $minute = null, $second = null , $month = null, $day = null, $year = null): int {
 		list( $year, $month, $day ) = self::hijriToGregorian($year, $month, $day);

@@ -277,7 +277,7 @@ class Rule {
 		if (is_string($path)){
 			$path = explode("/", $path);
 		} elseif (!is_array($path)) {
-			throw new PathException($path);
+			throw new PathException($this, $path, 'path must be string or array');
 		}
 		$this->path = array();
 		$this->wildcards = 0;
@@ -382,7 +382,7 @@ class Rule {
 			return;
 		}
 		if (!in_array($scheme, array(self::http, self::https))) {
-			throw new SchemeException();
+			throw new SchemeException($this);
 		}
 		$this->schemes[] = $scheme;
 	}
@@ -397,7 +397,7 @@ class Rule {
 	public function addDomain(string $domain): void {
 		if (substr($domain, 1) == "/" and substr($domain, -1) == "/") {
 			if (@preg_match($domain, null) === false) {
-				throw new DomainException();
+				throw new DomainException($this);
 			}
 		} elseif(substr($domain, 0, 4) == 'www.'){
 			$domain = substr($domain, 4);

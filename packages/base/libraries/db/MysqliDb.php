@@ -191,6 +191,8 @@ class MysqliDb
 	 */
 	protected $_lockInShareMode = false;
 
+	protected $_transaction_in_progress = false;
+
 	/**
 	 * Key field for Map()'ed result array
 	 * @var string
@@ -387,6 +389,8 @@ class MysqliDb
 		$this->_lastInsertId = null;
 		$this->_updateColumns = null;
 		$this->_mapKey = null;
+
+		return $this;
 	}
 
 	/**
@@ -970,7 +974,7 @@ class MysqliDb
      *
      * @return dbWrapper
      */
-    public function joinOrWhere($whereJoin, $whereProp, $whereValue = 'DBNULL', $operator = '=', $cond = 'AND')
+    public function joinOrWhere($whereJoin, $whereProp, $whereValue = 'DBNULL', $operator = '=')
     {
         return $this->joinWhere($whereJoin, $whereProp, $whereValue, $operator, 'OR');
     }
@@ -1997,7 +2001,7 @@ class MysqliDb
 	 * @uses mysqli->commit();
 	 * @uses mysqli->autocommit(true);
 	 */
-	public function commit()
+	public function commit(): bool
 	{
 		$result = $this->mysqli()->commit();
 		$this->_transaction_in_progress = false;
@@ -2011,7 +2015,7 @@ class MysqliDb
 	 * @uses mysqli->rollback();
 	 * @uses mysqli->autocommit(true);
 	 */
-	public function rollback()
+	public function rollback(): bool
 	{
 		$result = $this->mysqli()->rollback();
 		$this->_transaction_in_progress = false;

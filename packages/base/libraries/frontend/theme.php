@@ -1,6 +1,8 @@
 <?php
 namespace packages\base\frontend;
+
 use packages\base\{options, router, view, IO, Autoloader, Packages, Cache};
+use packages\base\Exception;
 
 class theme {
 

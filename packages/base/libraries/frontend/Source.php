@@ -11,8 +11,7 @@ class Source {
 
 	/**
 	 * construct a theme from its package.json
-	 * 
-	 * @param packages\base\IO\directory $home
+	 *
 	 * @throws packages\base\IO\NotFoundException if cannot find theme.json in the home directory
 	 * @throws packages\base\IO\SourceConfigException if source doesn't have name
 	 * @throws packages\base\IO\SourceConfigException if event listener was invalid
@@ -66,7 +65,7 @@ class Source {
 		return $source;
 	}
 
-	/** @var packages\base\IO\directory */
+	/** @var \packages\base\IO\Directory */
 	private $home;
 
 	/** @var string */
@@ -79,6 +78,9 @@ class Source {
 	private $bootstrap;
 
 	/** @var array */
+	private $views = [];
+
+	/** @var array */
 	private $assets = [];
 	
 	/** @var array */
@@ -86,10 +88,9 @@ class Source {
 	
 	/**
 	 * Get home directory of source.
-	 * 
-	 * @return IO\directory
+	 *
 	 */
-	public function getHome(): IO\directory{
+	public function getHome(): IO\Directory {
 		return $this->home;
 	}
 
@@ -103,19 +104,17 @@ class Source {
 	}
 	/**
 	 * Get file
-	 * 
-	 * @return packages\base\IO\file
+	 *
 	 */
-	public function getFile(string $path): IO\file {
+	public function getFile(string $path): IO\File {
 		return $this->home->file($path);
 	}
 
 	/**
 	 * Get theme.json file
-	 * 
-	 * @return packages\base\IO\file
+	 *
 	 */
-	public function getConfigFile(): IO\file {
+	public function getConfigFile(): IO\File {
 		return $this->getFile("theme.json");
 	}
 
@@ -169,7 +168,7 @@ class Source {
 				$this->addNodePackageAsset($asset);
 				break;
 			default:
-				throw new SourceAssetException("Unkown asset type", $this->path);
+				throw new SourceAssetException("Unkown asset type", $this->getPath());
 		}
 	}
 
@@ -199,7 +198,7 @@ class Source {
 		} elseif (isset($asset['inline'])) {
 			$assetData['inline'] = $asset['inline'];
 		} else {
-			throw new SourceAssetException("No file and no Code for asset",$this->path);
+			throw new SourceAssetException("No file and no Code for asset", $this->getPath());
 		}
 		$this->assets[] = $assetData;
 	}
@@ -214,11 +213,11 @@ class Source {
 	 */
 	private function addNodePackageAsset(array $asset): void {
 		if (!isset($asset['name'])) {
-			throw new SourceAssetException("No node package name",$this->path);
+			throw new SourceAssetException("No node package name",$this->getPath());
 		}
 		if (isset($asset['version'])) {
 			if (!preg_match("/^[\^\>\=\~\<\*]*[\\d\\w\\.\\-]+$/", $asset['version'])) {
-				throw new SourceAssetException("invalid node package version",$this->path);
+				throw new SourceAssetException("invalid node package version",$this->getPath());
 			}
 		}
 		$this->assets[] = $asset;
@@ -283,7 +282,7 @@ class Source {
 	/**3 */
 	public function addView($view){
 		if(isset($view['name'])){
-			if(!isset($view['file']) or is_file("{$this->path}/{$view['file']}")){
+			if(!isset($view['file']) or is_file("{$this->getPath()}/{$view['file']}")){
 				if(substr($view['name'], 0, 1) == "\\"){
 					$view['name'] = substr($view['name'], 1);
 				}
@@ -302,10 +301,10 @@ class Source {
 				$this->views[] = $newview;
 
 			}else{
-				throw new SourceViewFileException($view['file'], $this->path);
+				throw new SourceViewFileException($view['file'], $this->getPath());
 			}
 		}else{
-			throw new SourceViewException("View name is not set", $this->path);
+			throw new SourceViewException("View name is not set", $this->getPath());
 		}
 	}
 

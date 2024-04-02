@@ -59,7 +59,7 @@ class FormError extends Error {
 	 * 
 	 * @return mixed
 	 */
-	public function jsonSerialize() {
+	public function jsonSerialize(): array {
 		$data = parent::jsonSerialize();
 		if ($this->input) {
 			$data['input'] = $this->input;
