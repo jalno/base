@@ -3,7 +3,7 @@ namespace packages\base\Storage;
 
 use packages\base\{IO\Node, IO\Directory, Router, Exception, Storage};
 
-class LocalStorage extends Storage implements \Serializable {
+class LocalStorage extends Storage {
 
 	/**
 	 * @param array{"@class":class-string<LocalStorage>,"root":string,"type":"public"|"protected"|"private","@relative-to"?:string}
@@ -47,15 +47,14 @@ class LocalStorage extends Storage implements \Serializable {
 		return $prefix . '/' . $node->getPath();
 	}
 
-	public function serialize(): string {
-		return serialize(array(
+	public function __serialize(): array {
+		return array(
 			"type" => $this->type,
 			"root" => $this->root->getPath(),
-		));
+		);
 	}
 
-	public function unserialize($serialized): void {
-		$data = unserialize($serialized);
+	public function __unserialize(array $data): void {
 		$this->type = $data["type"];
 		$this->root = new Directory\Local($data["root"]);
 	}
