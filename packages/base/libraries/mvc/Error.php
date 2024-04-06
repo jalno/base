@@ -83,7 +83,7 @@ class Error extends Exception implements \JsonSerializable
         return $this->jsonSerialize();
     }
 
-    public function unserialize(array $data): void
+    public function __unserialize(array $data): void
     {
         $this->type = $data['type'];
         $this->traceMode = $data['traceMode'] ?? self::NO_TRACE;

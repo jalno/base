@@ -453,7 +453,7 @@ class Package
      *
      * @param array $data the representation of the object
      */
-    public function unserialize(array $data): void
+    public function __unserialize(array $data): void
     {
         $this->name = $data['name'];
         $this->home = new IO\directory\local("packages/{$data['name']}");
