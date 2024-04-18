@@ -52,7 +52,7 @@ jobs:
           configuration: packages/base/phpstan.neon
 
       - name: Install PHP CodeStyle Fixer
-        run: composer global require friendsofphp/php-cs-fixer:v3.22.0
+        run: composer global require friendsofphp/php-cs-fixer:^3
 
       - name: PHP CodeStyle Fixer
         run: php-cs-fixer fix --config packages/base/.php-cs-fixer.php --using-cache=no --dry-run -v
