@@ -14,9 +14,9 @@ try {
 
 	$api = Loader::sapi();
 	if ($api == Loader::cgi) {
-		Http::set();
+		HTTP::set();
 	} elseif ($api == Loader::cli) {
-		Cli::set();
+		CLI::set();
 	}
 
 	Loader::options();
