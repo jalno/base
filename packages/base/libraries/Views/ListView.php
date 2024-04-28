@@ -6,7 +6,7 @@ use packages\base\DB\DBObject;
 use packages\base\View;
 use packages\base\Views\Traits\ListTrait;
 
-class listview extends View
+class ListView extends View
 {
     use ListTrait;
 

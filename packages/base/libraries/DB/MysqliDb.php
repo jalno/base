@@ -1440,7 +1440,7 @@ class MysqliDb
                 foreach ($this->_joinAnd[$joinStr] as $join_and_cond) {
                     list($concat, $varName, $operator, $val) = $join_and_cond;
                     $this->_query .= ' '.$concat.' ';
-                    if (is_object($varName) and $varName instanceof parenthesis) {
+                    if (is_object($varName) and $varName instanceof Parenthesis) {
                         $this->_query .= ' (';
                         $condis = $varName->getWheres();
                         $this->_buildCondition(null, $condis);
@@ -1647,7 +1647,7 @@ class MysqliDb
         foreach ($conditions as $cond) {
             list($concat, $varName, $operator, $val) = $cond;
             $this->_query .= ' '.$concat.' ';
-            if (is_object($varName) and $varName instanceof parenthesis) {
+            if (is_object($varName) and $varName instanceof Parenthesis) {
                 $this->_query .= '(';
                 $condis = $varName->getWheres();
                 $this->_buildCondition(null, $condis);
@@ -2248,7 +2248,7 @@ class MysqliDb
 }
 
 // END class
-class parenthesis
+class Parenthesis
 {
     protected $_where = [];
 
