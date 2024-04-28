@@ -2,7 +2,6 @@
 
 namespace packages\base\Frontend;
 
-
 class SourceAssetException extends \Exception
 {
     private $source;

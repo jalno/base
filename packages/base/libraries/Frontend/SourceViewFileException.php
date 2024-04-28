@@ -2,7 +2,6 @@
 
 namespace packages\base\Frontend;
 
-
 class SourceViewFileException extends \Exception
 {
     private $viewfile;

@@ -19,4 +19,3 @@ class PermissionException extends Exception
         return $this->permission;
     }
 }
-

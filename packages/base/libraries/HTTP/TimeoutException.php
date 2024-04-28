@@ -2,8 +2,6 @@
 
 namespace packages\base\HTTP;
 
-use packages\base\Exception;
-
 class TimeoutException extends \Exception
 {
     private $request;

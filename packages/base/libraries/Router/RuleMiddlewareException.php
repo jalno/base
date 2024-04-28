@@ -2,8 +2,6 @@
 
 namespace packages\base\Router;
 
-use packages\base\Exception;
-
 class RuleMiddlewareException extends \Exception
 {
     private $middleware;

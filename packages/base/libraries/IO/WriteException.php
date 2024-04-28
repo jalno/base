@@ -2,7 +2,6 @@
 
 namespace packages\base\IO;
 
-
 class WriteException extends Exception
 {
     private $source;

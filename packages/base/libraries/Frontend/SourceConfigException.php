@@ -2,7 +2,6 @@
 
 namespace packages\base\Frontend;
 
-
 class SourceConfigException extends \Exception
 {
     private $source;
