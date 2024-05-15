@@ -55,7 +55,7 @@ class Client
         if ($thisOptions['json']) {
             $thisOptions['headers']['content-type'] = 'application/json; charset=UTF-8';
             if (!$thisOptions['body']) {
-                $thisOptions['body'] = json\encode($thisOptions['json']);
+                $thisOptions['body'] = Json\encode($thisOptions['json']);
             }
         }
         if ($thisOptions['form_params']) {

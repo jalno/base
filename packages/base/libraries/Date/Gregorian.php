@@ -2,7 +2,7 @@
 
 namespace packages\base\Date;
 
-class Gregorian implements date_interface
+class Gregorian implements DateInterface
 {
     public static $weekDays = [1, 2, 3, 4, 5, 6, 0];
 

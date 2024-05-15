@@ -4,7 +4,7 @@ namespace packages\base\Date;
 
 use packages\base\Utility\Safe;
 
-class Jdate implements date_interface
+class Jdate implements DateInterface
 {
     public static $weekDays = [6, 0, 1, 2, 3, 4, 5];
 

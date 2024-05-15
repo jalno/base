@@ -3,9 +3,9 @@
 namespace packages\base;
 
 use packages\base\Date\CalendarNotExist;
-use packages\base\Date\date_interface;
+use packages\base\Date\DateInterface;
 
-class Date implements date_interface
+class Date implements DateInterface
 {
     public static $presetsFormats = [
         'Q' => 'm/d/Y',

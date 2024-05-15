@@ -2,7 +2,7 @@
 
 namespace packages\base\Date;
 
-interface date_interface
+interface DateInterface
 {
     public static function format($format, $timestamp = null);
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace packages\base\access\Package;
+namespace packages\base\Access\Package;
 
 function controller(&$package, $controller)
 {

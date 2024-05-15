@@ -5,7 +5,7 @@ namespace packages\base\Date;
 use packages\base\Exception;
 use packages\base\Utility\Safe;
 
-class Hdate implements date_interface
+class Hdate implements DateInterface
 {
     /**
      * the Um Al-Qura Calendar start year.
