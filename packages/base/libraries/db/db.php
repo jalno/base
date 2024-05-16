@@ -65,20 +65,16 @@ class DB
 
     public static function has_connection($conname = 'default'): bool
     {
-        if (!isset(self::$driver[$conname])) {
-            Loader::connectdb();
-        }
-
         return isset(self::$driver[$conname]);
     }
 
     public static function connection($conname = 'default'): MysqliDb|false
     {
-        if (self::has_connection($conname)) {
-            return self::$driver[$conname];
+        if (!self::has_connection($conname)) {
+            Loader::connectdb($conname);
         }
 
-        return false;
+        return self::$driver[$conname] ?? false;
     }
 
     public static function getConnectionOrFail($conname = 'default'): MysqliDb
