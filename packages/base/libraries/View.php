@@ -332,7 +332,7 @@ class View
     /**
      * Setter for source.
      */
-    public function setSource(frontend\Source $source): void
+    public function setSource(Frontend\Source $source): void
     {
         $this->source = $source;
         Theme::setPrimarySource($source);

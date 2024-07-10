@@ -4,7 +4,7 @@ chdir(__DIR__);
 if (!is_file("packages/base/libraries/config/config.php") or !is_readable("packages/base/libraries/config/config.php")){
 	echo("FATAL ERROR\n");
 }
-
+require __DIR__ . "/vendor/autoload.php";
 require_once("packages/base/libraries/config/config.php");
 require_once("packages/base/libraries/loader/loader.php");
 

@@ -3,10 +3,10 @@
 namespace packages\base\IO\Drivers;
 
 use packages\base\Exception;
-use packages\base\IO\Drivers\Ftp\AuthException;
-use packages\base\IO\Drivers\Ftp\CannectionException;
-use packages\base\IO\Drivers\Ftp\ChangeDirException;
-use packages\base\IO\Drivers\Ftp\NotReady;
+use packages\base\IO\Drivers\FTP\AuthException;
+use packages\base\IO\Drivers\FTP\CannectionException;
+use packages\base\IO\Drivers\FTP\ChangeDirException;
+use packages\base\IO\Drivers\FTP\NotReady;
 
 class FTP
 {

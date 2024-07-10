@@ -2,10 +2,10 @@
 
 namespace packages\base;
 
-use packages\PhpParser\Node;
-use packages\PhpParser\NodeTraverser;
-use packages\PhpParser\NodeVisitorAbstract;
-use packages\PhpParser\ParserFactory;
+use PhpParser\Node;
+use PhpParser\NodeTraverser;
+use PhpParser\NodeVisitorAbstract;
+use PhpParser\ParserFactory;
 
 class AutoLoader
 {

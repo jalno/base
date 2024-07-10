@@ -19,15 +19,4 @@ trait ViewEvent
         return $this->view;
     }
 }
-class BeforeLoad extends Event
-{
-    use ViewEvent;
-}
-class AfterLoad extends Event
-{
-    use ViewEvent;
-}
-class AfterOutput extends Event
-{
-    use ViewEvent;
-}
+
