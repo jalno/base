@@ -9,19 +9,27 @@
         "php": "^8.1",
         "nikic/php-parser": "^5.1"
     },
+    "require-dev": {
+        "phpunit/phpunit": "^11"
+    },
     "autoload": {
         "psr-4": {
-            "packages\\base\\": ["libraries/"]
+            "packages\\base\\": ["src/"]
         },
         "files": [
-            "libraries/io/io.php",
-            "libraries/utility/utility.php",
-            "libraries/json/encode.php",
-            "libraries/json/encode.php",
-            "libraries/json/decode.php",
-            "libraries/url.php",
-            "libraries/translator/t.php"
+            "src/IO/Directories.php",
+            "src/IO/IO.php",
+            "src/Utility/Utility.php",
+            "src/Json/encode.php",
+            "src/Json/decode.php",
+            "src/url.php",
+            "src/Translator/t.php"
         ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "packages\\base\\tests\\": ["tests/"]
+        }
     },
     "extra": {
         "jalno": {
