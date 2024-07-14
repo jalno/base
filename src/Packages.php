@@ -2,43 +2,76 @@
 
 namespace packages\base;
 
+/**
+ * @method static void register(Package $package)
+ * @method static Package|null package(string $name)
+ * @method static Package[] get(string[] $name)
+ * @method static void registerTranslates(string $code)
+ */
 class Packages
 {
-    /** @var package[] */
-    private static $actives = [];
+    private static ?self $instance;
+
+    public static function getInstance(): self
+    {
+        if (!isset(self::$instance)) {
+            self::$instance = new self();
+        }
+
+        return self::$instance;
+    }
+
+    public static function hasInstance(): bool
+    {
+        return isset(self::$instance);
+    }
+
+    public static function clearInstance(): void
+    {
+        self::$instance = null;
+    }
+
+    public static function __callStatic($name, $arguments)
+    {
+        return call_user_func_array([self::getInstance(), $name], $arguments);
+    }
+
+
+    /**
+     * @var Package[]
+     */
+    private array $items = [];
 
     /**
      * Register a new package.
-     *
-     * @param package
      */
-    public static function register(Package $package): void
+    public function register(Package $package): void
     {
-        self::$actives[$package->getName()] = $package;
+        $this->items[$package->getName()] = $package;
     }
 
     /**
      * Return package by search its name.
      */
-    public static function package(string $name): ?Package
+    public function package(string $name): ?Package
     {
-        return self::$actives[$name] ?? null;
+        return $this->items[$name] ?? null;
     }
 
     /**
-     * get list of active packages.
+     * Get list of active packages.
      *
      * @param string[] $names
      *
      * @return Package[]
      */
-    public static function get($names = []): array
+    public function get(array $names = []): array
     {
         if (empty($names)) {
-            return self::$actives;
+            return $this->items;
         }
         $return = [];
-        foreach (self::$actives as $name => $package) {
+        foreach ($this->items as $name => $package) {
             if (in_array($name, $names)) {
                 $return[] = $package;
             }
@@ -47,9 +80,9 @@ class Packages
         return $return;
     }
 
-    public static function registerTranslates(string $code)
+    public function registerTranslates(string $code): void
     {
-        foreach (self::$actives as $package) {
+        foreach ($this->items as $package) {
             $package->registerTranslates($code);
         }
     }
