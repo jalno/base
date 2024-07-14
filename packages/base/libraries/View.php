@@ -368,7 +368,6 @@ class View
             return;
         }
 
-        Theme::loadViews();
         (new BeforeLoad($this))->trigger();
         $this->dynamicData()->trigger();
         if (method_exists($this, '__beforeLoad')) {
@@ -440,16 +439,13 @@ class View
             }
             $this->file = $this->source->getFile($this->file);
         } else {
-            $this->file = $this->source->getHTMLFile(get_class($this));
-            if ($this->file) {
-                return;
-            }
             $reflection = new \ReflectionClass(get_class($this));
-            $thisFile = $reflection->getFileName();
-            $sourceHome = $this->source->getHome()->getRealPath();
-            $file = substr($thisFile, strlen($sourceHome) + 1);
-            $file = $this->source->getFile('html'.substr($file, strpos($file, '/')));
-            $this->file = $file;
+            $filename = $reflection->getFileName();
+            $needle = DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR;
+
+            if (($pos = stripos($filename, $needle)) !== false) {
+                $this->file = $this->source->getHome()->file("html" . DIRECTORY_SEPARATOR . substr($filename, $pos + strlen($needle)));
+            }
         }
         if ($this->file and !$this->file->exists()) {
             throw new IO\NotFoundException($this->file);

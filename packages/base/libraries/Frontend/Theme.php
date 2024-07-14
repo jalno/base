@@ -2,7 +2,6 @@
 
 namespace packages\base\Frontend;
 
-use packages\base\AutoLoader;
 use packages\base\Cache;
 use packages\base\Exception;
 use packages\base\Options;
@@ -12,10 +11,10 @@ use packages\base\View;
 
 class Theme
 {
-    /** @var packages\base\frontend\Source[] */
+    /** @var Source[] */
     private static $sources = [];
 
-    /** @var Packages\base\frontend\Source|null */
+    /** @var Source|null */
     private static $primarySource;
 
     /**
@@ -23,31 +22,16 @@ class Theme
      *
      * @param string $viewName [parent] class name in lower case
      *
-     * @return array|null array will contain "name"(string), "source"(packages\base\frontend\Source)
+     * @return array|null array will contain "name"(string), "source"(Source)
      */
-    public static function locate(string $viewName): ?array
+    public static function locate(string $viewName): array
     {
-        $viewName = ltrim(strtolower($viewName), '\\');
-        $parentList = self::findViewParentList();
-        $class = null;
-        while (true) {
-            if (!isset($parentList[$viewName])) {
-                return null;
-            }
-            $class = $parentList[$viewName];
-            if (!isset($class['children']) or !$class['children']) {
-                break;
-            }
-            $viewName = $class['children'][0];
-        }
+        $reflection = new \ReflectionClass($viewName);
+        $filename = $reflection->getFilename();
 
-        if ('themes\\' != substr($viewName, 0, 7)) {
-            return null;
-        }
 
         foreach (self::$sources as $source) {
-            $path = $source->getHome()->getPath().'/';
-            if (substr($class['file'], 0, strlen($path)) != $path) {
+            if (!str_starts_with($filename, $source->getHome()->getPath().DIRECTORY_SEPARATOR)) {
                 continue;
             }
 
@@ -57,7 +41,8 @@ class Theme
             ];
         }
 
-        return null;
+        throw new Exception("Cannot find source of '{$viewName}'");
+
     }
 
     /**
@@ -92,7 +77,7 @@ class Theme
     /**
      * Set primary source.
      *
-     * @param Packages\base\frontend\Source $source
+     * @param Source $source
      */
     public static function setPrimarySource(Source $source): void
     {
@@ -102,7 +87,7 @@ class Theme
     /**
      * Append a frontend source.
      *
-     * @param Packages\base\frontend\Source $source
+     * @param Source $source
      */
     public static function addSource(Source $source): void
     {
@@ -138,7 +123,7 @@ class Theme
     /**
      * Find frontend source by home directory path.
      *
-     * @return Packages\base\frontend\Source|null
+     * @return Source|null
      */
     public static function byPath(string $path): ?Source
     {
@@ -154,7 +139,7 @@ class Theme
     /**
      * Find frontend sources by given name.
      *
-     * @return packages\base\frontend\Source[]
+     * @return Source[]
      */
     public static function byName(string $name): array
     {
@@ -171,69 +156,11 @@ class Theme
     /**
      * Getter for all sources.
      *
-     * @return packages\base\frontend\Source[]
+     * @return Source[]
      */
     public static function get(): array
     {
         return self::$sources;
-    }
-
-    /**
-     * Call onSourceLoad() method of all views.
-     */
-    public static function loadViews(): void
-    {
-        foreach (array_keys(self::findViewParentList()) as $class) {
-            if ('themes\\' == substr($class, 0, 7) and method_exists($class, 'onSourceLoad')) {
-                $class::onSourceLoad();
-            }
-        }
-    }
-
-    /**
-     * Find tree of parent list of defined classes which is extends packages\base\view.
-     */
-    private static function findViewParentList(): array
-    {
-        static $tree;
-        if (isset($tree) and $tree) {
-            return $tree;
-        }
-        $useCache = 'production' == Options::get('packages.base.env');
-        $tree = Cache::get('packages.base.frontend.theme.viewParentList');
-        if ($tree) {
-            return $tree;
-        }
-        $parentList = AutoLoader::getParentList($useCache);
-
-        $views = [View::class];
-        $tree = [];
-        for ($x = 0, $l = count($views); $x < $l; ++$x) {
-            if (!isset($parentList[$views[$x]])) {
-                throw new Exception('cannot find '.View::class.' in parent list');
-            }
-            $tree[$views[$x]] = $parentList[$views[$x]];
-            if (isset($parentList[$views[$x]]['children'])) {
-                $l += count($parentList[$views[$x]]['children']);
-                $views = array_merge($views, $parentList[$views[$x]]['children']);
-            }
-        }
-        $packages = [];
-        $x = 0;
-        foreach (Packages::get() as $package) {
-            $packages[$package->getName()] = $x++;
-        }
-        uasort($tree, function ($a, $b) use ($packages) {
-            $pA = self::getPackage($a['file']);
-            $pB = self::getPackage($b['file']);
-
-            return $packages[$pA] - $packages[$pB];
-        });
-        if ($tree and $useCache) {
-            Cache::set('packages.base.frontend.theme.viewParentList', $tree);
-        }
-
-        return $tree;
     }
 
     private static function getPackage(string $file): string

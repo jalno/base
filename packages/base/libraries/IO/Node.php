@@ -13,14 +13,14 @@ abstract class Node
     {
         $this->basename = basename($path);
         $this->directory = dirname($path);
-        if ('/' === $this->directory) {
+        if (DIRECTORY_SEPARATOR === $this->directory) {
             $this->directory = '';
         }
     }
 
     public function getPath(): string
     {
-        return $this->directory.'/'.$this->basename;
+        return $this->directory.DIRECTORY_SEPARATOR.$this->basename;
     }
 
     abstract public function rename(string $newName): bool;
@@ -40,7 +40,7 @@ abstract class Node
         if ($this->getPath() === $parent->getPath()) {
             return false;
         }
-        $base = $parent->getPath().'/';
+        $base = $parent->getPath().DIRECTORY_SEPARATOR;
 
         return substr($this->getPath(), 0, strlen($base)) == $base;
     }

@@ -2,9 +2,6 @@
 
 namespace packages\base;
 
-/**
- * user class must have prependNamespaceIfNeeded(string) method.
- */
 trait ListenerContainerTrait
 {
     /** @var array */
@@ -19,8 +16,8 @@ trait ListenerContainerTrait
     public function addEvent(string $event, string $listener): void
     {
         $event = [
-            'name' => $this->prependNamespaceIfNeeded($event),
-            'listener' => $this->prependNamespaceIfNeeded($listener),
+            'name' => $event,
+            'listener' => $listener,
         ];
         $this->events[] = $event;
     }

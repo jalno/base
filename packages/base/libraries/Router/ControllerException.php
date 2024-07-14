@@ -4,12 +4,9 @@ namespace packages\base\Router;
 
 class ControllerException extends RouterRuleException
 {
-    /** @var string */
-    private $controller;
 
-    public function __construct(string $controller)
+    public function __construct(public readonly string $controller)
     {
-        $this->controller = $controller;
     }
 
     /**

@@ -15,7 +15,17 @@
         },
         "files": [
             "libraries/io/io.php",
-            "libraries/utility/utility.php"
+            "libraries/utility/utility.php",
+            "libraries/json/encode.php",
+            "libraries/json/encode.php",
+            "libraries/json/decode.php",
+            "libraries/url.php",
+            "libraries/translator/t.php"
         ]
+    },
+    "extra": {
+        "jalno": {
+            "manifest": "package.json"
+        }
     }
 }

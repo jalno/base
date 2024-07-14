@@ -72,4 +72,13 @@ class Options
 
         return null;
     }
+
+    public static function fromFile(string $file): void {
+        $options = require $file;
+        if (isset($options) and is_array($options)) {
+            foreach ($options as $key => $value) {
+                self::set($key, $value);
+            }
+        }
+    }
 }

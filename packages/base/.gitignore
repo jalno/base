@@ -1,1 +1,15 @@
-/vendor
+/vendor/
+storage/session/*
+.php-cs-fixer.cache
+storage/private/cache/*
+storage/protected/logs/*
+storage/public/frontend/*
+storage/private/frontend/*
+storage/private/sessions/*
+storage/private/http_client_cookies/*
+!storage/private/cache/.gitkeep
+!storage/private/sessions/.gitkeep
+!storage/protected/logs/.gitkeep
+!storage/public/frontend/.gitkeep
+!storage/private/http_client_cookies/.gitkeep
+!storage/private/frontend/webpack.config.js

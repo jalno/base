@@ -6,17 +6,15 @@ use packages\base\Storage\LocalStorage;
 
 class Package
 {
-    use AutoloadContainerTrait;
     use LanguageContainerTrait;
     use ListenerContainerTrait;
 
     /**
      * construct a package from its package.json.
      *
-     * @param string $name name of directory in packages directory
+     * @param string $path path of directory in packages directory
      *
      * @throws IO\NotFoundException         if cannot find package.json in package directory
-     * @throws json\JsonException           {@see json\decode()}
      * @throws IO\NotFoundException         {@see package::addFrontend()}
      * @throws IO\NotFoundException         {@see package::addLang()}
      * @throws translator\LangAlreadyExists {@see package::addLang()}
@@ -24,22 +22,16 @@ class Package
      * @throws PackageConfigException       if package.json file wasn't an array
      * @throws PackageConfigException       if event hasn't "name" or "listener" indexes
      */
-    public static function fromName(string $name): self
+    public static function fromManifest(string $name, IO\File\Local $manifest): self
     {
-        $configFile = new IO\File\Local("packages/{$name}/package.json");
-        if (!$configFile->exists()) {
-            throw new IO\NotFoundException($configFile);
+        if (!$manifest->exists()) {
+            throw new IO\NotFoundException($manifest);
         }
-        $config = json\decode($configFile->read());
+        $config = json_decode($manifest->read(), true);
         if (!is_array($config)) {
             throw new PackageConfigException($name, 'config file is not an array');
         }
-        $package = new static($name);
-        if (isset($config['dependencies'])) {
-            foreach ($config['dependencies'] as $dependency) {
-                $package->addDependency($dependency);
-            }
-        }
+        $package = new static($name, $manifest->getDirectory());
         if (isset($config['frontend'])) {
             if (!is_array($config['frontend'])) {
                 $config['frontend'] = [$config['frontend']];
@@ -59,9 +51,6 @@ class Package
         if (isset($config['routing'])) {
             $package->setRouting($config['routing']);
         }
-        if (isset($config['autoload'])) {
-            $package->setAutoload($config['autoload']);
-        }
         if (isset($config['events'])) {
             foreach ($config['events'] as $event) {
                 if (!isset($event['name'], $event['listener'])) {
@@ -78,7 +67,7 @@ class Package
                 $package->setStorage($name, $storage);
             }
         }
-        $ignores = ['permissions', 'dependencies', 'frontend', 'languages', 'bootstrap', 'autoload', 'events', 'routing'];
+        $ignores = ['permissions', 'frontend', 'languages', 'bootstrap', 'events', 'routing'];
         foreach ($config as $key => $value) {
             if (!in_array($key, $ignores)) {
                 $package->setOption($key, $value);
@@ -87,12 +76,6 @@ class Package
 
         return $package;
     }
-
-    /** @var string */
-    private $name;
-
-    /** @var IO\Directory */
-    private $home;
 
     /** @var IO\Directory[] */
     private $frontends = [];
@@ -103,43 +86,15 @@ class Package
     /** @var IO\File|null */
     private $routing;
 
-    /** @var string[] */
-    private $dependencies = [];
-
     /** @var array */
     private $options = [];
 
     /** @var array<string,Storage> */
     private $storages = [];
 
-    /**
-     * Getter for name of package.
-     */
-    public function getName(): string
-    {
+
+    public function getName(): string {
         return $this->name;
-    }
-
-    /**
-     * Save anthor package name as dependency.
-     *
-     * @param string $dependency must be a valid package name
-     */
-    public function addDependency(string $dependency): void
-    {
-        if (!in_array($dependency, $this->dependencies)) {
-            $this->dependencies[] = $dependency;
-        }
-    }
-
-    /**
-     * Get list of dependencies.
-     *
-     * @return string[]
-     */
-    public function getDependencies(): array
-    {
-        return $this->dependencies;
     }
 
     /**
@@ -320,23 +275,6 @@ class Package
     }
 
     /**
-     * Prepend package namespace to given namespace if hasn't any other package namespace.
-     *
-     * @return string
-     */
-    public function prependNamespaceIfNeeded(string $namespace)
-    {
-        $namespace = str_replace('/', '\\', $namespace);
-        if ('\\' != substr($namespace, 0, 1)) {
-            if (!preg_match('/^(packages|themes)(?:\\\\[a-zA-Z0-9-\\_]+)+/', $namespace)) {
-                $namespace = "packages\\{$this->name}\\".$namespace;
-            }
-        }
-
-        return ltrim(strtolower($namespace), '\\');
-    }
-
-    /**
      * return list of routing rules.
      *
      * @return router\rule[]
@@ -351,36 +289,36 @@ class Package
         }
         $routing = json\decode($this->routing->read());
         if (!is_array($routing)) {
-            throw new PackageConfigException($this->name, 'routing file is not an array');
+            throw new PackageConfigException($this->home->getPath(), 'routing file is not an array');
         }
         $rules = [];
         foreach ($routing as $route) {
             if (isset($route['handler'])) {
-                $route['controller'] = $route['handler'];
+                $route['controller'] =  $route['handler'];
             }
             if (!isset($route['controller'])) {
-                throw new PackageConfigException($this->name, "rule doesn't have any controller: ".print_r($route, true));
+                throw new PackageConfigException($this->home->getPath(), "rule doesn't have any controller: ".print_r($route, true));
             }
-            $route['controller'] = $this->prependNamespaceIfNeeded($route['controller']);
+            $route['controller'] = str_replace("/", "\\", $route['controller']);
             if (isset($route['middleware'])) {
                 if (!is_array($route['middleware'])) {
                     $route['middleware'] = [$route['middleware']];
                 }
                 foreach ($route['middleware'] as &$middleware) {
-                    $middleware = $this->prependNamespaceIfNeeded($middleware);
+                    $middleware = str_replace("/", "\\", $middleware);
                 }
             }
             if (isset($route['permissions'])) {
                 foreach ($route['permissions'] as &$controller) {
                     if (is_string($controller)) {
-                        $controller = $this->prependNamespaceIfNeeded($controller);
+                        $controller = str_replace("/", "\\", $controller);
                     }
                 }
             }
             if (isset($route['exceptions'])) {
                 foreach ($route['exceptions'] as &$exception) {
                     if (is_string($exception)) {
-                        $exception = $this->prependNamespaceIfNeeded($exception);
+                        $exception = str_replace("/", "\\", $exception);
                     }
                 }
             }
@@ -428,14 +366,13 @@ class Package
     {
         $data = [
             'name' => $this->name,
+            'home' => $this->home,
             'bootstrap' => $this->bootstrap ? $this->bootstrap->getPath() : null,
             'routing' => $this->routing ? $this->routing->getPath() : null,
-            'dependencies' => $this->dependencies,
             'options' => $this->options,
             'events' => $this->events,
             'frontends' => [],
             'langs' => [],
-            'autoload' => ($this->autoload instanceof IO\File) ? $this->autoload->getPath() : $this->autoload,
             'storages' => $this->storages,
         ];
         foreach ($this->frontends as $frontend) {
@@ -456,10 +393,9 @@ class Package
     public function __unserialize(array $data): void
     {
         $this->name = $data['name'];
-        $this->home = new IO\Directory\Local("packages/{$data['name']}");
+        $this->home = $data['home'];
         $this->bootstrap = $data['bootstrap'] ? new IO\File\Local($data['bootstrap']) : null;
         $this->routing = $data['routing'] ? new IO\File\Local($data['routing']) : null;
-        $this->dependencies = $data['dependencies'];
         $this->options = $data['options'];
         $this->events = $data['events'];
         foreach ($data['frontends'] as $frontend) {
@@ -469,25 +405,14 @@ class Package
             $this->langs[$lang] = new IO\File\Local($file);
         }
         $this->storages = $data['storages'] ?? [];
-        $this->autoload = is_string($data['autoload']) ? (new IO\File\Local($data['autoload'])) : $data['autoload'];
     }
 
     /**
      * Class constructor which should called by method.
      */
-    private function __construct(string $name)
+    private function __construct(private string $name, private IO\Directory\Local $home)
     {
-        $this->setName($name);
         $this->setDefaultStorages();
-    }
-
-    /**
-     * Setter for name and home directory of the package.
-     */
-    private function setName(string $name): void
-    {
-        $this->name = $name;
-        $this->home = new IO\Directory\Local("packages/{$name}");
     }
 
     private function setDefaultStorages(): void
