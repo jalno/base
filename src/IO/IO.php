@@ -2,7 +2,6 @@
 
 namespace packages\base\IO;
 
-require_once 'directories.php';
 function get_absolute_path($path)
 {
     $path = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $path);
