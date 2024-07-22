@@ -19,7 +19,7 @@ class Source extends ServiceProvider
     use ListenerContainerTrait;
 
     /**
-     * construct a theme from its package.json.
+     * construct a theme from its jalno.json.
      *
      * @throws IO\NotFoundException     if cannot find theme.json in the home directory
      * @throws IO\SourceConfigException if source doesn't have name
@@ -27,7 +27,7 @@ class Source extends ServiceProvider
      */
     public static function fromDirectory(Application $app, Package $package, LocalDirectory $home): Source
     {
-        $config = $home->file('theme.json');
+        $config = $home->file('jalno.json');
         if (!$config->exists()) {
             throw new IO\NotFoundException($config);
         }
@@ -84,11 +84,11 @@ class Source extends ServiceProvider
     }
 
     /**
-     * Get theme.json file.
+     * Get jalno.json file.
      */
     public function getConfigFile(): LocalFile
     {
-        return $this->home->file('theme.json');
+        return $this->home->file('jalno.json');
     }
 
     /**

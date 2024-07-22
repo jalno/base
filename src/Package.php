@@ -17,16 +17,16 @@ class Package extends ServiceProvider
     use ListenerContainerTrait;
 
     /**
-     * construct a package from its package.json.
+     * construct a package from its jalno.json.
      *
      * @param string $path path of directory in packages directory
      *
-     * @throws IO\NotFoundException         if cannot find package.json in package directory
+     * @throws IO\NotFoundException         if cannot find jalno.json in package directory
      * @throws IO\NotFoundException         {@see package::addFrontend()}
      * @throws IO\NotFoundException         {@see package::addLang()}
      * @throws translator\LangAlreadyExists {@see package::addLang()}
      * @throws translator\InvalidLangCode   {@see package::addLang()}
-     * @throws PackageConfigException       if package.json file wasn't an array
+     * @throws PackageConfigException       if jalno.json file wasn't an array
      * @throws PackageConfigException       if event hasn't "name" or "listener" indexes
      */
     public static function fromManifest(Application $app, string $name, string $manifest): self
@@ -35,7 +35,7 @@ class Package extends ServiceProvider
         if (!is_array($config)) {
             throw new PackageConfigException($name, 'config file is not an array');
         }
-        $package = new static($app, $name, new LocalDirectory(dirname($manifest)));
+        $package = new static($app, $name, new LocalDirectory(dirname($manifest)), new LocalFile($manifest));
         if (isset($config['frontend'])) {
             if (!is_array($config['frontend'])) {
                 $config['frontend'] = [$config['frontend']];
@@ -315,11 +315,11 @@ class Package extends ServiceProvider
     }
 
     /**
-     * Get package.json file.
+     * Get jalno.json file.
      */
     public function getConfigFile(): LocalFile
     {
-        return $this->home->file('package.json');
+        return $this->configFile;
     }
 
     public function register(): void
@@ -394,7 +394,7 @@ class Package extends ServiceProvider
     /**
      * Class constructor which should called by method.
      */
-    private function __construct(Application $app, private string $name, private LocalDirectory $home)
+    private function __construct(Application $app, private string $name, private LocalDirectory $home, private LocalFile $configFile)
     {
         parent::__construct($app);
         $this->setDefaultStorages();
