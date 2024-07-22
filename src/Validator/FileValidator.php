@@ -3,7 +3,7 @@
 namespace packages\base\Validator;
 
 use packages\base\Exception;
-use packages\base\HTTP;
+use packages\base\Http;
 use packages\base\InputValidationException;
 use packages\base\IO\Directory;
 use packages\base\IO\File;

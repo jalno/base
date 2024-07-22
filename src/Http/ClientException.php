@@ -1,6 +1,6 @@
 <?php
 
-namespace packages\base\HTTP;
+namespace packages\base\Http;
 
 class ClientException extends ResponseException
 {

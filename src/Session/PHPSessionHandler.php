@@ -2,7 +2,7 @@
 
 namespace packages\base\Session;
 
-use packages\base\HTTP;
+use packages\base\Http;
 
 class PHPSessionHandler implements ISessionHandler
 {

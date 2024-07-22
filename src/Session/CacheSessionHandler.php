@@ -4,7 +4,7 @@ namespace packages\base\Session;
 
 use packages\base\Cache;
 use packages\base\Date;
-use packages\base\HTTP;
+use packages\base\Http;
 
 class CacheSessionHandler implements ISessionHandler
 {

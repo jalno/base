@@ -6,7 +6,7 @@ use packages\base\Cache;
 use packages\base\Date;
 use packages\base\DB as DatabaseManager;
 use packages\base\DB\MysqliDb;
-use packages\base\HTTP;
+use packages\base\Http;
 use packages\base\Json;
 
 class DbSessionHandler implements ISessionHandler

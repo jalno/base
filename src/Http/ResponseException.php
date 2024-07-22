@@ -1,6 +1,6 @@
 <?php
 
-namespace packages\base\HTTP;
+namespace packages\base\Http;
 
 use packages\base\Exception;
 
