@@ -2,6 +2,7 @@
 
 namespace packages\base\Storage;
 
+use Illuminate\Support\Facades\Request;
 use packages\base\Exception;
 use packages\base\IO\Directory;
 use packages\base\IO\Node;
@@ -28,6 +29,10 @@ class LocalStorage extends Storage
             throw new Exception("'type' value is not string");
         }
         if (isset($data['@relative-to']) and is_string($data['@relative-to'])) {
+            $data['root'] = ltrim($data['root'], '/');
+            if (str_starts_with($data['root'], "storage/")) {
+                $data['root'] = substr($data['root'], 8);
+            }
             $data['root'] = rtrim($data['@relative-to'], '/').'/'.ltrim($data['root'], '/');
         }
         $data['root'] = new Directory\Local($data['root']);
@@ -51,7 +56,7 @@ class LocalStorage extends Storage
 
         $prefix = '';
         if ($absolute) {
-            $prefix .= Router::getscheme().'://'.Router::gethostname();
+            $prefix .= Request::getSchemeAndHttpHost();
         }
 
         return $prefix.'/'.$node->getPath();

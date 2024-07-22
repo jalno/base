@@ -2,13 +2,18 @@
 
 namespace packages\base\Frontend;
 
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Support\Facades\Request;
+use Illuminate\Support\ServiceProvider;
 use packages\base\IO;
+use packages\base\IO\Directory\Local as LocalDirectory;
+use packages\base\IO\File\Local as LocalFile;
 use packages\base\Json;
 use packages\base\LanguageContainerTrait;
 use packages\base\ListenerContainerTrait;
-use packages\base\Router;
+use packages\base\Package;
 
-class Source
+class Source extends ServiceProvider
 {
     use LanguageContainerTrait;
     use ListenerContainerTrait;
@@ -16,13 +21,11 @@ class Source
     /**
      * construct a theme from its package.json.
      *
-     * @return packages\base\frontend\Source
-     *
-     * @throws packages\base\IO\NotFoundException     if cannot find theme.json in the home directory
-     * @throws packages\base\IO\SourceConfigException if source doesn't have name
-     * @throws packages\base\IO\SourceConfigException if event listener was invalid
+     * @throws IO\NotFoundException     if cannot find theme.json in the home directory
+     * @throws IO\SourceConfigException if source doesn't have name
+     * @throws IO\SourceConfigException if event listener was invalid
      */
-    public static function fromDirectory(IO\Directory $home): Source
+    public static function fromDirectory(Application $app, Package $package, LocalDirectory $home): Source
     {
         $config = $home->file('theme.json');
         if (!$config->exists()) {
@@ -32,17 +35,11 @@ class Source
         if (!isset($config['name'])) {
             throw new SourceConfigException("source doesn't have name", $home);
         }
-        $source = new Source($home, $config['name']);
-        if (isset($config['parent'])) {
-            $source->setParent($config['parent']);
-        }
+        $source = new Source($app, $package, $home, $config['name']);
         if (isset($config['assets'])) {
             foreach ($config['assets'] as $asset) {
                 $source->addAsset($asset);
             }
-        }
-        if (isset($config['bootstrap'])) {
-            $source->setBootstrap($config['bootstrap']);
         }
         if (isset($config['languages'])) {
             foreach ($config['languages'] as $lang => $file) {
@@ -61,31 +58,17 @@ class Source
         return $source;
     }
 
-    /** @var IO\Directory */
-    private $home;
-
-    /** @var string */
-    private $name;
-
-    /** @var string|null */
-    private $parent;
-
-    /** @var packages\base\IO\file|null */
-    private $bootstrap;
-
     /** @var array */
-    private $assets = [];
+    private array $assets = [];
 
-    /**
-     * Get home directory of source.
-     */
-    public function getHome(): IO\Directory
+    public function getHome(): LocalDirectory
     {
         return $this->home;
     }
 
     /**
      * Get home directory path.
+     * @deprecated
      */
     public function getPath(): string
     {
@@ -93,9 +76,9 @@ class Source
     }
 
     /**
-     * Get file.
+     * @deprecated
      */
-    public function getFile(string $path): IO\File
+    public function getFile(string $path): LocalFile
     {
         return $this->home->file($path);
     }
@@ -103,25 +86,9 @@ class Source
     /**
      * Get theme.json file.
      */
-    public function getConfigFile(): IO\File
+    public function getConfigFile(): LocalFile
     {
-        return $this->getFile('theme.json');
-    }
-
-    /**
-     * Set parent frontend.
-     */
-    public function setParent(?string $parent): void
-    {
-        $this->parent = $parent;
-    }
-
-    /**
-     * Get parent frontend.
-     */
-    public function getParent(): ?string
-    {
-        return $this->parent;
+        return $this->home->file('theme.json');
     }
 
     /**
@@ -137,7 +104,7 @@ class Source
      *
      * @param array $asset should contain "type" index within these values: "js", "css", "less", "scss", "sass", "ts", "package"
      *
-     * @throws packages\base\frontend\SourceAssetException if type was invalid
+     * @throws SourceAssetException if type was invalid
      */
     public function addAsset(array $asset): void
     {
@@ -155,7 +122,7 @@ class Source
                 $this->addNodePackageAsset($asset);
                 break;
             default:
-                throw new SourceAssetException('Unkown asset type', $this->getPath());
+                throw new SourceAssetException('Unkown asset type', $this->home->getPath());
         }
     }
 
@@ -165,8 +132,8 @@ class Source
      * @param array $asset should contain "type" index within these values: "js", "css", "less", "scss", "sass", "ts", "package"
      *                     also every asset could have a "name" and "file" and "inline" block code
      *
-     * @throws packages\base\frontend\SourceAssetFileException if file does not exist
-     * @throws packages\base\frontend\SourceAssetFileException if there no file and no Code for asset
+     * @throws SourceAssetFileException if file does not exist
+     * @throws SourceAssetFileException if there no file and no Code for asset
      */
     private function addCodeAsset(array $asset): void
     {
@@ -177,7 +144,7 @@ class Source
             $assetData['name'] = $asset['name'];
         }
         if (isset($asset['file'])) {
-            $file = $this->getFile($asset['file']);
+            $file = $this->home->file($asset['file']);
             if ('node_modules/' != substr($asset['file'], 0, 13) and !$file->exists()) {
                 throw new SourceAssetFileException($asset['file'], $this->home->getPath());
             }
@@ -186,7 +153,7 @@ class Source
         } elseif (isset($asset['inline'])) {
             $assetData['inline'] = $asset['inline'];
         } else {
-            throw new SourceAssetException('No file and no Code for asset', $this->getPath());
+            throw new SourceAssetException('No file and no Code for asset', $this->home->getPath());
         }
         $this->assets[] = $assetData;
     }
@@ -196,17 +163,17 @@ class Source
      *
      * @param array $asset should contain "name" index, and could have a "version" index
      *
-     * @throws packages\base\frontend\SourceAssetException if asset doesn't have "name" index
-     * @throws packages\base\frontend\SourceAssetException if "version" was invalid
+     * @throws SourceAssetException if asset doesn't have "name" index
+     * @throws SourceAssetException if "version" was invalid
      */
     private function addNodePackageAsset(array $asset): void
     {
         if (!isset($asset['name'])) {
-            throw new SourceAssetException('No node package name', $this->getPath());
+            throw new SourceAssetException('No node package name', $this->home->getPath());
         }
         if (isset($asset['version'])) {
             if (!preg_match("/^[\^\>\=\~\<\*]*[\\d\\w\\.\\-]+$/", $asset['version'])) {
-                throw new SourceAssetException('invalid node package version', $this->getPath());
+                throw new SourceAssetException('invalid node package version', $this->home->getPath());
             }
         }
         $this->assets[] = $asset;
@@ -217,7 +184,7 @@ class Source
      *
      * @param string|string[]|null $type filter type
      */
-    public function getAssets($type = null): array
+    public function getAssets(string|array|null $type = null): array
     {
         if (is_string($type)) {
             $type = [$type];
@@ -258,22 +225,31 @@ class Source
     {
         $url = '';
         if ($absolute) {
-            $hostname = Router::gethostname();
-            if (!$hostname and $defaultHostnames = Router::getDefaultDomains()) {
-                $hostname = $defaultHostnames[0];
-            }
-            $url .= Router::getscheme().'://'.$hostname;
+            $url .= Request::getSchemeAndHttpHost();
         }
 
-        return $url.'/'.$this->home->file($file)->getPath();
+        return $url . '/packages/' . $this->package->getName() . "/" . $this->home->getRelativePath($this->package->getHome()) . "/" . $file;
     }
 
-    /**
-     * @param packages\base\IO\directory $home
-     */
-    private function __construct(IO\directory $home, string $name)
+    public function register(): void
     {
-        $this->home = $home;
-        $this->name = $name;
+        $this->addLinkForAssets();
+    }
+
+    protected function addLinkForAssets(): void
+    {
+        $links = config('filesystems.links', [public_path('storage') => storage_path('app/public')]);
+        $symlink = public_path('packages/' . $this->package->getName() . "/" . $this->home->getRelativePath($this->package->getHome()));
+        if (!is_dir(dirname($symlink))) {
+            mkdir(dirname($symlink), 0755, true);
+        }
+        $links[$symlink] = $this->home->getPath();
+        config()->set("filesystems.links", $links);
+    }
+
+
+    private function __construct(Application $app, private Package $package, private LocalDirectory $home , private string $name)
+    {
+        parent::__construct($app);
     }
 }

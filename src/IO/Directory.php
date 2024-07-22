@@ -16,9 +16,9 @@ abstract class Directory extends Node
 
     abstract public function directories(bool $recursively): array;
 
-    abstract public function file(string $name);
+    abstract public function file(string $name): File;
 
-    abstract public function directory(string $name);
+    abstract public function directory(string $name): Directory;
 
     abstract public function __serialize(): array;
 

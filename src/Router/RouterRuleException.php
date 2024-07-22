@@ -6,13 +6,9 @@ use packages\base\Exception;
 
 class RouterRuleException extends Exception
 {
-    /** @var \packages\base\router\Rule */
-    private $rule;
-
-    public function __construct(Rule $rule, string $message = '')
+    public function __construct(private Rule $rule, string $message = '')
     {
         parent::__construct($message);
-        $this->rule = $rule;
     }
 
     /**

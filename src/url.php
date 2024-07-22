@@ -2,12 +2,14 @@
 
 namespace packages\base;
 
+use Illuminate\Support\Facades\Request;
+
 function url($page = '', $parameters = [], $absolute = false)
 {
     $changelang = Options::get('packages.base.translator.changelang');
     $type = Options::get('packages.base.translator.changelang.type') ?: 'short';
     if ('.' == $page) {
-        $page = HTTP::$request['uri'];
+        $page = Http::$request['uri'];
         if ('uri' == $changelang) {
             $page = ltrim($page, '/');
             $firstSlash = strpos($page, '/');
@@ -33,7 +35,6 @@ function url($page = '', $parameters = [], $absolute = false)
     }
     $url = '';
     if ($absolute) {
-        $hostname = '';
         if (isset($parameters['hostname'])) {
             trigger_error("'hostname' parameter is deprecated, use '@hostname' instead", E_USER_DEPRECATED);
             $hostname = $parameters['hostname'];
@@ -42,12 +43,9 @@ function url($page = '', $parameters = [], $absolute = false)
             $hostname = $parameters['@hostname'];
             unset($parameters['@hostname']);
         } else {
-            $hostname = Router::gethostname();
+            $hostname = Request::getHttpHost();
         }
-        if (!$hostname and $defaultHostnames = Router::getDefaultDomains()) {
-            $hostname = $defaultHostnames[0];
-        }
-        $url .= Router::getscheme().'://'.$hostname;
+        $url .= Request::getScheme().'://'.$hostname;
     }
 
     if ('uri' == $changelang) {

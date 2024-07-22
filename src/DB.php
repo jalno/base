@@ -65,10 +65,6 @@ class DB
 
     public static function has_connection($conname = 'default'): bool
     {
-        if (!isset(self::$driver[$conname])) {
-            Loader::connectdb();
-        }
-
         return isset(self::$driver[$conname]);
     }
 

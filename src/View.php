@@ -7,6 +7,7 @@ use packages\base\Frontend\Theme;
 use packages\base\View\Events\AfterLoad;
 use packages\base\View\Events\AfterOutput;
 use packages\base\View\Events\BeforeLoad;
+use Throwable;
 
 class View
 {
@@ -358,16 +359,13 @@ class View
 
     /**
      * Ouput the html file.
-     *
-     * @return void
      */
-    public function output()
+    public function output(): string
     {
         $this->loadHTMLFile();
         if (!$this->file) {
-            return;
+            return "";
         }
-
         (new BeforeLoad($this))->trigger();
         $this->dynamicData()->trigger();
         if (method_exists($this, '__beforeLoad')) {
@@ -376,9 +374,24 @@ class View
         (new AfterLoad($this))->trigger();
         $this->dynamicData()->addAssets();
 
-        require_once $this->file->getPath();
+
+        $obLevel = ob_get_level();
+        ob_start();
+        try {
+            require $this->file->getPath();
+        } catch (Throwable $e) {
+            while (ob_get_level() > $obLevel) {
+                ob_end_clean();
+            }
+
+           throw $e;
+        }
+
+        $result = ltrim(ob_get_clean());
 
         (new AfterOutput($this))->trigger();
+
+        return $result;
     }
 
     /**

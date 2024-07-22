@@ -2,229 +2,160 @@
 
 namespace packages\base;
 
+use Illuminate\Http\Response as LaravelResponse;
 use packages\base\Response\File;
 use packages\base\Views\Form;
+use Symfony\Component\HttpFoundation\Request;
 
-class Response
+/**
+ * @deprecated
+ */
+class Response extends LaravelResponse
 {
-    protected $status;
-    protected $data;
-    protected $view;
-    protected $ajax = false;
-    protected $api = false;
-    protected $json = false;
-    protected $xml = false;
-    protected $file;
+    protected ?View $view = null;
+    protected bool $isAjax = false;
+    protected bool $isApi = false;
+    protected bool $isJson = false;
+    protected ?File $file = null;
     protected $raw;
-    protected $output;
-    protected $headers = [];
-    protected $httpcode;
-    protected $isAttachment = false;
+    protected ?string $output = null;
+    protected bool $isAttachment = false;
 
-    public function __construct($status = null, $data = [])
+    public function __construct(protected ?bool $status = null, protected array $data = [])
     {
-        $this->status = $status;
-        $this->data = $data;
-
-        $this->setAjax(isset(HTTP::$request['get']['ajax']) and HTTP::$request['get']['ajax']);
-        $this->setAPI(isset(HTTP::$request['get']['api']) and HTTP::$request['get']['api']);
-
-        if ($this->is_ajax() or $this->is_api()) {
-            $this->setJSON(!isset(HTTP::$request['get']['json']) or HTTP::$request['get']['json']);
-            $this->setXML(isset(HTTP::$request['get']['xml']) and HTTP::$request['get']['xml']);
+        $request = request();
+        $this->setAjax(boolval($request->query->get("ajax")));
+        $this->setAPI(boolval($request->query->get("api")));
+        if ($this->isAjax or $this->isApi) {
+            $isJson = $request->query->get("json");
+            $this->setJSON($isJson === null or boolval($isJson));
         }
+        parent::__construct();
     }
 
-    public function is_ajax()
+    /**
+     * @return $this
+     */
+    public function prepare(Request $request): static
     {
-        return $this->ajax;
+        if ($this->file) {
+            $this->headers->set("Content-Type", $this->file->getMimeType());
+            $this->headers->set("Content-Length", $this->file->getSize());
+            if ($name = $this->file->getName())
+            {
+                $position = $this->isAttachment ? 'attachment' : 'inline';
+                $this->headers->set('Content-Disposition', [$position, "filename=\"{$name}\""]);
+            }
+        } elseif ($this->isJson) {
+            $this->exportViewToData();
+            $this->setContent($this->getJsonData());
+        } elseif ($this->view) {
+            $this->view->setData($this->getStatus(), 'status');
+            $this->setContent($this->view->output());
+        }
+
+        return parent::prepare($request);
     }
 
-    public function is_api()
+    public function sendContent(): static
     {
-        return $this->api;
+        if (!$this->file) {
+            return parent::sendContent();
+        }
+        $this->file->output();
+        return $this;
     }
 
-    public function setView(View $view)
+    public function is_ajax(): bool
+    {
+        return $this->isAjax;
+    }
+
+    public function is_api(): bool
+    {
+        return $this->isApi;
+    }
+
+    public function setView(?View $view): void
     {
         $this->view = $view;
     }
 
-    protected function prepareView()
-    {
-        $log = Log::getInstance();
-        if ($this->view) {
-            if (method_exists($this->view, 'export')) {
-                $target = '';
-                if ($this->api) {
-                    $target = 'api';
-                } elseif ($this->ajax) {
-                    $target = 'ajax';
-                }
-                $log->debug('call export method for colleting data');
-                $export = $this->view->export($target);
-                $log->reply('Success');
-                if (isset($export['data'])) {
-                    foreach ($export['data'] as $key => $val) {
-                        $this->data[$key] = $val;
-                    }
-                }
-            }
-            if ($this->view instanceof Form) {
-                $log->debug('view is a form, colleting form errors');
-                $errors = $this->view->getFormErrors();
-                if ($errors) {
-                    foreach ($errors as $e) {
-                        $e->setTraceMode(View\Error::NO_TRACE);
-                    }
-                    $this->setData($errors, 'error');
-                }
-            }
-            $log->debug('colleting errors');
-            $errors = $this->view->getErrors();
-            if ($errors) {
-                foreach ($errors as $e) {
-                    $e->setTraceMode(View\Error::NO_TRACE);
-                }
-                $this->setData($errors, 'error');
-            }
-        }
-    }
+    
 
-    public function getView()
+    public function getView(): ?View
     {
         return $this->view;
     }
 
-    public function setFile(File $file)
+    public function setFile(File $file): void
     {
         $this->file = $file;
     }
 
-    public function setStatus($status)
+    public function setStatus(?bool $status): void
     {
         $log = Log::getInstance();
         $this->status = $status;
         $log->debug('status changed to', $status);
     }
 
-    public function getStatus()
+    public function getStatus(): ?bool
     {
         return $this->status;
     }
 
+
     public function setData($data, $key = null)
     {
-        $log = Log::getInstance();
         if ($key) {
-            $log->debug('data', $key, 'set to', $data);
             $this->data[$key] = $data;
         } else {
             $this->data = $data;
         }
         if ($this->view) {
-            $log->debug('also passed to view');
             $this->view->setData($data, $key);
         }
     }
 
-    public function getData($key = null)
+    public function getData(?string $key = null): mixed
     {
-        if ($key) {
-            return isset($this->data[$key]) ? $this->data[$key] : null;
-        } else {
-            return $this->data;
-        }
+        return $key ? ($this->data[$key] ?? null) : $this->data;
     }
 
-    public function json()
+    public function go(string $url): void
     {
-        $log = Log::getInstance();
-        $log->debug('set http header to json');
-        HTTP::tojson();
-        $log->debug('encode json response');
-
-        return json\encode(array_merge([
-            'status' => $this->status,
-        ], $this->data));
-    }
-
-    public function go($url)
-    {
-        if ($this->ajax) {
+        if ($this->isAjax) {
             $this->data['redirect'] = $url;
         } else {
-            HTTP::redirect($url);
+            $this->setStatusCode(302);
+            $this->headers->set("Location", $url);
         }
+        $this->setContent(null);
     }
 
-    public function rawOutput(&$output)
+    public function rawOutput(&$output): void
     {
-        $this->raw = true;
-        $this->output = $output;
-        $this->file = null;
-        $this->json = false;
+        $this->setContent($output);
+        $this->isJson = false;
     }
 
-    public function setHeader($key, $value)
+    public function setHeader(string $key, string $value): void
     {
-        $log = Log::getInstance();
-        $log->debug('set http header', $key, 'to', $value);
-        $this->headers[$key] = $value;
+        $this->headers->set($key, $value);
     }
 
-    public function setHttpCode($code)
+    public function setHttpCode(int $code): void
     {
-        $log = Log::getInstance();
-        $log->debug('set http response code to', $code);
-        $this->httpcode = $code;
+        $this->setStatusCode($code);
     }
 
-    public function setMimeType($type, $charset = null)
+    public function setMimeType(string $type, ?string $charset = null)
     {
-        if ($charset) {
-            $this->setHeader('content-type', $type.'; charset='.$charset);
-        } else {
-            $this->setHeader('content-type', $type);
-        }
+        $this->headers->set('content-type', $charset ? [$type, 'charset=' . $charset] : $type);
     }
 
-    public function sendHeaders()
-    {
-        if ($this->httpcode) {
-            HTTP::setHttpCode($this->httpcode);
-        }
-        foreach ($this->headers as $key => $val) {
-            HTTP::setHeader($key, $val);
-        }
-    }
-
-    public function send()
-    {
-        $log = Log::getInstance();
-        $log->info('send response');
-        $this->sendHeaders();
-        if ($this->file) {
-            HTTP::setMimeType($this->file->getMimeType());
-            HTTP::setLength($this->file->getSize());
-            if ($name = $this->file->getName()) {
-                $position = $this->isAttachment ? 'attachment' : 'inline';
-                HTTP::setHeader('content-disposition', "{$position}; filename=\"{$name}\"");
-            }
-            $this->file->output();
-        } elseif ($this->json) {
-            $this->prepareView();
-            echo $this->json();
-        } elseif ($this->raw) {
-            echo $this->output;
-        } elseif ($this->view) {
-            $this->view->setData($this->getStatus(), 'status');
-            $this->view->output();
-        }
-        $log->reply('Success');
-    }
-
-    public function forceDownload()
+    public function forceDownload(): void
     {
         $this->isAttachment = true;
     }
@@ -245,23 +176,65 @@ class Response
 
     public function setAjax(bool $status = true): void
     {
-        $this->ajax = $status;
+        $this->isAjax = $status;
         $this->setJSON($status);
     }
 
     public function setAPI(bool $status = true): void
     {
-        $this->api = $status;
+        $this->isApi = $status;
         $this->setJSON($status);
     }
 
     public function setJSON(bool $status = true): void
     {
-        $this->json = $status;
+        $this->isJson = $status;
     }
 
-    public function setXML(bool $status = true): void
+    private function exportViewToData(): void
     {
-        $this->xml = $status;
+        if (!$this->view) {
+            return;
+        }
+        if (method_exists($this->view, 'export')) {
+            $target = '';
+            if ($this->isApi) {
+                $target = 'api';
+            } elseif ($this->isAjax) {
+                $target = 'ajax';
+            }
+            $export = $this->view->export($target);
+            if (isset($export['data'])) {
+                foreach ($export['data'] as $key => $val) {
+                    $this->data[$key] = $val;
+                }
+            }
+        }
+        if ($this->view instanceof Form) {
+            $errors = $this->view->getFormErrors();
+            if ($errors) {
+                foreach ($errors as $e) {
+                    $e->setTraceMode(View\Error::NO_TRACE);
+                }
+                $this->setData($errors, 'error');
+            }
+        }
+        $errors = $this->view->getErrors();
+        if ($errors) {
+            foreach ($errors as $e) {
+                $e->setTraceMode(View\Error::NO_TRACE);
+            }
+            $this->setData($errors, 'error');
+        }
     }
+
+
+
+    private function getJsonData(): array
+    {
+        return array_replace([
+            'status' => $this->status,
+        ], $this->data);
+    }
+
 }

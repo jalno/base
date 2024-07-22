@@ -2,9 +2,16 @@
 
 namespace packages\base;
 
+use Illuminate\Foundation\Application;
+use Illuminate\Routing\Route;
+use Illuminate\Routing\Router;
+use Illuminate\Support\ServiceProvider;
+use packages\base\Frontend\Theme;
 use packages\base\Storage\LocalStorage;
+use packages\base\IO\Directory\Local as LocalDirectory;
+use packages\base\IO\File\Local as LocalFile;
 
-class Package
+class Package extends ServiceProvider
 {
     use LanguageContainerTrait;
     use ListenerContainerTrait;
@@ -22,16 +29,13 @@ class Package
      * @throws PackageConfigException       if package.json file wasn't an array
      * @throws PackageConfigException       if event hasn't "name" or "listener" indexes
      */
-    public static function fromManifest(string $name, IO\File\Local $manifest): self
+    public static function fromManifest(Application $app, string $name, string $manifest): self
     {
-        if (!$manifest->exists()) {
-            throw new IO\NotFoundException($manifest);
-        }
-        $config = json_decode($manifest->read(), true);
+        $config = json_decode(file_get_contents($manifest), true);
         if (!is_array($config)) {
             throw new PackageConfigException($name, 'config file is not an array');
         }
-        $package = new static($name, $manifest->getDirectory());
+        $package = new static($app, $name, new LocalDirectory(dirname($manifest)));
         if (isset($config['frontend'])) {
             if (!is_array($config['frontend'])) {
                 $config['frontend'] = [$config['frontend']];
@@ -54,7 +58,7 @@ class Package
         if (isset($config['events'])) {
             foreach ($config['events'] as $event) {
                 if (!isset($event['name'], $event['listener'])) {
-                    throw new PackageConfigException($package, 'invalid event');
+                    throw new PackageConfigException($name, 'invalid event');
                 }
                 $package->addEvent($event['name'], $event['listener']);
             }
@@ -62,12 +66,12 @@ class Package
 
         if (isset($config['storages'])) {
             foreach ($config['storages'] as $name => $storageArray) {
-                $storageArray['@relative-to'] = $package->getHome()->getPath();
+                $storageArray['@relative-to'] = storage_path("packages/" . $package->getName() . "/");
                 $storage = Storage::fromArray($storageArray);
                 $package->setStorage($name, $storage);
             }
         }
-        $ignores = ['permissions', 'frontend', 'languages', 'bootstrap', 'events', 'routing'];
+        $ignores = ['permissions', 'frontend', 'languages', 'bootstrap', 'events', 'routing', 'storages'];
         foreach ($config as $key => $value) {
             if (!in_array($key, $ignores)) {
                 $package->setOption($key, $value);
@@ -77,23 +81,21 @@ class Package
         return $package;
     }
 
-    /** @var IO\Directory[] */
-    private $frontends = [];
+    /** @var LocalDirectory[] */
+    private array $frontends = [];
 
-    /** @var IO\File|null */
-    private $bootstrap;
+    private ?LocalFile $bootstrap = null;
+    private ?LocalFile $routing = null;
 
-    /** @var IO\File|null */
-    private $routing;
-
-    /** @var array */
-    private $options = [];
+    /** @var array<string,mixed> */
+    private array $options = [];
 
     /** @var array<string,Storage> */
-    private $storages = [];
+    private array $storages = [];
 
 
-    public function getName(): string {
+    public function getName(): string
+    {
         return $this->name;
     }
 
@@ -107,16 +109,13 @@ class Package
     public function addFrontend(string $source): void
     {
         $directory = $this->home->directory($source);
-        if (!$directory->exists()) {
-            throw new IO\NotFoundException($directory);
-        }
         $this->frontends[] = $directory;
     }
 
     /**
      * Get frontends directory.
      *
-     * @return IO\Directory[]
+     * @return LocalDirectory[]
      */
     public function getFrontends(): array
     {
@@ -171,6 +170,7 @@ class Package
 
     /**
      * @return string path to a file inside the package
+     * @deprecated use getHome()->file($path)->getPath() instead.
      */
     public function getFilePath(string $file): string
     {
@@ -181,6 +181,7 @@ class Package
      * return content of the file inside the directory.
      *
      * @throws IO\NotFoundException if the file doesn't exists
+     * @deprecated use getHome()->file($path)->read() instead.
      */
     public function getFileContents(string $file): string
     {
@@ -237,17 +238,11 @@ class Package
     /**
      * Generate a URL to given file.
      *
-     * @param bool $absolute whether url should be contain scheme and domain or not
+     * @deprecated
      */
     public function url(string $file, bool $absolute = false): string
     {
-        $url = '';
-        if ($absolute) {
-            $url .= Router::getscheme().'://'.Router::gethostname();
-        }
-        $url .= '/'.$this->home->file($file)->getPath();
-
-        return $url;
+        throw new Exception("Not Supported");
     }
 
     /**
@@ -277,7 +272,7 @@ class Package
     /**
      * return list of routing rules.
      *
-     * @return router\rule[]
+     * @return Route[]
      *
      * @throws PackageConfigException if routing file is not an array
      * @throws PackageConfigException rule doesn't have any controller
@@ -292,53 +287,21 @@ class Package
             throw new PackageConfigException($this->home->getPath(), 'routing file is not an array');
         }
         $rules = [];
-        foreach ($routing as $route) {
-            if (isset($route['handler'])) {
-                $route['controller'] =  $route['handler'];
+        foreach ($routing as $rule) {
+            if (!isset($rule['path'])) {
+                continue;
             }
-            if (!isset($route['controller'])) {
-                throw new PackageConfigException($this->home->getPath(), "rule doesn't have any controller: ".print_r($route, true));
-            }
-            $route['controller'] = str_replace("/", "\\", $route['controller']);
-            if (isset($route['middleware'])) {
-                if (!is_array($route['middleware'])) {
-                    $route['middleware'] = [$route['middleware']];
-                }
-                foreach ($route['middleware'] as &$middleware) {
-                    $middleware = str_replace("/", "\\", $middleware);
-                }
-            }
-            if (isset($route['permissions'])) {
-                foreach ($route['permissions'] as &$controller) {
-                    if (is_string($controller)) {
-                        $controller = str_replace("/", "\\", $controller);
-                    }
-                }
-            }
-            if (isset($route['exceptions'])) {
-                foreach ($route['exceptions'] as &$exception) {
-                    if (is_string($exception)) {
-                        $exception = str_replace("/", "\\", $exception);
-                    }
-                }
-            }
-            if (isset($route['paths'])) {
-                foreach ($route['paths'] as $path) {
-                    $route['path'] = $path;
-                    $rules[] = Router\Rule::import($route);
-                }
-            } else {
-                $rules[] = Router\Rule::import($route);
-            }
+
+            $rules[] = (new RouteFactory($rule))->create();
         }
 
         return $rules;
     }
 
     /**
-     * Get file.
+     * @deprecated use getHome()->file($path) instead
      */
-    public function getFile(string $path): IO\File
+    public function getFile(string $path): LocalFile
     {
         return $this->home->file($path);
     }
@@ -346,7 +309,7 @@ class Package
     /**
      * Get home directory.
      */
-    public function getHome(): IO\Directory
+    public function getHome(): LocalDirectory
     {
         return $this->home;
     }
@@ -354,71 +317,93 @@ class Package
     /**
      * Get package.json file.
      */
-    public function getConfigFile(): IO\File
+    public function getConfigFile(): LocalFile
     {
-        return $this->getFile('package.json');
+        return $this->home->file('package.json');
+    }
+
+    public function register(): void
+    {
+        $this->registerRoutes();
+        $this->registerFrontendSources();
+        $this->addLinkForPublicStorages();
+    }
+
+    protected function registerRoutes(): void
+    {
+        /**
+         * @var Router
+         */
+        $router = $this->app->get("router");
+        $routes = $this->getRoutingRules();
+        foreach ($routes as $route) {
+            $route->setRouter($router);
+            $route->setContainer($this->app);
+            $router->getRoutes()->add($route);
+        }
+    }
+
+    public function loadDynamicStorages(): void
+    {
+        $storages = Options::get("packages.{$this->name}.storages");
+        if (!$storages) {
+            return;
+        }
+        foreach ($storages as $name => $storageArray) {
+            $storageArray['@relative-to'] = $this->home->getPath();
+            $storage = Storage::fromArray($storageArray);
+            $this->setStorage($name, $storage);
+        }
+    }
+
+    protected function registerFrontendSources(): void
+    {
+        foreach ($this->frontends as $dir) {
+            $source = Frontend\Source::fromDirectory($this->app, $this, $dir);
+            $source->addLangs();
+            Theme::addSource($source);
+            $this->app->register($source, true);
+        }
+    }
+
+    protected function addLinkForPublicStorages(): void
+    {
+        $links = config('filesystems.links', [public_path('storage') => storage_path('app/public')]);
+        $links = array_merge($links, $this->makeLinksForPublicStorages());
+        config()->set("filesystems.links", $links);
     }
 
     /**
-     * make serializable.
+     * @return array<string,string>
      */
-    public function __serialize(): array
+    protected function makeLinksForPublicStorages(): array
     {
-        $data = [
-            'name' => $this->name,
-            'home' => $this->home,
-            'bootstrap' => $this->bootstrap ? $this->bootstrap->getPath() : null,
-            'routing' => $this->routing ? $this->routing->getPath() : null,
-            'options' => $this->options,
-            'events' => $this->events,
-            'frontends' => [],
-            'langs' => [],
-            'storages' => $this->storages,
-        ];
-        foreach ($this->frontends as $frontend) {
-            $data['frontends'][] = $frontend->getPath();
-        }
-        foreach ($this->langs as $lang => $file) {
-            $data['langs'][$lang] = $file->getPath();
+        $storages = array_filter($this->storages, fn(Storage $s) => ($s instanceof LocalStorage and $s->getType() == Storage::TYPE_PUBLIC));
+        $map = [];
+        foreach ($storages as $name => $storage) {
+            $symlink = public_path('packages/' . $this->name . "/storage/" . $name);
+            if (!is_dir(dirname($symlink))) {
+                mkdir(dirname($symlink), 0755, true);
+            }
+            $map[$symlink] = $storage->getRoot()->getPath();
         }
 
-        return $data;
-    }
-
-    /**
-     * make unserializable.
-     *
-     * @param array $data the representation of the object
-     */
-    public function __unserialize(array $data): void
-    {
-        $this->name = $data['name'];
-        $this->home = $data['home'];
-        $this->bootstrap = $data['bootstrap'] ? new IO\File\Local($data['bootstrap']) : null;
-        $this->routing = $data['routing'] ? new IO\File\Local($data['routing']) : null;
-        $this->options = $data['options'];
-        $this->events = $data['events'];
-        foreach ($data['frontends'] as $frontend) {
-            $this->frontends[] = new IO\Directory\Local($frontend);
-        }
-        foreach ($data['langs'] as $lang => $file) {
-            $this->langs[$lang] = new IO\File\Local($file);
-        }
-        $this->storages = $data['storages'] ?? [];
+        return $map;
     }
 
     /**
      * Class constructor which should called by method.
      */
-    private function __construct(private string $name, private IO\Directory\Local $home)
+    private function __construct(Application $app, private string $name, private LocalDirectory $home)
     {
+        parent::__construct($app);
         $this->setDefaultStorages();
     }
 
     private function setDefaultStorages(): void
     {
-        $this->storages['public'] = new LocalStorage(Storage::TYPE_PUBLIC, $this->home->directory('storage/public'));
-        $this->storages['protected'] = new LocalStorage(Storage::TYPE_PROTECTED, $this->home->directory('storage/protected'));
-        $this->storages['private'] = new LocalStorage(Storage::TYPE_PRIVATE, $this->home->directory('storage/private'));
+        $this->storages['public'] = new LocalStorage(Storage::TYPE_PUBLIC, new LocalDirectory(storage_path("packages/{$this->name}/public")));
+        $this->storages['protected'] = new LocalStorage(Storage::TYPE_PROTECTED, new LocalDirectory(storage_path("packages/{$this->name}/protected")));
+        $this->storages['private'] = new LocalStorage(Storage::TYPE_PRIVATE, new LocalDirectory(storage_path("packages/{$this->name}/private")));
     }
 }
