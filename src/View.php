@@ -2,7 +2,9 @@
 
 namespace packages\base;
 
+use Illuminate\Support\Facades\Vite;
 use packages\base\Frontend\Events\ThrowDynamicData;
+use packages\base\frontend\Source;
 use packages\base\Frontend\Theme;
 use packages\base\View\Events\AfterLoad;
 use packages\base\View\Events\AfterOutput;
@@ -43,8 +45,7 @@ class View
     /** @var string|IO\file|null */
     protected $file;
 
-    /** @var frontend\Source */
-    protected $source;
+    protected ?Source $source = null;
 
     /** @var array */
     protected $css = [];
@@ -400,20 +401,11 @@ class View
     protected function loadCSS(): void
     {
         foreach ($this->css as $css) {
-            if ('file' == $css['type']) {
-                if ($css['preload']) {
-                    echo "<link rel=\"preload\" type=\"text/css\" href=\"{$css['file']}\" as=\"style\" onload=\"this.onload=null;this.rel='stylesheet'\">\n";
-                    echo "<noscript><link rel=\"stylesheet\" type=\"text/css\" href=\"{$css['file']}\"></noscript>\n";
-                } else {
-                    echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"{$css['file']}\" />\n";
-                }
-            }
-        }
-        foreach ($this->css as $css) {
             if ('inline' == $css['type']) {
                 echo "<style>\n{$css['code']}\n</style>\n";
             }
         }
+        echo Vite::__invoke("resources/css/{$this->source->getName()}.css")->toHtml();
     }
 
     /**
@@ -426,11 +418,7 @@ class View
                 echo "<script>\n{$js['code']}\n</script>\n";
             }
         }
-        foreach ($this->js as $js) {
-            if ('file' == $js['type']) {
-                echo "<script async src=\"{$js['file']}\"></script>\n";
-            }
-        }
+        echo Vite::__invoke("resources/js/{$this->source->getName()}.js")->toHtml();
     }
 
     /**
@@ -450,7 +438,7 @@ class View
             if (!is_string($this->file)) {
                 return;
             }
-            $this->file = $this->source->getFile($this->file);
+            $this->file = $this->source->getHome()->file($this->file);
         } else {
             $reflection = new \ReflectionClass(get_class($this));
             $filename = $reflection->getFileName();
