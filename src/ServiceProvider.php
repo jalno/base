@@ -3,6 +3,7 @@ namespace packages\base;
 
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\ServiceProvider as SupportServiceProvider;
+use packages\base\Console\Commands\RunCommand;
 
 class ServiceProvider extends SupportServiceProvider
 {
@@ -22,6 +23,10 @@ class ServiceProvider extends SupportServiceProvider
 
 		Packages::registerFromComposer();
 		Packages::loadDynamicStorages();
+
+		$this->commands([
+			RunCommand::class,
+		]);
 	}
 
 

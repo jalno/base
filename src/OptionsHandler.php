@@ -8,7 +8,7 @@ class OptionsHandler
 {
     public function loadFromFile(): void
     {
-        $options = Arr::undot(config("jalno"));
+        $options = Arr::undot(config("jalno", []));
         config()->set("jalno", $options);
     }
 

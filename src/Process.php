@@ -3,6 +3,11 @@
 namespace packages\base;
 
 use packages\base\DB\DBObject;
+use packages\base\Process\Exceptions\CannotStartProcessException;
+use packages\base\Process\Exceptions\InterruptedException;
+use packages\base\Process\Exceptions\NotSavedProcessException;
+use packages\base\Process\Exceptions\NotShellAccessException;
+use packages\base\Process\Exceptions\NotStartedProcessException;
 use packages\base\View\Error;
 
 class Process extends DBObject
@@ -74,57 +79,44 @@ class Process extends DBObject
     /**
      * Runs the command in a background process.
      */
-    public function background_run()
+    public function background_run(): void
     {
-        if (!$this->checkOS()) {
-            throw new Process\Exceptions\NotShellAccessException();
-        }
-        if (!function_exists('shell_exec')) {
-            throw new Process\Exceptions\NotShellAccessException();
-        }
-        if (!$this->id) {
-            throw new Process\Exceptions\NotSavedProcessException();
-        }
-        $root_directory = Options::get('root_directory');
-        $php = Options::get('packages.base.process.php-bin');
-        if (!$php) {
-            $php = 'php';
-        }
-        $command = $php.' '.realpath($root_directory.'/index.php').' --process='.$this->id;
-        $pid = (int) shell_exec("$command > /dev/null  2>&1 & echo $!");
-        if ($pid > 0) {
-            $this->pid = $pid;
-            $this->save();
+        $this->checkOS();
 
-            return true;
-        } else {
-            throw new Process\Exceptions\CannotStartProcessException($this);
+        if (!function_exists('shell_exec')) {
+            throw new NotShellAccessException();
         }
+    
+        if (!$this->id) {
+            throw new NotSavedProcessException();
+        }
+        $artsian = $this->getArtsianPath();
+
+        $php = Options::get('packages.base.process.php-bin') ?: "php";
+        $command = $php.' '. $artsian . ' --process='.$this->id;
+        $pid = (int) shell_exec("$command > /dev/null  2>&1 & echo $!");
+        if ($pid <= 0) {
+            throw new CannotStartProcessException($this);
+        }
+        $this->pid = $pid;
+        $this->save();
     }
 
-    public function setPID()
+    public function setPID(): void
     {
-        switch (Loader::sapi()) {
-            case Loader::cli:
-                $this->pid = CLI::$process['pid'];
-                break;
-            case Loader::cgi:
-                $this->pid = HTTP::pid();
-                break;
-        }
+        $this->pid = getmypid();
         $this->save();
     }
 
     public function runAndWaitFor(int $seconds = 0, bool $throwable = true)
     {
-        if ($this->background_run()) {
-            if ($this->waitFor($seconds, $throwable)) {
-                $this->byId($this->id);
+        $this->background_run();
+        if ($this->waitFor($seconds, $throwable)) {
+            $this->byId($this->id);
 
-                return $this->response;
-            } else {
-                return self::running;
-            }
+            return $this->response;
+        } else {
+            return self::running;
         }
     }
 
@@ -137,13 +129,8 @@ class Process extends DBObject
      * @throws Exception if Could not find process
      * @throws Exception if the process is alread running
      */
-    public function run()
+    public function run(): ?Response
     {
-        list($class, $method) = explode('@', $this->name, 2);
-        $class = ltrim($class, '\\');
-        if (!class_exists($class) or !method_exists($class, $method)) {
-            throw new Exception('Could not find process:'.$this->name);
-        }
         if (self::running == $this->status) {
             throw new Exception("Process #{$this->id} already running");
         }
@@ -152,18 +139,10 @@ class Process extends DBObject
         $this->end = null;
         $this->setPID();
         $this->save();
+
         $return = null;
         try {
-            if (get_class($this) == $class) {
-                $obj = $this;
-            } else {
-                $obj = new $class();
-                $obj->data = $this->data;
-            }
-            $return = $obj->$method($this->parameters ?? []);
-            if ($this !== $obj) {
-                $this->data = $obj->data;
-            }
+            $return = app()->call($this->name, ['data' => $this->parameters]);
             if ($return instanceof Response) {
                 $this->status = $return->getStatus() ? self::stopped : self::error;
                 $this->response = $return;
@@ -174,6 +153,7 @@ class Process extends DBObject
                 $this->status = self::stopped;
             }
         } catch (\Throwable $e) {
+            fwrite(STDERR, (string) $e);
             $this->status = Process::error;
             if ($e instanceof Error) {
                 $e->setTraceMode(Error::SHORT_TRACE);
@@ -191,17 +171,15 @@ class Process extends DBObject
      *
      * @return bool TRUE if the process is running, FALSE if not
      */
-    public function isRunning()
+    public function isRunning(): bool
     {
-        if ($this->checkOS()) {
-            if ($this->pid) {
-                return file_exists('/proc/'.$this->pid);
-            } else {
-                throw new Process\Exceptions\NotStartedProcessException($this);
-            }
+        $this->checkOS();
+
+        if (!$this->pid) {
+            throw new NotStartedProcessException($this);
         }
 
-        return false;
+        return file_exists('/proc/'.$this->pid);
     }
 
     /**
@@ -210,7 +188,7 @@ class Process extends DBObject
     protected function isInterrupted(): bool
     {
         if (!$this->pid) {
-            throw new Process\Exceptions\NotStartedProcessException($this);
+            throw new NotStartedProcessException($this);
         }
 
         return 1 == Cache::get('packages.base.process.'.$this->pid.'.interrupt');
@@ -221,12 +199,12 @@ class Process extends DBObject
      *
      * @return void
      *
-     * @throws packages\base\InterruptedException
+     * @throws InterruptedException
      */
-    protected function checkInterruption()
+    protected function checkInterruption(): void
     {
         if ($this->isInterrupted()) {
-            throw new Process\Exceptions\InterruptedException();
+            throw new InterruptedException();
         }
     }
 
@@ -235,10 +213,10 @@ class Process extends DBObject
      *
      * @return void
      */
-    public function interrupt()
+    public function interrupt(): void
     {
         if (!$this->pid) {
-            throw new Process\Exceptions\NotStartedProcessException($this);
+            throw new NotStartedProcessException($this);
         }
         Cache::set('packages.base.process.'.$this->pid.'.interrupt', 1);
     }
@@ -248,7 +226,7 @@ class Process extends DBObject
      *
      * @return bool `true` if the processes was stopped, `false` otherwise
      */
-    public function stop($signal = self::SIGTERM, $timeout = 10)
+    public function stop(int $signal = self::SIGTERM, int $timeout = 10): bool
     {
         if (isset($this->pid)) {
             if ($this->isRunning()) {
@@ -266,22 +244,21 @@ class Process extends DBObject
         return false;
     }
 
-    protected function checkOS()
+    protected function checkOS(): void
     {
         if (self::OS_NIX != self::getOS()) {
-            throw new Process\Exceptions\NotShellAccessException();
+            throw new NotShellAccessException();
         }
 
-        return true;
     }
 
-    protected function progress($progress)
+    protected function progress(int|float $progress): void
     {
         $this->progress += $progress;
         $this->save();
     }
 
-    public static function getOS()
+    public static function getOS(): int
     {
         $os = strtoupper(PHP_OS);
         if ('WIN' === substr($os, 0, 3)) {
@@ -306,5 +283,14 @@ class Process extends DBObject
         }
 
         return !$this->isRunning();
+    }
+
+    public static function getArtsianPath(): string
+    {
+        $path = Options::get("packages.base.process.artisan", app()->basePath("artisan"));
+        if (!is_file($path)) {
+            throw new Exception("Cannot find artsian file in '{$path}'");
+        }
+        return $path;
     }
 }
