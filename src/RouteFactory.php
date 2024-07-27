@@ -11,7 +11,7 @@ use packages\base\Router\RulePartValue;
 class RouteFactory
 {
 	private array $wheres = [];
-	public function __construct(private array $rule)
+	public function __construct(private array $rule, private bool $langInUrl)
 	{
 		
 	}
@@ -40,12 +40,13 @@ class RouteFactory
 		$action = str_replace("/", "\\", $this->rule['controller']);
 		$methods = isset($this->rule['method']) ?  array_map('strtoupper', (array)$this->rule['method']) : Router::$verbs;
 		$uri = $this->buildUri();
-		if (!isset($this->rule['absolute']) or !$this->rule['absolute']) {
-			$uri = "{lang}/{$uri}";
+		$isHomePage = ($uri == "");
+		if ((!isset($this->rule['absolute']) or !$this->rule['absolute']) and $this->langInUrl) {
+			$uri = ($isHomePage ? "{lang?}" : "{lang}") . "/{$uri}";
+			$this->wheres['lang'] = "[a-z]{2}";
 		}
 
 		$route = new Route($methods, $uri, $action);
-
 		foreach ($this->wheres as $parameter => $condition) {
 			if (is_array($condition)) {
 				$route->whereIn($parameter, $condition);
@@ -64,7 +65,7 @@ class RouteFactory
 			throw new Exception('path must be string or array: ' . print_r($this->rule['path'], true));
 		}
 		$uri = "";
-		foreach ($this->rule['path'] as $x => $part) {
+		foreach ($this->rule['path'] as  $part) {
 			if (!$part) {
 				continue;
 			}
@@ -97,7 +98,6 @@ class RouteFactory
 				}
 			} elseif ('wildcard' == $part['type']) {
 				$uri .= "{{$part['name']}}";
-				// throw new Exception("wildcard routes are not supported, yet");
 			}
 		}
 

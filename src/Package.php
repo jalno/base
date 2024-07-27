@@ -286,13 +286,14 @@ class Package extends ServiceProvider
         if (!is_array($routing)) {
             throw new PackageConfigException($this->home->getPath(), 'routing file is not an array');
         }
+        $langInUrl = (Options::get('packages.base.translator.changelang') == 'uri');
         $rules = [];
         foreach ($routing as $rule) {
             if (!isset($rule['path'])) {
                 continue;
             }
 
-            $rules[] = (new RouteFactory($rule))->create();
+            $rules[] = (new RouteFactory($rule, $langInUrl))->create();
         }
 
         return $rules;

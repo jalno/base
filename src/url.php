@@ -6,11 +6,10 @@ use Illuminate\Support\Facades\Request;
 
 function url($page = '', $parameters = [], $absolute = false)
 {
-    $changelang = Options::get('packages.base.translator.changelang');
-    $type = Options::get('packages.base.translator.changelang.type') ?: 'short';
+    $langInUrl = (Options::get('packages.base.translator.changelang') == 'uri');
     if ('.' == $page) {
         $page = Http::$request['uri'];
-        if ('uri' == $changelang) {
+        if ($langInUrl) {
             $page = ltrim($page, '/');
             $firstSlash = strpos($page, '/');
             if (false !== $firstSlash) {
@@ -48,7 +47,7 @@ function url($page = '', $parameters = [], $absolute = false)
         $url .= Request::getScheme().'://'.$hostname;
     }
 
-    if ('uri' == $changelang) {
+    if ($langInUrl) {
         $lang = '';
         if (isset($parameters['lang'])) {
             trigger_error("'lang' parameter is deprecated, use '@lang' instead", E_USER_DEPRECATED);
@@ -58,11 +57,7 @@ function url($page = '', $parameters = [], $absolute = false)
             $lang = $parameters['@lang'];
             unset($parameters['@lang']);
         } else {
-            if ('short' == $type) {
-                $lang = Translator::getShortCodeLang();
-            } elseif ('complete' == $type) {
-                $lang = Translator::getCodeLang();
-            }
+            $lang = Translator::getShortCodeLang();
         }
         if (!$page) {
             if (2 == strlen($lang)) {
@@ -74,14 +69,6 @@ function url($page = '', $parameters = [], $absolute = false)
             }
         } elseif ($lang) {
             $url .= '/'.$lang;
-        }
-    } elseif ('parameter' == $changelang) {
-        if (!isset($parameters['@lang'])) {
-            if ('short' == $type) {
-                $parameters['@lang'] = Translator::getShortCodeLang();
-            } elseif ('complete' == $type) {
-                $parameters['@lang'] = Translator::getCodeLang();
-            }
         }
     } else {
         unset($parameters['@lang'], $parameters['lang']);
