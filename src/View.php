@@ -23,13 +23,6 @@ class View
     public static function byName(string $viewName): View
     {
         $location = Theme::locate($viewName);
-        if (!$location) {
-            throw new NoViewException($viewName);
-        }
-        $sources = Theme::byName($location['source']->getName());
-        foreach ($sources as $source) {
-            $source->registerTranslates(Translator::getCodeLang());
-        }
         $view = new $location['name']();
         $view->setSource($location['source']);
 

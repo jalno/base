@@ -71,7 +71,7 @@ class ThrowDynamicData extends Event
         $this->setOption('packages.base.translator.changelang.type');
         $this->setOption('packages.base.routing.www');
         $this->setData('translator', [
-            'lang' => Translator::getCodeLang(),
+            'lang' => app()->getLocale(),
         ]);
     }
 

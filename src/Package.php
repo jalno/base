@@ -13,7 +13,6 @@ use packages\base\IO\File\Local as LocalFile;
 
 class Package extends ServiceProvider
 {
-    use LanguageContainerTrait;
     use ListenerContainerTrait;
 
     /**
@@ -23,9 +22,6 @@ class Package extends ServiceProvider
      *
      * @throws IO\NotFoundException         if cannot find jalno.json in package directory
      * @throws IO\NotFoundException         {@see package::addFrontend()}
-     * @throws IO\NotFoundException         {@see package::addLang()}
-     * @throws translator\LangAlreadyExists {@see package::addLang()}
-     * @throws translator\InvalidLangCode   {@see package::addLang()}
      * @throws PackageConfigException       if jalno.json file wasn't an array
      * @throws PackageConfigException       if event hasn't "name" or "listener" indexes
      */
@@ -42,11 +38,6 @@ class Package extends ServiceProvider
             }
             foreach ($config['frontend'] as $frontend) {
                 $package->addFrontend($frontend);
-            }
-        }
-        if (isset($config['languages'])) {
-            foreach ($config['languages'] as $lang => $file) {
-                $package->addLang($lang, $file);
             }
         }
         if (isset($config['bootstrap'])) {
@@ -236,16 +227,6 @@ class Package extends ServiceProvider
     }
 
     /**
-     * Generate a URL to given file.
-     *
-     * @deprecated
-     */
-    public function url(string $file, bool $absolute = false): string
-    {
-        throw new Exception("Not Supported");
-    }
-
-    /**
      * Set routing file.
      *
      * @param string $routing a filename in the package
@@ -328,6 +309,16 @@ class Package extends ServiceProvider
         $this->registerRoutes();
         $this->registerFrontendSources();
         $this->addLinkForPublicStorages();
+        $this->registerTranslations();
+        
+    }
+
+    protected function registerTranslations(): void
+    {
+        $dir = $this->home->directory("langs");
+        if ($dir->exists()) {
+            $this->loadJsonTranslationsFrom($dir->getPath());
+        }
     }
 
     protected function registerRoutes(): void
@@ -361,7 +352,6 @@ class Package extends ServiceProvider
     {
         foreach ($this->frontends as $dir) {
             $source = Frontend\Source::fromDirectory($this->app, $this, $dir);
-            $source->addLangs();
             Theme::addSource($source);
             $this->app->register($source, true);
         }

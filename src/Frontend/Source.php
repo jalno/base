@@ -9,13 +9,11 @@ use packages\base\IO;
 use packages\base\IO\Directory\Local as LocalDirectory;
 use packages\base\IO\File\Local as LocalFile;
 use packages\base\Json;
-use packages\base\LanguageContainerTrait;
 use packages\base\ListenerContainerTrait;
 use packages\base\Package;
 
 class Source extends ServiceProvider
 {
-    use LanguageContainerTrait;
     use ListenerContainerTrait;
 
     /**
@@ -39,11 +37,6 @@ class Source extends ServiceProvider
         if (isset($config['assets'])) {
             foreach ($config['assets'] as $asset) {
                 $source->addAsset($asset);
-            }
-        }
-        if (isset($config['languages'])) {
-            foreach ($config['languages'] as $lang => $file) {
-                $source->addLang($lang, $file);
             }
         }
         if (isset($config['events'])) {
@@ -234,6 +227,15 @@ class Source extends ServiceProvider
     public function register(): void
     {
         $this->addLinkForAssets();
+        $this->registerTranslations();
+    }
+
+    protected function registerTranslations(): void
+    {
+        $dir = $this->home->directory("langs");
+        if ($dir->exists()) {
+            $this->loadJsonTranslationsFrom($dir->getPath());
+        }
     }
 
     protected function addLinkForAssets(): void

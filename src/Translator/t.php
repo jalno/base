@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Alias for translator::trans().
+ * Alias for t().
  */
 function t(string $key, ?array $params = []): ?string
 {
-    return packages\base\Translator::trans($key, $params);
+    return __($key, $params);
 }

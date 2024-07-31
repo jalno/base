@@ -2,12 +2,11 @@
 
 namespace packages\base;
 
-use packages\base\Translator\InvalidLangCode;
-use packages\base\Translator\Language;
+use Illuminate\Translation\Translator as TranslationTranslator;
 
 class Translator
 {
-    public static $allowlangs = [
+    public static array $allowlangs = [
         'en', 'aa', 'ab', 'af', 'am', 'ar', 'as', 'ay', 'az', 'ba', 'be', 'bg', 'bh', 'bi', 'bn', 'bo', 'br', 'ca', 'co', 'cs', 'cy', 'da', 'de', 'dz', 'el',
         'eo', 'es', 'et', 'eu', 'fa', 'fi', 'fj', 'fo', 'fr', 'fy', 'ga', 'gd', 'gl', 'gn', 'gu', 'ha', 'hi', 'hr', 'hu', 'hy', 'ia', 'ie', 'ik', 'in', 'is',
         'it', 'iw', 'ja', 'ji', 'jw', 'ka', 'kk', 'kl', 'km', 'kn', 'ko', 'ks', 'ku', 'ky', 'la', 'ln', 'lo', 'lt', 'lv', 'mg', 'mi', 'mk', 'ml', 'mn', 'mo',
@@ -15,122 +14,198 @@ class Translator
         'sk', 'sl', 'sm', 'sn', 'so', 'sq', 'sr', 'ss', 'st', 'su', 'sv', 'sw', 'ta', 'te', 'tg', 'th', 'ti', 'tk', 'tl', 'tn', 'to', 'tr', 'ts', 'tt', 'tw',
         'uk', 'ur', 'uz', 'vi', 'vo', 'wo', 'xh', 'yo', 'zh', 'zu',
     ];
-    public static $countries = [
-        'AF', 'AX', 'AL', 'DZ', 'AS', 'AD', 'AO', 'AI', 'AQ', 'AG', 'AR', 'AM', 'AW', 'AU', 'AT', 'AZ', 'BS', 'BH', 'BD', 'BB', 'BY', 'BE', 'BZ', 'BJ', 'BM',
-        'BT', 'BO', 'BA', 'BW', 'BV', 'BR', 'IO', 'BN', 'BG', 'BF', 'BI', 'KH', 'CM', 'CA', 'CV', 'KY', 'CF', 'TD', 'CL', 'CN', 'CX', 'CC', 'CO', 'KM', 'CG',
-        'CD', 'CK', 'CR', 'CI', 'HR', 'CU', 'CY', 'CZ', 'DK', 'DJ', 'DM', 'DO', 'EC', 'EG', 'SV', 'GQ', 'ER', 'EE', 'ET', 'FK', 'FO', 'FJ', 'FI', 'FR', 'GF',
-        'PF', 'TF', 'GA', 'GM', 'GE', 'DE', 'GH', 'GI', 'GR', 'GL', 'GD', 'GP', 'GU', 'GT', 'GG', 'GN', 'GW', 'GY', 'HT', 'HM', 'VA', 'HN', 'HK', 'HU', 'IS',
-        'IN', 'ID', 'IR', 'IQ', 'IE', 'IM', 'IL', 'IT', 'JM', 'JP', 'JE', 'JO', 'KZ', 'KE', 'KI', 'KR', 'KW', 'KG', 'LA', 'LV', 'LB', 'LS', 'LR', 'LY', 'LI',
-        'LT', 'LU', 'MO', 'MK', 'MG', 'MW', 'MY', 'MV', 'ML', 'MT', 'MH', 'MQ', 'MR', 'MU', 'YT', 'MX', 'FM', 'MD', 'MC', 'MN', 'ME', 'MS', 'MA', 'MZ', 'MM',
-        'NA', 'NR', 'NP', 'NL', 'AN', 'NC', 'NZ', 'NI', 'NE', 'NG', 'NU', 'NF', 'MP', 'NO', 'OM', 'PK', 'PW', 'PS', 'PA', 'PG', 'PY', 'PE', 'PH', 'PN', 'PL',
-        'PT', 'PR', 'QA', 'RE', 'RO', 'RU', 'RW', 'BL', 'SH', 'KN', 'LC', 'MF', 'PM', 'VC', 'WS', 'SM', 'ST', 'SA', 'SN', 'RS', 'SC', 'SL', 'SG', 'SK', 'SI',
-        'SB', 'SO', 'ZA', 'GS', 'ES', 'LK', 'SD', 'SR', 'SJ', 'SZ', 'SE', 'CH', 'SY', 'TW', 'TJ', 'TZ', 'TH', 'TL', 'TG', 'TK', 'TO', 'TT', 'TN', 'TR', 'TM',
-        'TC', 'TV', 'UG', 'UA', 'AE', 'GB', 'US', 'UM', 'UY', 'UZ', 'VU', 'VE', 'VN', 'VG', 'VI', 'WF', 'EH', 'YE', 'ZM', 'ZW',
+    public static array $countries = [
+        "ab" => "RU",
+        "aa" => "ET",
+        "af" => "ZA",
+        "ak" => "GH",
+        "sq" => "AL",
+        "am" => "ET",
+        "ar" => "EG",
+        "an" => "ES",
+        "hy" => "AM",
+        "as" => "IN",
+        "av" => "RU",
+        "ae" => "ET",
+        "ay" => "BO",
+        "az" => "AZ",
+        "bm" => "ML",
+        "ba" => "RU",
+        "eu" => "ES",
+        "be" => "BY",
+        "bn" => "BD",
+        "bi" => "CM",
+        "bs" => "BA",
+        "br" => "FR",
+        "bg" => "BG",
+        "my" => "MM",
+        "ca" => "ES",
+        "ch" => "GU",
+        "ce" => "RU",
+        "ny" => "MW",
+        "zh" => "CN",
+        "cu" => "BY",
+        "cv" => "RU",
+        "kw" => "GB",
+        "co" => "CO",
+        "cr" => "CA",
+        "hr" => "HR",
+        "cs" => "CZ",
+        "da" => "DK",
+        "dv" => "MV",
+        "nl" => "NL",
+        "dz" => "BT",
+        "en" => "US",
+        "et" => "EE",
+        "ee" => "GH",
+        "fo" => "FO",
+        "fj" => "FJ",
+        "fi" => "FI",
+        "fr" => "FR",
+        "fy" => "NL",
+        "ff" => "SN",
+        "gd" => "GB",
+        "gl" => "ES",
+        "lg" => "UG",
+        "ka" => "GE",
+        "de" => "DE",
+        "el" => "GR",
+        "kl" => "GL",
+        "gn" => "PY",
+        "gu" => "IN",
+        "ht" => "HT",
+        "ha" => "NG",
+        "he" => "IL",
+        "hz" => "NA",
+        "hi" => "IN",
+        "ho" => "PG",
+        "hu" => "HU",
+        "is" => "IS",
+        "ig" => "NG",
+        "id" => "ID",
+        "iu" => "CA",
+        "ik" => "CA",
+        "ga" => "IE",
+        "it" => "IT",
+        "ja" => "JP",
+        "jv" => "ID",
+        "kn" => "IN",
+        "kr" => "NG",
+        "ks" => "IN",
+        "kk" => "KZ",
+        "km" => "KH",
+        "ki" => "KE",
+        "rw" => "RW",
+        "ky" => "KG",
+        "kv" => "RU",
+        "kg" => "CO",
+        "ko" => "KR",
+        "kj" => "AO",
+        "ku" => "IQ",
+        "lo" => "LA",
+        "la" => "VA",
+        "lv" => "LV",
+        "li" => "NL",
+        "ln" => "CD",
+        "lt" => "LT",
+        "lu" => "CD",
+        "lb" => "LU",
+        "mk" => "MK",
+        "mg" => "MG",
+        "ms" => "MY",
+        "ml" => "IN",
+        "mt" => "MT",
+        "gv" => "IM",
+        "mi" => "NZ",
+        "mr" => "IN",
+        "mh" => "MH",
+        "mn" => "MN",
+        "na" => "NA",
+        "nv" => "US",
+        "nd" => "ZW",
+        "nr" => "ZA",
+        "ng" => "NA",
+        "ne" => "NP",
+        "no" => "NO",
+        "nb" => "NO",
+        "nn" => "NO",
+        "oc" => "FR",
+        "oj" => "CA",
+        "or" => "IN",
+        "om" => "ET",
+        "os" => "RU",
+        "pi" => "FJ",
+        "ps" => "AF",
+        "fa" => "IR",
+        "pl" => "PL",
+        "pt" => "BR",
+        "pa" => "PK",
+        "qu" => "PE",
+        "ro" => "RO",
+        "rm" => "CH",
+        "rn" => "BI",
+        "ru" => "RU",
+        "se" => "NO",
+        "sm" => "SM",
+        "sg" => "SG",
+        "sa" => "IN",
+        "sc" => "IT",
+        "sr" => "RS",
+        "sn" => "ZW",
+        "sd" => "PK",
+        "si" => "LK",
+        "sk" => "SK",
+        "sl" => "SI",
+        "so" => "SO",
+        "st" => "ZA",
+        "es" => "ES",
+        "su" => "ID",
+        "sw" => "TZ",
+        "ss" => "ZA",
+        "sv" => "SE",
+        "tl" => "PH",
+        "ty" => "PF",
+        "tg" => "TJ",
+        "ta" => "IN",
+        "tt" => "RU",
+        "te" => "IN",
+        "th" => "TH",
+        "bo" => "CN",
+        "ti" => "ET",
+        "to" => "TO",
+        "ts" => "ZA",
+        "tn" => "BW",
+        "tr" => "TR",
+        "tk" => "TM",
+        "tw" => "TW",
+        "ug" => "CN",
+        "uk" => "UA",
+        "ur" => "PK",
+        "uz" => "UZ",
+        "ve" => "ZA",
+        "vi" => "VN",
+        "wa" => "BE",
+        "cy" => "CY",
+        "wo" => "SN",
+        "xh" => "ZA",
+        "ii" => "CN",
+        "yi" => "IS",
+        "yo" => "NG",
+        "za" => "ZA",
+        "zu" => "ZA"
     ];
-    private static $lang;
-    private static $langs = [];
 
-    public static function setLang($code)
+
+    /**
+     * @deprecated use `app()->getLocale()` instead
+     */
+    public static function getShortCodeLang(): string
     {
-        if (isset(self::$langs[$code])) {
-            self::$lang = $code;
-        } else {
-            throw new InvalidLangCode();
-        }
+        return app()->getLocale();
     }
 
-    public static function getDefaultLang()
-    {
-        $defaultlang = Options::get('packages.base.translator.defaultlang');
 
-        return $defaultlang;
-    }
-
-    public static function getDefaultShortLang()
-    {
-        return substr(self::getDefaultLang(), 0, 2);
-    }
-
-    public static function getAvailableLangs()
-    {
-        return array_keys(self::$langs);
-    }
-
-    public static function getLangs()
-    {
-        return self::$langs;
-    }
-
-    public static function addLang($code)
-    {
-        if (!isset(self::$langs[$code])) {
-            if (!self::is_validCode($code)) {
-                throw new InvalidLangCode();
-            }
-            self::$langs[$code] = new Language($code);
-        }
-
-        return self::$langs[$code];
-    }
-
-    public static function getLang($code = null)
-    {
-        if ($code) {
-            return isset(self::$langs[$code]) ? self::$langs[$code] : false;
-        } else {
-            return self::$langs[self::$lang];
-        }
-    }
-
-    public static function getCodeLang($code = null)
-    {
-        if ($code) {
-            return $code;
-        } else {
-            return self::$lang;
-        }
-    }
-
-    public static function getShortCodeLang($code = null)
-    {
-        if ($code) {
-            return substr($code, 0, 2);
-        } else {
-            return substr(self::$lang, 0, 2);
-        }
-    }
-
-    public static function trans($key, array $params = [])
-    {
-        if (self::$lang and isset(self::$langs[self::$lang])) {
-            return self::$langs[self::$lang]->trans($key, $params);
-        }
-    }
-
-    public static function import(Language $lang)
-    {
-        $code = $lang->getCode();
-        if (!isset(self::$langs[$code])) {
-            self::$langs[$code] = $lang;
-        } else {
-            $phrases = $lang->getPhrases();
-            self::$langs[$code]->setRTL($lang->isRTL());
-            if ($calendar = $lang->getCalendar()) {
-                self::$langs[$code]->setCalendar($calendar);
-            }
-            foreach ($lang->getDateFormats() as $key => $format) {
-                self::$langs[$code]->setDateFormat($key, $format);
-            }
-            try {
-                foreach ($phrases as $key => $phrase) {
-                    self::$langs[$code]->addPhrase($key, $phrase);
-                }
-            } catch (Translator\PhraseAlreadyExists $e) {
-            }
-        }
-    }
-
-    public static function is_validCode($code)
+    public static function is_validCode(string $code): bool
     {
         if (preg_match('/^([a-z]{2})_([A-Z]{2})$/', $code, $matches)) {
             if (in_array($matches[1], self::$allowlangs) and in_array($matches[2], self::$countries)) {
@@ -141,8 +216,27 @@ class Translator
         return false;
     }
 
-    public static function is_shortCode($code)
+    public static function is_shortCode(string $code): bool
     {
         return in_array($code, self::$allowlangs);
+    }
+
+    /**
+     * @return string[]
+     */
+    public static function getAvailableLangs(): array
+    {
+        $codes = (array) Options::get("packages.base.translator.active.lang");
+        if (!$codes) {
+            $codes = [app()->getLocale()];
+        }
+        return $codes;
+    }
+
+    public static function isRTL(?string $code = null): bool {
+        if ($code === null) {
+            $code = app()->getLocale();
+        }
+        return in_array($code, ["ar", "dv", "fa","ha","he","ks","ku","ps", "ur", "yi"]);
     }
 }

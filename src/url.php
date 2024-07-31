@@ -3,6 +3,7 @@
 namespace packages\base;
 
 use Illuminate\Support\Facades\Request;
+use Illuminate\Translation\Translator;
 
 function url($page = '', $parameters = [], $absolute = false)
 {
@@ -57,16 +58,10 @@ function url($page = '', $parameters = [], $absolute = false)
             $lang = $parameters['@lang'];
             unset($parameters['@lang']);
         } else {
-            $lang = Translator::getShortCodeLang();
+            $lang = app()->getLocale();
         }
         if (!$page) {
-            if (2 == strlen($lang)) {
-                if ($lang != Translator::getDefaultShortLang()) {
-                    $url .= '/'.$lang;
-                }
-            } elseif ($lang and $lang != Translator::getDefaultLang()) {
-                $url .= '/'.$lang;
-            }
+            $url .= '/'.$lang;
         } elseif ($lang) {
             $url .= '/'.$lang;
         }

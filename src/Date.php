@@ -146,24 +146,14 @@ class Date implements DateInterface
         $defaultOption = [
             'calendar' => 'gregorian',
         ];
-        $log->debug('looking for active language date calendar');
-        $lang = Translator::getLang();
-        if ($lang and $calendar = $lang->getCalendar()) {
-            $log->reply($calendar);
-            $defaultOption['calendar'] = $calendar;
-            foreach ($lang->getDateFormats() as $key => $format) {
-                self::setPresetsFormat($key, $format);
-            }
+        $log->debug('looking for packages.base.date option');
+        if (($option = Options::load('packages.base.date')) !== false) {
+            $log->reply($option);
+            $defaultOption = array_replace_recursive($defaultOption, $option);
+            $log->debug('set calendar to', $defaultOption['calendar']);
+            self::setCanlenderName($defaultOption['calendar']);
         } else {
-            $log->debug('looking for packages.base.date option');
-            if (($option = Options::load('packages.base.date')) !== false) {
-                $log->reply($option);
-                $defaultOption = array_replace_recursive($defaultOption, $option);
-                $log->debug('set calendar to', $defaultOption['calendar']);
-                self::setCanlenderName($defaultOption['calendar']);
-            } else {
-                $log->reply('Not defined');
-            }
+            $log->reply('Not defined');
         }
         $log->debug('set calendar to', $defaultOption['calendar']);
         self::setCanlenderName($defaultOption['calendar']);
@@ -190,7 +180,7 @@ class Date implements DateInterface
         $now = self::time();
         $mine = $time - $now;
         if (0 == $mine) {
-            return Translator::trans('date.relatively.now');
+            return t('date.relatively.now');
         }
         $steps = ['y', 'm', 'w', 'd', 'h', 'i', 's'];
         if ('short' == $format) {
@@ -211,7 +201,7 @@ class Date implements DateInterface
             $isLast = (count($expr) + $matched and $key >= $maxStep);
             if ($matched) {
                 $number = $isLast ? ceil($abs / $item[1]) : floor($abs / $item[1]);
-                $expr[] = Translator::trans('date.relatively.'.$item[0], ['number' => $number]);
+                $expr[] = t('date.relatively.'.$item[0], ['number' => $number]);
                 $abs = $abs % $item[1];
             }
             if ($isLast) {
@@ -219,20 +209,20 @@ class Date implements DateInterface
             }
         }
         if ($abs and (!$expr or 6 == $maxStep)) {
-            $expr[] = Translator::trans('date.relatively.seconds', ['number' => $abs]);
+            $expr[] = t('date.relatively.seconds', ['number' => $abs]);
         }
         $expr_text = $expr[0];
         $count = count($expr);
         for ($x = 1; $x < $count; ++$x) {
-            $expr_text = Translator::trans('date.relatively.and', [
+            $expr_text = t('date.relatively.and', [
                 'expr1' => $expr_text,
                 'expr2' => $expr[$x],
             ]);
         }
         if ($mine < 0) {
-            return Translator::trans('date.relatively.ago', ['expr' => $expr_text]);
+            return t('date.relatively.ago', ['expr' => $expr_text]);
         } else {
-            return Translator::trans('date.relatively.later', ['expr' => $expr_text]);
+            return t('date.relatively.later', ['expr' => $expr_text]);
         }
     }
 

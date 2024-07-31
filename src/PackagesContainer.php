@@ -78,7 +78,7 @@ class PackagesContainer
                     if (isset($result[$name])) {
                         throw new Exception("Duplicate package named '{$name}'");
                     }
-                    $result[$name] = $basePath . DIRECTORY_SEPARATOR . "vendor" . DIRECTORY_SEPARATOR . $package['name'] . DIRECTORY_SEPARATOR . $package['extra']['jalno']['manifest'];
+                    $result[$name] = realpath($basePath . DIRECTORY_SEPARATOR . "vendor" . DIRECTORY_SEPARATOR . $package['name'] . DIRECTORY_SEPARATOR . $package['extra']['jalno']['manifest']);
                 }
             }
         }
