@@ -17,7 +17,7 @@ class Controller
      *
      * @return array filtered data
      *
-     * @throws packages\base\InputValidationException
+     * @throws InputValidationException
      */
     protected function checkinputs(array $rules)
     {
@@ -66,7 +66,7 @@ class Controller
         $response->send();
     }
 
-    public function getResponse()
+    public function getResponse(): Response
     {
         return $this->response;
     }

@@ -2,24 +2,24 @@
 namespace packages\base;
 
 use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Routing\Contracts\ControllerDispatcher as ControllerDispatcherContract;
 use Illuminate\Support\ServiceProvider as SupportServiceProvider;
 use packages\base\Console\Commands\RunCommand;
+use packages\base\Routing\ControllerDispatcher;
 
 class ServiceProvider extends SupportServiceProvider
 {
 	public function register(): void
 	{
+
 		$this->app->singleton(PackagesContainer::class);
 		$this->app->singleton(OptionsHandler::class);
+		$this->app->bind(ControllerDispatcherContract::class, ControllerDispatcher::class);
 		$this->app->make(Kernel::class)->prependMiddleware(Http\Middlewares\SetHttp::class);
 
 		Options::loadFromFile();
 		$this->connectToDatabaseIfPossible();
 		Options::loadFromDatabase();
-
-		$defaultLang = Translator::getDefaultLang();
-		Translator::addLang($defaultLang);
-		Translator::setLang($defaultLang);
 
 		Packages::registerFromComposer();
 		Packages::loadDynamicStorages();

@@ -20,19 +20,17 @@ class SourceContainer
 	 *
 	 * @param string $viewName [parent] class name in lower case
 	 *
-	 * @return array|null array will contain "name"(string), "source"(Source)
+	 * @return array{name:string,source:Source}
 	 */
 	public function locate(string $viewName): array
 	{
 		$reflection = new \ReflectionClass($viewName);
 		$filename = $reflection->getFilename();
 
-
 		foreach ($this->sources as $source) {
 			if (!str_starts_with($filename, $source->getHome()->getPath() . DIRECTORY_SEPARATOR)) {
 				continue;
 			}
-
 			return [
 				'name' => $viewName,
 				'source' => $source,
