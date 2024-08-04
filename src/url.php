@@ -5,7 +5,7 @@ namespace packages\base;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Translation\Translator;
 
-function url($page = '', $parameters = [], $absolute = false)
+function url(string $page = '', array $parameters = [], bool $absolute = false): string
 {
     $langInUrl = (Options::get('packages.base.translator.changelang') == 'uri');
     if ('.' == $page) {
