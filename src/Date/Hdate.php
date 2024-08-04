@@ -33,7 +33,7 @@ class Hdate implements DateInterface
      */
     public static $adj_data = [];
 
-    public static function format($type, $maket = 'now'): string
+    public static function format(string $type, ?int $maket = null): string
     {
         $transnumber = 0;
         $TZhours = 0;
@@ -41,7 +41,7 @@ class Hdate implements DateInterface
         $need = '';
         $result1 = '';
         $result = '';
-        if ('now' == $maket) {
+        if (null === $maket) {
             $year = date('Y');
             $month = date('m');
             $day = date('d');
@@ -274,7 +274,7 @@ class Hdate implements DateInterface
             list($day, $year) = self::format('Y');
         }
 
-        return in_array($year % 30, ['2, 5, 7, 10, 13, 16, 18, 21, 24, 26, 29']);
+        return in_array($year % 30, [2, 5, 7, 10, 13, 16, 18, 21, 24, 26, 29]);
     }
 
     public static function gregorianToHijri(int $year, int $month, int $day): array
@@ -480,7 +480,7 @@ class Hdate implements DateInterface
         throw new Exception('The given month is not valid!');
     }
 
-    public static function mktime($hour = null, $minute = null, $second = null, $month = null, $day = null, $year = null): int
+    public static function mktime(?int $hour = null, ?int $minute = null, ?int $second = null, ?int $month = null, ?int $day = null, ?int $year = null): int
     {
         list($year, $month, $day) = self::hijriToGregorian($year, $month, $day);
 

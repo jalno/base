@@ -2,12 +2,15 @@
 
 namespace packages\base;
 
-use packages\base\Date\CalendarNotExist;
+use InvalidArgumentException;
 use packages\base\Date\DateInterface;
+use packages\base\Date\Gregorian;
+use packages\base\Date\Hdate;
+use packages\base\Date\Jdate;
 
 class Date implements DateInterface
 {
-    public static $presetsFormats = [
+    public static array $presetsFormats = [
         'Q' => 'm/d/Y',
         'q' => 'n/j/Y',
         'QQ' => 'F d Y',
@@ -20,164 +23,87 @@ class Date implements DateInterface
         'QTS' => 'g:i:s A',
     ];
 
-    public static function setPresetsFormat(string $key, string $format)
+    public static function setPresetsFormat(string $key, string $format): void
     {
         if (!isset(self::$presetsFormats[$key])) {
             throw new Exception("'{$key}' is not a presets formats. allowed presets formats is: ".Json\encode(self::$presetsFormats));
         }
         self::$presetsFormats[$key] = $format;
     }
-    protected static $calendar;
-    protected static $inited = false;
 
-    public static function setCanlenderName($name)
+    protected static ?string $calendar = null;
+
+    public static function setCanlenderName(string $name): void
     {
-        $log = Log::getInstance();
-        $classname = __NAMESPACE__.'\\date\\'.$name;
-        $log->debug('looking for', $classname, 'calendar');
-        if (class_exists($classname)) {
-            $log->reply('found');
-            self::$calendar = $name;
-        } else {
-            $log->reply()->fatal('Notfound');
-            throw new CalendarNotExist($name);
-        }
+        self::$calendar = $name;
     }
 
-    public static function getCanlenderName()
+    public static function getCanlenderName(): string
     {
         return self::$calendar;
     }
 
-    public static function setTimeZone(string $timezone)
+    public static function setTimeZone(string $timezone): void
     {
-        $log = Log::getInstance();
-        $log->debug('check given timezone ('.$timezone.') is valid?');
-        if (!in_array($timezone, \DateTimeZone::listIdentifiers(\DateTimeZone::ALL))) {
-            $log->reply()->fatal('is not valid');
-            throw new Date\TimeZoneNotValid($timezone);
-        } else {
-            $log->reply('is valid');
+        if (!date_default_timezone_set($timezone)) {
+            throw new Exception("timezone identifier isn't valid");
         }
-        date_default_timezone_set($timezone);
     }
 
     public static function getTimeZone(): string
     {
-        self::init();
-
         return date_default_timezone_get();
     }
 
-    public static function format($format, $timestamp = null)
+    public static function format(string $format, ?int $timestamp = null): string
     {
-        self::init();
-        if (null === $timestamp) {
-            $timestamp = self::time();
-        }
+        static::init();
         $presetsFormats = array_reverse(self::$presetsFormats);
         $format = str_replace(array_keys($presetsFormats), array_values($presetsFormats), $format);
 
-        return call_user_func_array([__NAMESPACE__.'\\date\\'.self::$calendar, 'format'], [$format, $timestamp]);
+        return call_user_func([static::getCalendarFQCN(), 'format'], $format, $timestamp);
     }
 
-    public static function strtotime($time, $now = null)
+    public static function strtotime(string $time, ?int $now = null): int
     {
-        self::init();
-        if (null === $now) {
-            $now = self::time();
-        }
+        static::init();
 
-        return call_user_func_array([__NAMESPACE__.'\\date\\'.self::$calendar, 'strtotime'], [$time, $now]);
+        return call_user_func([static::getCalendarFQCN(), 'strtotime'], $time, $now);
     }
 
     public static function getFirstDayOfWeek(): int
     {
-        self::init();
+        static::init();
 
-        return call_user_func([__NAMESPACE__.'\\date\\'.self::$calendar, 'getFirstDayOfWeek']);
+        return call_user_func([static::getCalendarFQCN(), 'getFirstDayOfWeek']);
     }
 
     public static function getWeekDay(int $day): ?int
     {
-        self::init();
+        static::init();
 
-        return call_user_func([__NAMESPACE__.'\\date\\'.self::$calendar, 'getWeekDay'], $day);
+        return call_user_func([static::getCalendarFQCN(), 'getWeekDay'], $day);
     }
 
-    public static function mktime($hour = null, $minute = null, $second = null, $month = null, $day = null, $year = null)
+    public static function mktime(?int $hour = null, ?int $minute = null, ?int $second = null, ?int $month = null, ?int $day = null, ?int $year = null): int
     {
-        self::init();
-        $now = explode('/', self::format('Y/m/d/H/i/s'));
-        if (null === $year) {
-            $year = $now[0];
-        }
-        if (null === $day) {
-            $day = $now[2];
-        }
-        if (null === $month) {
-            $month = $now[1];
-        }
-        if (null === $hour) {
-            $hour = $now[3];
-        }
-        if (null === $minute) {
-            $minute = $now[4];
-        }
-        if (null === $second) {
-            $second = $now[5];
-        }
-        if (self::$calendar) {
-            return call_user_func_array([__NAMESPACE__.'\\date\\'.self::$calendar, 'mktime'], [$hour, $minute, $second, $month, $day, $year]);
-        }
+        static::init();
+        return call_user_func([static::getCalendarFQCN(), 'mktime'], $hour, $minute, $second, $month, $day, $year);
     }
 
-    /**
-     * @return int
-     */
-    public static function time()
+    public static function time(): int
     {
         return time();
     }
 
-    public static function setDefaultcalendar()
+    public static function setDefaultCalendar(): void
     {
-        $log = Log::getInstance();
-        $defaultOption = [
-            'calendar' => 'gregorian',
-        ];
-        $log->debug('looking for packages.base.date option');
-        if (($option = Options::load('packages.base.date')) !== false) {
-            $log->reply($option);
-            $defaultOption = array_replace_recursive($defaultOption, $option);
-            $log->debug('set calendar to', $defaultOption['calendar']);
-            self::setCanlenderName($defaultOption['calendar']);
-        } else {
-            $log->reply('Not defined');
-        }
-        $log->debug('set calendar to', $defaultOption['calendar']);
-        self::setCanlenderName($defaultOption['calendar']);
-    }
-
-    public static function setDefaultTimeZone()
-    {
-        $log = Log::getInstance();
-        $defaultOption = [];
-        $log->debug('looking for packages.base.date option');
-        $option = Options::get('packages.base.date');
-        if (false !== $option) {
-            $log->reply('found');
-        }
-        if (!isset($defaultOption['timezone'])) {
-            return;
-        }
-        $log->debug('set timezone to', $defaultOption['timezone']);
-        self::setTimeZone($defaultOption['timezone']);
+        static::setCanlenderName(Options::get('packages.base.date.calendar') ?: 'gregorian');
     }
 
     public static function relativeTime(int $time, string $format = 'short'): string
     {
-        $now = self::time();
+        $now = static::time();
         $mine = $time - $now;
         if (0 == $mine) {
             return t('date.relatively.now');
@@ -188,7 +114,7 @@ class Date implements DateInterface
         } elseif ('long' == $format) {
             $format = 's';
         } elseif (!in_array($format, $steps)) {
-            throw new \TypeError('wrong format, allowed: y, m, w, d, h, i, s');
+            throw new InvalidArgumentException('wrong format, allowed: y, m, w, d, h, i, s');
         }
         $maxStep = array_search($format, $steps);
         $abs = abs($mine);
@@ -226,18 +152,22 @@ class Date implements DateInterface
         }
     }
 
-    public static function init()
+    public static function init(): void
     {
-        if (self::$inited) {
-            return;
-        }
-        self::setDefaultTimeZone();
         if (!self::$calendar) {
-            self::setDefaultcalendar();
+            static::setDefaultCalendar();
         }
-        if (!self::$calendar) {
-            throw new Date\NoCalendarException();
-        }
-        self::$inited = true;
+    }
+
+    /**
+     * @return class-string<DateInterface>
+     */
+    protected static function getCalendarFQCN(): string {
+        return  match(strtolower(self::$calendar)) {
+            "jdate" => Jdate::class,
+            "gregorian" => Gregorian::class,
+            "hdate" => Hdate::class,
+            default => __NAMESPACE__ . '\\Date\\' . self::$calendar,
+        };
     }
 }

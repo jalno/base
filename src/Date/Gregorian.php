@@ -4,23 +4,15 @@ namespace packages\base\Date;
 
 class Gregorian implements DateInterface
 {
-    public static $weekDays = [1, 2, 3, 4, 5, 6, 0];
+    public static array $weekDays = [1, 2, 3, 4, 5, 6, 0];
 
-    public static function format($format, $timestamp = null)
+    public static function format(string $format, ?int $timestamp = null): string
     {
-        if (null === $timestamp) {
-            $timestamp = time();
-        }
-
         return date($format, $timestamp);
     }
 
-    public static function strtotime($time, $now = null)
+    public static function strtotime(string $time, ?int $now = null): int
     {
-        if (null === $now) {
-            $now = time();
-        }
-
         return strtotime($time, $now);
     }
 
@@ -36,25 +28,10 @@ class Gregorian implements DateInterface
         return false !== $key ? $key : null;
     }
 
-    public static function mktime($hour = null, $minute = null, $second = null, $month = null, $day = null, $year = null)
+    public static function mktime(?int $hour = null, ?int $minute = null, ?int $second = null, ?int $month = null, ?int $day = null, ?int $year = null): int
     {
         if (null === $hour) {
             $hour = date('H');
-        }
-        if (null === $minute) {
-            $minute = date('i');
-        }
-        if (null === $second) {
-            $second = date('s');
-        }
-        if (null === $month) {
-            $month = date('n');
-        }
-        if (null === $day) {
-            $day = date('j');
-        }
-        if (null === $year) {
-            $year = date('Y');
         }
 
         return mktime($hour, $minute, $second, $month, $day, $year);

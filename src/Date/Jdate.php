@@ -20,7 +20,7 @@ class Jdate implements DateInterface
         return false !== $key ? $key : null;
     }
 
-    public static function format($type, $maket = 'now')
+    public static function format(string $type, ?int $maket = null): string
     {
         $transnumber = 0;
         $TZhours = 0;
@@ -28,7 +28,7 @@ class Jdate implements DateInterface
         $need = '';
         $result1 = '';
         $result = '';
-        if ('now' == $maket) {
+        if (null === $maket) {
             $year = date('Y');
             $month = date('m');
             $day = date('d');
@@ -410,14 +410,15 @@ class Jdate implements DateInterface
         }
     }
 
-    public static function mktime($hour = null, $minute = null, $second = null, $month = null, $day = null, $year = null)
+    public static function
+    mktime(?int $hour = null, ?int $minute = null, ?int $second = null, ?int $month = null, ?int $day = null, ?int $year = null): int
     {
         list($year, $month, $day) = self::jalali_to_gregorian($year, $month, $day);
 
         return mktime($hour, $minute, $second, $month, $day, $year);
     }
 
-    public static function strtotime($str, $now = null)
+    public static function strtotime(string $str, ?int $now = null): int
     {
         if ($date = Safe::is_date($str)) {
             if (!isset($date['h'])) {
