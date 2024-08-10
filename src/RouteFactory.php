@@ -47,6 +47,7 @@ class RouteFactory
 		}
 
 		$route = new Route($methods, $uri, $action);
+		$route->middleware('web');
 		foreach ($this->wheres as $parameter => $condition) {
 			if (is_array($condition)) {
 				$route->whereIn($parameter, $condition);
