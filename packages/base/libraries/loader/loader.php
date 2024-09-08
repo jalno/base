@@ -227,7 +227,7 @@ class Loader
         }
     }
 
-    public static function connectdb(): void
+    public static function connectdb(string $connectionName = null, bool $reconnect = false): void
     {
         $db = Options::get('packages.base.loader.db', false);
         if (!$db) {
@@ -239,13 +239,18 @@ class Loader
             ];
         }
         foreach ($db as $name => $config) {
+            if ($connectionName and $name !== $connectionName) {
+                continue;
+            }
             if (!isset($config['port']) or !$config['port']) {
                 $config['port'] = 3306;
             }
             if (!isset($config['host'], $config['user'], $config['pass'],$config['dbname'])) {
                 throw new DatabaseConfigException("{$name} connection is invalid");
             }
-            DB::connect($name, $config['host'], $config['user'], $config['dbname'], $config['pass'], $config['port']);
+            if (!DB::has_connection($name) or $reconnect) {
+                DB::connect($name, $config['host'], $config['user'], $config['dbname'], $config['pass'], $config['port']);
+            }
         }
     }
 
