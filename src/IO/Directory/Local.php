@@ -23,7 +23,7 @@ class Local extends Directory
         if (!$dest->exists()) {
             $dest->make(true);
         }
-        if (rename($this->getPath(), $dest->getPath().'/'.$this->basename)) {
+        if (rename($this->getPath(), $dest->getPath().DIRECTORY_SEPARATOR .$this->basename)) {
             $this->directory = $dest->getPath();
 
             return true;
@@ -34,7 +34,7 @@ class Local extends Directory
 
     public function rename(string $newName): bool
     {
-        if (rename($this->getPath(), $this->directory.'/'.$newName)) {
+        if (rename($this->getPath(), $this->directory.DIRECTORY_SEPARATOR .$newName)) {
             $this->basename = $newName;
 
             return true;
@@ -54,10 +54,10 @@ class Local extends Directory
     public function make(bool $recursive = false): bool
     {
         if ($recursive) {
-            $dirs = explode('/', $this->getPath());
+            $dirs = explode(DIRECTORY_SEPARATOR , $this->getPath());
             $dir = '';
             foreach ($dirs as $part) {
-                $dir .= $part.'/';
+                $dir .= $part.DIRECTORY_SEPARATOR ;
                 if ($dir and !is_dir($dir)) {
                     if (!mkdir($dir)) {
                         return false;
@@ -77,10 +77,10 @@ class Local extends Directory
             $files = [];
             foreach (scandir($dir) as $item) {
                 if ('.' != $item and '..' != $item) {
-                    if (is_file($dir.'/'.$item)) {
-                        $files[] = new File\Local($dir.'/'.$item);
+                    if (is_file($dir.DIRECTORY_SEPARATOR .$item)) {
+                        $files[] = new File\Local($dir.DIRECTORY_SEPARATOR .$item);
                     } elseif ($recursively) {
-                        $files = array_merge($files, $scanner($dir.'/'.$item));
+                        $files = array_merge($files, $scanner($dir.DIRECTORY_SEPARATOR .$item));
                     }
                 }
             }
@@ -97,10 +97,10 @@ class Local extends Directory
             $items = [];
             foreach (scandir($dir) as $item) {
                 if ('.' != $item and '..' != $item) {
-                    if (is_dir($dir.'/'.$item)) {
-                        $items[] = new Local($dir.'/'.$item);
+                    if (is_dir($dir.DIRECTORY_SEPARATOR .$item)) {
+                        $items[] = new Local($dir.DIRECTORY_SEPARATOR .$item);
                         if ($recursively) {
-                            $items = array_merge($items, $scanner($dir.'/'.$item));
+                            $items = array_merge($items, $scanner($dir.DIRECTORY_SEPARATOR .$item));
                         }
                     }
                 }
@@ -118,12 +118,12 @@ class Local extends Directory
             $items = [];
             foreach (scandir($dir) as $item) {
                 if ('.' != $item and '..' != $item) {
-                    if (is_file($dir.'/'.$item)) {
-                        $items[] = new File\Local($dir.'/'.$item);
+                    if (is_file($dir.DIRECTORY_SEPARATOR .$item)) {
+                        $items[] = new File\Local($dir.DIRECTORY_SEPARATOR .$item);
                     } else {
-                        $items[] = new Local($dir.'/'.$item);
+                        $items[] = new Local($dir.DIRECTORY_SEPARATOR .$item);
                         if ($recursively) {
-                            $items = array_merge($items, $scanner($dir.'/'.$item));
+                            $items = array_merge($items, $scanner($dir.DIRECTORY_SEPARATOR .$item));
                         }
                     }
                 }
@@ -142,12 +142,12 @@ class Local extends Directory
 
     public function file(string $name): File\Local
     {
-        return new File\Local($this->getPath().'/'.$name);
+        return new File\Local($this->getPath().DIRECTORY_SEPARATOR .$name);
     }
 
     public function directory(string $name): local
     {
-        return new Local($this->getPath().'/'.$name);
+        return new Local($this->getPath().DIRECTORY_SEPARATOR .$name);
     }
 
     public function getDirectory(): Local
@@ -174,7 +174,7 @@ class Local extends Directory
         if ($this->getRealPath() === $parent->getRealPath()) {
             return false;
         }
-        $base = $parent->getRealPath().'/';
+        $base = $parent->getRealPath().DIRECTORY_SEPARATOR;
 
         return substr($this->getRealPath(), 0, strlen($base)) == $base;
     }
