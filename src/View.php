@@ -442,7 +442,7 @@ class View
             }
         }
         if ($this->file and !$this->file->exists()) {
-            throw new IO\NotFoundException($this->file);
+            throw new IO\NotFoundException($this->file, "Notfound html file for " . get_class($this) . " in " . $this->file->getPath());
         }
     }
 }
