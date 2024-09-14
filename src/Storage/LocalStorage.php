@@ -2,31 +2,25 @@
 
 namespace packages\base\Storage;
 
-use Illuminate\Support\Facades\Request;
 use packages\base\Exception;
 use packages\base\IO\Directory;
 use packages\base\IO\Node;
-use packages\base\Router;
 use packages\base\Storage;
 
 class LocalStorage extends Storage
 {
     /**
-     * @param array{"@class":class-string<LocalStorage>,"root":string,"type":"public"|"protected"|"private","@relative-to"?:string}
+     * @param array{"@class":class-string<LocalStorage>,"root":string,"type":"public"|"protected"|"private","@relative-to"?:string,"url"?:string}
      */
     public static function fromArray(array $data): self
     {
-        if (!isset($data['root'])) {
-            throw new Exception("'root' index is not present");
-        }
-        if (!isset($data['type'])) {
-            throw new Exception("'type' index is not present");
-        }
-        if (!is_string($data['root'])) {
-            throw new Exception("'root' value is not string");
-        }
-        if (!is_string($data['type'])) {
-            throw new Exception("'type' value is not string");
+        foreach(['root', 'type'] as $key) {
+            if (!isset($data[$key])) {
+                throw new Exception("'{$key}' index is not present");
+            }
+            if (!is_string($data[$key])) {
+                throw new Exception("'{$key}' value is not string");
+            }
         }
         if (isset($data['@relative-to']) and is_string($data['@relative-to'])) {
             $data['root'] = ltrim($data['root'], '/');
@@ -35,10 +29,25 @@ class LocalStorage extends Storage
             }
             $data['root'] = rtrim($data['@relative-to'], '/').'/'.ltrim($data['root'], '/');
         }
+        if ($data['type'] == self::TYPE_PUBLIC) {
+            if (!isset($data['url'])) {
+                throw new Exception("'url' index is not present");
+            }
+            if (!is_string($data['url'])) {
+                throw new Exception("'url' value is not string");
+            }
+        }
         $data['root'] = new Directory\Local($data['root']);
 
-        return new self($data['type'], $data['root']);
+        $instance = new self($data['type'], $data['root']);
+        if (isset($data['url'])) {
+            $instance->url = $data['url'];
+        }
+
+        return $instance;
     }
+
+    protected ?string $url = null;
 
     public function __construct(string $type, Directory $root)
     {
@@ -48,18 +57,22 @@ class LocalStorage extends Storage
         }
     }
 
-    public function getURL(Node $node, bool $absolute = false): string
+    public function getURL(Node $node): string
     {
         if (self::TYPE_PUBLIC != $this->getType()) {
             throw new AccessForbiddenException($node);
         }
 
-        $prefix = '';
-        if ($absolute) {
-            $prefix .= Request::getSchemeAndHttpHost();
-        }
+        return $this->url. "/" . $node->getRelativePath($this->root);
+    }
 
-        return $prefix.'/'.$node->getPath();
+    public function setUrlPrefix(?string $url): static {
+        if ($this->type == self::TYPE_PUBLIC and !$url) {
+            throw new Exception("You cannot remove url prefix of a public storage");
+        }
+        $this->url = rtrim($url, "/");;
+
+        return $this;
     }
 
     public function __serialize(): array
@@ -67,6 +80,7 @@ class LocalStorage extends Storage
         return [
             'type' => $this->type,
             'root' => $this->root->getPath(),
+            'url' => $this->url,
         ];
     }
 
@@ -74,5 +88,6 @@ class LocalStorage extends Storage
     {
         $this->type = $data['type'];
         $this->root = new Directory\Local($data['root']);
+        $this->url = $data['url'];
     }
 }

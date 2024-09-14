@@ -210,7 +210,7 @@ class Package extends ServiceProvider
     {
         if ($storage instanceof LocalStorage) {
             $root = $storage->getRoot();
-            $storageDir = $this->home->directory('storage');
+            $storageDir = $this->getRootLocalStorage();
             if ($root->isIn($storageDir)) {
                 $type = $storage->getType();
                 if (!$root->isIn($storageDir->directory($type))) {
@@ -342,7 +342,7 @@ class Package extends ServiceProvider
             return;
         }
         foreach ($storages as $name => $storageArray) {
-            $storageArray['@relative-to'] = $this->home->getPath();
+            $storageArray['@relative-to'] = $this->getRootLocalStorage()->getPath();
             $storage = Storage::fromArray($storageArray);
             $this->setStorage($name, $storage);
         }
@@ -372,7 +372,7 @@ class Package extends ServiceProvider
         $storages = array_filter($this->storages, fn(Storage $s) => ($s instanceof LocalStorage and $s->getType() == Storage::TYPE_PUBLIC));
         $map = [];
         foreach ($storages as $name => $storage) {
-            $symlink = public_path('packages/' . $this->name . "/storage/" . $name);
+            $symlink = public_path("packages/{$this->name}/storage/{$name}");
             if (!is_dir(dirname($symlink))) {
                 mkdir(dirname($symlink), 0755, true);
             }
@@ -380,6 +380,15 @@ class Package extends ServiceProvider
         }
 
         return $map;
+    }
+
+    protected function getUrlOfPublicLocalStorage(string $name): string
+    {
+        return asset("packages/{$this->name}/storage/{$name}");
+    }
+
+    protected function getRootLocalStorage(): LocalDirectory {
+        return new LocalDirectory(storage_path("packages/{$this->name}"));
     }
 
     /**
@@ -393,8 +402,10 @@ class Package extends ServiceProvider
 
     private function setDefaultStorages(): void
     {
-        $this->storages['public'] = new LocalStorage(Storage::TYPE_PUBLIC, new LocalDirectory(storage_path("packages/{$this->name}/public")));
-        $this->storages['protected'] = new LocalStorage(Storage::TYPE_PROTECTED, new LocalDirectory(storage_path("packages/{$this->name}/protected")));
-        $this->storages['private'] = new LocalStorage(Storage::TYPE_PRIVATE, new LocalDirectory(storage_path("packages/{$this->name}/private")));
+        $root = $this->getRootLocalStorage();
+        $this->storages['public'] = (new LocalStorage(Storage::TYPE_PUBLIC, $root->directory("public")))
+            ->setUrlPrefix($this->getUrlOfPublicLocalStorage("public"));
+        $this->storages['protected'] = new LocalStorage(Storage::TYPE_PROTECTED, $root->directory("protected"));
+        $this->storages['private'] = new LocalStorage(Storage::TYPE_PRIVATE, $root->directory("private"));
     }
 }
