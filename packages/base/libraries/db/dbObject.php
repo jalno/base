@@ -1070,4 +1070,17 @@ class DBObject implements IValidator
 
         return $obj;
     }
+
+    /**
+     * Method returns a copy of a DBObject subquery object.
+     *
+     * @return DBObject new DBObject object
+     */
+    public function __clone()
+    {
+        $clone = unserialize(serialize($this));
+        $clone->db = $clone->db->copy();
+
+        return $clone;
+    }
 }
