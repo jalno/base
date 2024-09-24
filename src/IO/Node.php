@@ -40,9 +40,7 @@ abstract class Node
         if ($this->getPath() === $parent->getPath()) {
             return false;
         }
-        $base = $parent->getPath().DIRECTORY_SEPARATOR;
-
-        return substr($this->getPath(), 0, strlen($base)) == $base;
+        return str_starts_with($this->getPath(), $parent->getPath().DIRECTORY_SEPARATOR);
     }
 
     public function getRelativePath(Directory $parent): string

@@ -48,10 +48,14 @@ class Response extends LaravelResponse
             }
         } elseif ($this->isJson) {
             $this->exportViewToData();
-            $this->setContent($this->getJsonData());
+            if (!$this->original) {
+                $this->setContent($this->getJsonData());
+            }
         } elseif ($this->view) {
             $this->view->setData($this->getStatus(), 'status');
-            $this->setContent($this->view->output());
+            if (!$this->original) {
+                $this->setContent($this->view->output());
+            }
         }
 
         return parent::prepare($request);

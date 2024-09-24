@@ -120,9 +120,7 @@ class Local extends File implements IStreamableFile
         if (!$parent instanceof Directory\Local) {
             return false;
         }
-        $base = $parent->getRealPath().'/';
-
-        return substr($this->getRealPath(), 0, strlen($base)) == $base;
+        return str_starts_with($this->getRealPath(), $parent->getRealPath().DIRECTORY_SEPARATOR);
     }
 
     public function getRelativePath(Directory $parent): string

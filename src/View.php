@@ -280,7 +280,7 @@ class View
     public function getData(?string $key = null)
     {
         if ($key) {
-            return isset($this->data[$key]) ? $this->data[$key] : null;
+            return $this->data[$key] ??  null;
         } else {
             return $this->data;
         }

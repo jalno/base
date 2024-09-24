@@ -174,9 +174,7 @@ class Local extends Directory
         if ($this->getRealPath() === $parent->getRealPath()) {
             return false;
         }
-        $base = $parent->getRealPath().DIRECTORY_SEPARATOR;
-
-        return substr($this->getRealPath(), 0, strlen($base)) == $base;
+        return str_starts_with($this->getRealPath(), $parent->getRealPath().DIRECTORY_SEPARATOR);
     }
 
     public function getRelativePath(Directory $parent): string
