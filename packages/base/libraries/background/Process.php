@@ -307,4 +307,12 @@ class Process extends DBObject
 
         return !$this->isRunning();
     }
+
+    public function save($data = null)
+    {
+        if (!Loader::canConnectDB()) {
+            return;
+        }
+        return parent::save($data);
+    }
 }
