@@ -2,6 +2,7 @@
 
 namespace packages\base;
 
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Vite;
 use packages\base\Frontend\Events\ThrowDynamicData;
 use packages\base\frontend\Source;
@@ -115,10 +116,11 @@ class View
     /**
      * Add an inline of css block.
      */
-    public function addCSS(string $code, string $name = ''): void
+    public function addCSS(string $code, string $name = '', ?string $env = null): void
     {
         $this->css[] = [
             'name' => $name,
+            'env' => $env,
             'type' => 'inline',
             'code' => $code,
         ];
@@ -161,10 +163,11 @@ class View
     /**
      * Add an inline of Javascript block.
      */
-    public function addJS(string $code, string $name = ''): void
+    public function addJS(string $code, string $name = '', ?string $env = null): void
     {
         $this->js[] = [
             'name' => $name,
+            'env' => $env,
             'type' => 'inline',
             'code' => $code,
         ];
@@ -338,13 +341,13 @@ class View
                     if (isset($asset['file'])) {
                         $this->addCSSFile(Theme::url($asset['file']), $asset['name'] ?? '', $asset['preload'] ?? false);
                     } elseif (isset($asset['inline'])) {
-                        $this->addCSS($asset['inline'], $asset['name'] ?? '');
+                        $this->addCSS($asset['inline'], $asset['name'] ?? '', $asset['env'] ?? null);
                     }
                 } elseif ('js' == $asset['type']) {
                     if (isset($asset['file'])) {
                         $this->addJSFile(Theme::url($asset['file']), $asset['name'] ?? '');
                     } elseif (isset($asset['inline'])) {
-                        $this->addJS($asset['inline'], $asset['name'] ?? '');
+                        $this->addJS($asset['inline'], $asset['name'] ?? '', $asset['env'] ?? null);
                     }
                 }
             }
@@ -393,8 +396,9 @@ class View
      */
     protected function loadCSS(): void
     {
+        $env = App::environment();
         foreach ($this->css as $css) {
-            if ('inline' == $css['type']) {
+            if ('inline' == $css['type'] && (!isset($js['env']) || $js['env'] == $env)) {
                 echo "<style>\n{$css['code']}\n</style>\n";
             }
         }
@@ -406,8 +410,9 @@ class View
      */
     protected function loadJS(): void
     {
+        $env = App::environment();
         foreach ($this->js as $js) {
-            if ('inline' == $js['type']) {
+            if ('inline' == $js['type'] && (!isset($js['env']) || $js['env'] == $env)) {
                 echo "<script>\n{$js['code']}\n</script>\n";
             }
         }

@@ -148,6 +148,10 @@ class Source extends ServiceProvider
         } else {
             throw new SourceAssetException('No file and no Code for asset', $this->home->getPath());
         }
+
+        if ((isset($asset['file']) || isset($asset['inline'])) && isset($asset['env'])) {
+            $assetData['env'] = $asset['env'];
+        }
         $this->assets[] = $assetData;
     }
 
