@@ -410,13 +410,25 @@ class View
      */
     protected function loadJS(): void
     {
+        $this->loadLanguageFileJS();
+
         $env = App::environment();
         foreach ($this->js as $js) {
             if ('inline' == $js['type'] && (!isset($js['env']) || $js['env'] == $env)) {
                 echo "<script>\n{$js['code']}\n</script>\n";
             }
         }
+
         echo Vite::__invoke("resources/js/{$this->source->getName()}.js")->toHtml();
+    }
+
+    protected function loadLanguageFileJS(): void
+    {
+        $locale = App::getLocale();
+        $filePath = App::resourcePath('js') . "/translator-{$locale}.js";
+        if (file_exists($filePath)) {
+            echo Vite::__invoke("resources/js/translator-{$locale}.js")->toHtml();
+        }
     }
 
     /**
