@@ -419,15 +419,21 @@ class View
             }
         }
 
-        echo Vite::__invoke("resources/js/{$this->source->getName()}.js")->toHtml();
+        echo Vite::__invoke("resources/js/{$this->source->getName()}.js")->toHtml() . PHP_EOL;
     }
 
     protected function loadLanguageFileJS(): void
     {
         $locale = App::getLocale();
-        $filePath = App::resourcePath('js') . "/translator-{$locale}.js";
-        if (file_exists($filePath)) {
-            echo Vite::__invoke("resources/js/translator-{$locale}.js")->toHtml();
+
+        $translationFile = App::resourcePath("js/translator-{$locale}.js");
+        if (file_exists($translationFile)) {
+            echo Vite::__invoke("resources/js/translator-{$locale}.js")->toHtml() . PHP_EOL;
+        }
+
+        $themeTranslationFile = App::resourcePath("js/{$this->source->getName()}-translator-{$locale}.js");
+        if (is_file($themeTranslationFile)) {
+            echo Vite::__invoke("resources/js/{$this->source->getName()}-translator-{$locale}.js")->toHtml() . PHP_EOL;
         }
     }
 
