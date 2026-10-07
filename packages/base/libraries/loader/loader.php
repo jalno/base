@@ -93,11 +93,16 @@ class Loader
     public static function sapi()
     {
         $sapi_type = php_sapi_name();
-        if ('cli' == substr($sapi_type, 0, 3)) {
-            return self::cli;
-        } else {
+
+        if ('cli-server' === $sapi_type) {
             return self::cgi;
         }
+
+        if ('cli' == substr($sapi_type, 0, 3)) {
+            return self::cli;
+        }
+
+        return self::cgi;
     }
 
     private static function package(string $name, bool $cache): ?Package
